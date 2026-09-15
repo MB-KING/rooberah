@@ -58,7 +58,7 @@ export default async function AdminModerationPage() {
         ) : (
           feedback.map((item) => (
             <AdminCard key={item.id}>
-              <p className="text-xs font-bold text-[#F59E0B]">
+              <p className="text-xs font-bold text-[#F39C12]">
                 برنامه {item.event.eventNumber} — {item.event.title}
               </p>
               <p className="mt-1 font-black text-white">
@@ -110,7 +110,7 @@ export default async function AdminModerationPage() {
                   />
                 </a>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-[#F59E0B]">
+                  <p className="text-xs font-bold text-[#F39C12]">
                     برنامه {photo.event.eventNumber} — {photo.event.title}
                   </p>
                   <p className="mt-1 font-black text-white">

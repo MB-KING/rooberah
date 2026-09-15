@@ -7,6 +7,7 @@ import {
 import type { Route } from "next";
 import Link from "next/link";
 import { EmptyState } from "@/components/user/empty-state";
+import { APP_NAME } from "@/shared/brand";
 import { UserAvatar } from "@/components/user/user-avatar";
 import { UserCard, UserPageHeader } from "@/components/user/user-card";
 import {
@@ -211,7 +212,7 @@ export default async function MembersPage({
             const name =
               [member.firstName, member.lastName].filter(Boolean).join(" ") ||
               member.username ||
-              "عضو هم مسیر";
+              `عضو ${APP_NAME}`;
             const rank = skip + index + 1;
             return (
               <Link

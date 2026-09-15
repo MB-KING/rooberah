@@ -21,7 +21,7 @@ export default async function AdminBadgesPage() {
   return (
     <>
       <PageTitle title="مدیریت نشان‌ها" subtitle="نشان‌ها افتخارهایی هستند که اعضا با حضور، امتیاز یا انتخاب ویژه دریافت می‌کنند." />
-      <AdminCard className="mb-4 border-[#F59E0B]/25 bg-[#0B1E43]">
+      <AdminCard className="mb-4 border-[#F39C12]/25 bg-[#2A160C]">
         <h2 className="font-black text-white">نشان به چه درد می‌خورد؟</h2>
         <p className="mt-2 text-sm leading-7 text-slate-300">
           نشان یک افتخار داخل پروفایل عضو است. مثلا «قدم اول» برای اولین حضور یا «هم‌قدم» برای چند حضور پشت سر هم. نشان‌ها حس پیشرفت می‌دهند و کمک می‌کنند اعضای فعال دیده شوند.
@@ -45,7 +45,7 @@ export default async function AdminBadgesPage() {
                 <div>
                   <h2 className="font-black text-white">{badge.name}</h2>
                   <p className="mt-1 text-sm text-slate-400">{badge.description ?? "بدون توضیح"}</p>
-                  <p className="mt-2 text-xs font-bold text-[#F59E0B]">
+                  <p className="mt-2 text-xs font-bold text-[#F39C12]">
                     {badgeTypeLabels[badge.type]}، حدنصاب {badge.threshold}، {badge.isActive ? "فعال" : "غیرفعال"}
                   </p>
                 </div>
@@ -86,7 +86,7 @@ function BadgeForm({
       <Field name="slug" label="شناسه انگلیسی" defaultValue={badge?.slug} placeholder="first-step" required />
       <label className="grid gap-2 text-sm font-bold text-slate-200">
         نوع نشان
-        <select name="type" defaultValue={badge?.type ?? BadgeType.ATTENDANCE_COUNT} className="h-11 rounded-xl border border-white/10 bg-[#061124] px-3 text-white outline-none focus:border-[#F59E0B]">
+        <select name="type" defaultValue={badge?.type ?? BadgeType.ATTENDANCE_COUNT} className="h-11 rounded-xl border border-white/10 bg-[#1C1008] px-3 text-white outline-none focus:border-[#F39C12]">
           {Object.entries(badgeTypeLabels).map(([value, label]) => (
             <option key={value} value={value}>
               {label}
@@ -99,10 +99,10 @@ function BadgeForm({
       <Field name="sortOrder" label="ترتیب نمایش" type="number" defaultValue={String(badge?.sortOrder ?? 0)} />
       <label className="grid gap-2 text-sm font-bold text-slate-200">
         توضیحات
-        <textarea name="description" rows={3} defaultValue={badge?.description ?? ""} className="rounded-xl border border-white/10 bg-[#061124] px-3 py-3 text-white outline-none focus:border-[#F59E0B]" />
+        <textarea name="description" rows={3} defaultValue={badge?.description ?? ""} className="rounded-xl border border-white/10 bg-[#1C1008] px-3 py-3 text-white outline-none focus:border-[#F39C12]" />
       </label>
       <label className="flex items-center gap-2 text-sm font-bold text-slate-200">
-        <input name="isActive" type="checkbox" defaultChecked={badge?.isActive ?? true} className="h-4 w-4 accent-[#F59E0B]" />
+        <input name="isActive" type="checkbox" defaultChecked={badge?.isActive ?? true} className="h-4 w-4 accent-[#F39C12]" />
         فعال باشد
       </label>
       <div>
@@ -138,7 +138,7 @@ function Field({
         required={required}
         placeholder={placeholder}
         defaultValue={defaultValue}
-        className="h-11 rounded-xl border border-white/10 bg-[#061124] px-3 text-white outline-none focus:border-[#F59E0B]"
+        className="h-11 rounded-xl border border-white/10 bg-[#1C1008] px-3 text-white outline-none focus:border-[#F39C12]"
       />
     </label>
   );

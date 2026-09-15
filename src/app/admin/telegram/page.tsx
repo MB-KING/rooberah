@@ -31,7 +31,7 @@ export default async function AdminTelegramPage() {
             نوع
             <select
               name="type"
-              className="h-11 rounded-xl border border-white/10 bg-[#061124] px-3 text-white"
+              className="h-11 rounded-xl border border-white/10 bg-[#1C1008] px-3 text-white"
               defaultValue="GROUP"
             >
               <option value="GROUP">گروه</option>
@@ -41,7 +41,7 @@ export default async function AdminTelegramPage() {
           <Field name="telegramChatId" label="Chat ID (اختیاری)" placeholder="-100..." />
           <Field name="sortOrder" label="ترتیب" type="number" defaultValue="0" />
           <label className="flex items-center gap-2 text-sm font-bold text-slate-200">
-            <input name="isActive" type="checkbox" defaultChecked className="accent-[#F59E0B]" />
+            <input name="isActive" type="checkbox" defaultChecked className="accent-[#F39C12]" />
             فعال
           </label>
           <label className="flex items-center gap-2 text-sm font-bold text-slate-200">
@@ -49,7 +49,7 @@ export default async function AdminTelegramPage() {
               name="receiveAnnouncements"
               type="checkbox"
               defaultChecked
-              className="accent-[#F59E0B]"
+              className="accent-[#F39C12]"
             />
             دریافت اعلان برنامه جدید
           </label>
@@ -79,7 +79,7 @@ export default async function AdminTelegramPage() {
                 <select
                   name="type"
                   defaultValue={resource.type}
-                  className="h-11 rounded-xl border border-white/10 bg-[#061124] px-3 text-white"
+                  className="h-11 rounded-xl border border-white/10 bg-[#1C1008] px-3 text-white"
                 >
                   <option value="GROUP">گروه</option>
                   <option value="CHANNEL">کانال</option>
@@ -105,7 +105,7 @@ export default async function AdminTelegramPage() {
                   name="isActive"
                   type="checkbox"
                   defaultChecked={resource.isActive}
-                  className="accent-[#F59E0B]"
+                  className="accent-[#F39C12]"
                 />
                 فعال
               </label>
@@ -114,7 +114,7 @@ export default async function AdminTelegramPage() {
                   name="receiveAnnouncements"
                   type="checkbox"
                   defaultChecked={resource.receiveAnnouncements}
-                  className="accent-[#F59E0B]"
+                  className="accent-[#F39C12]"
                 />
                 دریافت اعلان
               </label>
@@ -168,7 +168,7 @@ function Field({
         defaultValue={defaultValue}
         placeholder={placeholder}
         required={required}
-        className="h-11 rounded-xl border border-white/10 bg-[#061124] px-3 text-white"
+        className="h-11 rounded-xl border border-white/10 bg-[#1C1008] px-3 text-white"
       />
     </label>
   );

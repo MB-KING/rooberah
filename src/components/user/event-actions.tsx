@@ -9,6 +9,7 @@ import {
   cancelEventRegistrationAction,
   registerForEventAction
 } from "@/app/actions";
+import { APP_NAME } from "@/shared/brand";
 import { TelegramLoginWidget } from "@/components/telegram/telegram-login-widget";
 import { Button } from "@/components/ui/button";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
@@ -174,7 +175,7 @@ function LoginThenRegisterButton({ eventId }: { eventId: string }) {
           throw err;
         }
         setError(
-          "ورود از تلگرام انجام نشد. یک‌بار دیگر از داخل ربات هم مسیر باز کن."
+          `ورود از تلگرام انجام نشد. یک‌بار دیگر از داخل ربات ${APP_NAME} باز کن.`
         );
         router.refresh();
       }

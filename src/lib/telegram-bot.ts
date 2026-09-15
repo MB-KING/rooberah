@@ -1,4 +1,5 @@
 import { config } from "@/lib/config";
+import { APP_NAME } from "@/shared/brand";
 import { logger } from "@/lib/logger";
 import {
   formatHelpMessageHtml,
@@ -78,7 +79,7 @@ function buildAppKeyboard(input: {
   eventPath?: string;
   buttonText?: string;
 }) {
-  const label = input.buttonText ?? "🥾 باز کردن هم مسیر";
+  const label = input.buttonText ?? `باز کردن ${APP_NAME}`;
   const httpsApp = appPublicUrl().startsWith("https://");
   const webAppUrl = input.eventPath
     ? `${appPublicUrl()}${input.eventPath}`
@@ -103,7 +104,7 @@ export async function setupTelegramBot() {
 
   await callTelegram("setMyCommands", {
     commands: [
-      { command: "start", description: "شروع هم مسیر" },
+      { command: "start", description: `شروع ${APP_NAME}` },
       { command: "app", description: "باز کردن مینی‌اپ" },
       { command: "help", description: "راهنما" },
       { command: "addgroup", description: "ثبت گروه فعلی (سوپرادمین)" },
@@ -115,7 +116,7 @@ export async function setupTelegramBot() {
   await callTelegram("setChatMenuButton", {
     menu_button: {
       type: "web_app",
-      text: "هم مسیر",
+      text: APP_NAME,
       web_app: { url }
     }
   });
@@ -137,7 +138,7 @@ export async function sendStartMessage(chatId: number | string | bigint) {
     disable_web_page_preview: true,
     reply_markup: buildAppKeyboard({
       chatId: id,
-      buttonText: "🥾 باز کردن هم مسیر"
+      buttonText: `باز کردن ${APP_NAME}`
     })
   });
 }
@@ -151,7 +152,7 @@ export async function sendHelpMessage(chatId: number | string | bigint) {
     disable_web_page_preview: true,
     reply_markup: buildAppKeyboard({
       chatId: id,
-      buttonText: "🥾 باز کردن هم مسیر"
+      buttonText: `باز کردن ${APP_NAME}`
     })
   });
 }

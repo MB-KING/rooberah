@@ -36,9 +36,9 @@ export default async function AdminActivityPage() {
         title="گزارش فعالیت"
         subtitle="۱۰۰ تغییر اخیر مدیریتی برای پیگیری اینکه چه کسی، چه چیزی را و چه زمانی تغییر داده است."
       />
-      <AdminCard className="mb-4 border-[#F59E0B]/25 bg-[#0B1E43]">
+      <AdminCard className="mb-4 border-[#F39C12]/25 bg-[#2A160C]">
         <div className="flex items-start gap-3">
-          <Activity className="mt-0.5 text-[#F59E0B]" />
+          <Activity className="mt-0.5 text-[#F39C12]" />
           <div>
             <h2 className="font-black text-white">ردپای تغییرات</h2>
             <p className="mt-1 text-sm leading-7 text-slate-300">

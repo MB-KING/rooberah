@@ -99,8 +99,8 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
     bootstrapped.current = true;
     webApp.ready();
     webApp.expand();
-    webApp.setHeaderColor?.("#0B1E43");
-    webApp.setBackgroundColor?.("#061124");
+    webApp.setHeaderColor?.("#2A160C");
+    webApp.setBackgroundColor?.("#1C1008");
 
     try {
       await loginWithInitData(initData);

@@ -3,6 +3,7 @@ import { Vazirmatn } from "next/font/google";
 import { QueryProvider } from "@/components/query-provider";
 import { TelegramProvider } from "@/components/telegram/telegram-provider";
 import { ReferralCapture } from "@/components/user/referral-capture";
+import { APP_NAME, APP_SLOGAN, BRAND_ICON_SRC, brandColors } from "@/shared/brand";
 import "./globals.css";
 
 const vazirmatn = Vazirmatn({
@@ -12,11 +13,11 @@ const vazirmatn = Vazirmatn({
 });
 
 export const metadata: Metadata = {
-  title: "هم مسیر",
-  description: "یک مسیر، هزار تجربه",
+  title: APP_NAME,
+  description: APP_SLOGAN,
   icons: {
-    icon: "/brand/ham-masir-icon.png",
-    apple: "/brand/ham-masir-icon.png"
+    icon: BRAND_ICON_SRC,
+    apple: BRAND_ICON_SRC
   }
 };
 
@@ -26,7 +27,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#1E3A8A"
+  themeColor: brandColors.ember
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

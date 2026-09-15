@@ -24,7 +24,7 @@ export default async function AdminCategoriesPage() {
           <Field name="slug" label="اسلاگ انگلیسی" placeholder="tech" required />
           <Field name="sortOrder" label="ترتیب" type="number" defaultValue="0" />
           <label className="flex items-center gap-2 text-sm font-bold text-slate-200">
-            <input name="isActive" type="checkbox" defaultChecked className="accent-[#F59E0B]" />
+            <input name="isActive" type="checkbox" defaultChecked className="accent-[#F39C12]" />
             فعال
           </label>
           <Button type="submit" className="w-full" pendingLabel="در حال ذخیره…">
@@ -50,7 +50,7 @@ export default async function AdminCategoriesPage() {
                   name="isActive"
                   type="checkbox"
                   defaultChecked={category.isActive}
-                  className="accent-[#F59E0B]"
+                  className="accent-[#F39C12]"
                 />
                 فعال
               </label>
@@ -93,7 +93,7 @@ function Field({
         defaultValue={defaultValue}
         placeholder={placeholder}
         required={required}
-        className="h-11 rounded-xl border border-white/10 bg-[#061124] px-3 text-white"
+        className="h-11 rounded-xl border border-white/10 bg-[#1C1008] px-3 text-white"
       />
     </label>
   );

@@ -87,7 +87,7 @@ export default async function AdminDashboardPage() {
 
       {pendingFeedback + pendingPhotos > 0 ? (
         <Link href={"/admin/moderation" as Route} className="mb-4 block">
-          <AdminCard className="border-[#F59E0B]/35 bg-[#F59E0B]/10">
+          <AdminCard className="border-[#F39C12]/35 bg-[#F39C12]/10">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="font-black text-white">در انتظار تأیید</p>
@@ -96,7 +96,7 @@ export default async function AdminDashboardPage() {
                   {pendingPhotos.toLocaleString("fa-IR")} عکس باید بررسی شود.
                 </p>
               </div>
-              <Images className="text-[#F59E0B]" size={22} aria-hidden="true" />
+              <Images className="text-[#F39C12]" size={22} aria-hidden="true" />
             </div>
           </AdminCard>
         </Link>
@@ -107,7 +107,7 @@ export default async function AdminDashboardPage() {
               <p className="text-sm font-bold text-slate-300">
                 صف تأیید نظر و عکس خالی است.
               </p>
-              <Images className="text-[#F59E0B]" size={20} aria-hidden="true" />
+              <Images className="text-[#F39C12]" size={20} aria-hidden="true" />
             </div>
           </AdminCard>
         </Link>
@@ -122,7 +122,7 @@ export default async function AdminDashboardPage() {
                   <p className="text-xs font-bold text-slate-300">{label}</p>
                   <p className="mt-2 text-2xl font-black text-white">{value}</p>
                 </div>
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F59E0B]/15 text-[#F59E0B]">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F39C12]/15 text-[#F39C12]">
                   <Icon size={18} aria-hidden="true" />
                 </div>
               </div>
@@ -144,7 +144,7 @@ export default async function AdminDashboardPage() {
             <h2 className="text-lg font-black text-white">آخرین برنامه‌ها</h2>
             <p className="mt-1 text-sm text-slate-400">ورود سریع به حضور</p>
           </div>
-          <CalendarDays className="text-[#F59E0B]" aria-hidden="true" />
+          <CalendarDays className="text-[#F39C12]" aria-hidden="true" />
         </div>
         <div className="grid gap-3">
           {latestEvents.length === 0 ? (
@@ -153,7 +153,7 @@ export default async function AdminDashboardPage() {
             latestEvents.map((event) => (
               <div
                 key={event.id}
-                className="rounded-xl border border-white/10 bg-[#061124]/70 p-3"
+                className="rounded-xl border border-white/10 bg-[#1C1008]/70 p-3"
               >
                 <p className="font-black text-white">{event.title}</p>
                 <p className="mt-1 text-sm text-slate-400">
@@ -164,7 +164,7 @@ export default async function AdminDashboardPage() {
                   {event._count.attendance} حضور
                 </p>
                 <Link
-                  className="mt-3 inline-flex min-h-11 items-center gap-1 text-sm font-bold text-[#F59E0B]"
+                  className="mt-3 inline-flex min-h-11 items-center gap-1 text-sm font-bold text-[#F39C12]"
                   href={`/admin/events/${event.id}/attendance`}
                 >
                   حضور و غیاب <ArrowLeft size={15} aria-hidden="true" />

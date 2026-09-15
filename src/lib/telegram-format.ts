@@ -1,3 +1,5 @@
+import { APP_NAME } from "@/shared/brand";
+
 /** Client-safe Telegram text helpers (no server secrets). */
 
 export function escapeHtml(value: string) {
@@ -85,7 +87,7 @@ export function formatEventAnnounceHtml(event: {
   description?: string | null;
 }) {
   const lines = [
-    "🥾 <b>برنامه جدید هم مسیر</b>",
+    `<b>برنامه جدید ${APP_NAME}</b>`,
     "────────────",
     `<b>${escapeHtml(event.title)}</b>`,
     `شماره ${escapeHtml(String(event.eventNumber))}`,
@@ -107,7 +109,7 @@ export function formatEventAnnounceHtml(event: {
 
 export function formatStartMessageHtml() {
   return [
-    "👋 <b>به هم مسیر خوش آمدی</b>",
+    `<b>به ${APP_NAME} خوش آمدی</b>`,
     "",
     "🥾 اینجا برنامه‌های پیاده‌روی و دورهمی‌ها را می‌بینی، ثبت‌نام می‌کنی و با بقیه همراه می‌شوی.",
     "",
@@ -117,7 +119,7 @@ export function formatStartMessageHtml() {
 
 export function formatHelpMessageHtml() {
   return [
-    "🧭 <b>راهنمای هم مسیر</b>",
+    `<b>راهنمای ${APP_NAME}</b>`,
     "",
     "• 📱 از دکمه زیر مینی‌اپ را باز کن",
     "• 🥾 برنامه‌ها را ببین و ثبت‌نام کن",

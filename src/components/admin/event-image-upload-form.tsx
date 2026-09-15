@@ -66,7 +66,7 @@ export function EventImageUploadForm({ eventId }: { eventId: string }) {
         <input
           name="caption"
           disabled={pending}
-          className="h-11 rounded-xl border border-white/10 bg-[#061124] px-3 text-white"
+          className="h-11 rounded-xl border border-white/10 bg-[#1C1008] px-3 text-white"
         />
       </label>
       <PendingSubmitButton

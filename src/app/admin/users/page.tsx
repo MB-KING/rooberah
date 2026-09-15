@@ -56,7 +56,7 @@ export default async function AdminUsersPage() {
         title="اعضا و نقش‌ها"
         subtitle="برای هر کاربر فقط یکی از سه نقش اصلی را انتخاب کن: عضو، ادمین یا سوپرادمین."
       />
-      <AdminCard className="mb-4 border-[#F59E0B]/25 bg-[#0B1E43]">
+      <AdminCard className="mb-4 border-[#F39C12]/25 bg-[#2A160C]">
         <h2 className="font-black text-white">نقش‌ها یعنی چه؟</h2>
         <p className="mt-2 text-sm leading-7 text-slate-300">
           عضو فقط بخش‌های معمولی را می‌بیند. ادمین می‌تواند برنامه بسازد، وضعیت
@@ -117,7 +117,7 @@ export default async function AdminUsersPage() {
                           <form
                             key={item.id}
                             action={revokeSpecialBadgeAction}
-                            className="inline-flex items-center gap-2 rounded-full bg-[#F59E0B]/15 px-3 py-1 text-xs font-bold text-[#F59E0B]"
+                            className="inline-flex items-center gap-2 rounded-full bg-[#F39C12]/15 px-3 py-1 text-xs font-bold text-[#F39C12]"
                           >
                             <input
                               type="hidden"
@@ -149,7 +149,7 @@ export default async function AdminUsersPage() {
                       <input type="hidden" name="userId" value={user.id} />
                       <select
                         name="badgeId"
-                        className="h-11 w-full rounded-xl border border-white/10 bg-[#061124] px-3 text-sm text-white"
+                        className="h-11 w-full rounded-xl border border-white/10 bg-[#1C1008] px-3 text-sm text-white"
                       >
                         {specialBadges.map((badge) => (
                           <option key={badge.id} value={badge.id}>

@@ -43,7 +43,7 @@ export default async function AttendancePage({ params }: { params: Promise<{ eve
         title="تأیید حضور"
         subtitle={`${event.title} - ${event.locationName}`}
       />
-      <details className="mb-4 rounded-xl border border-[#F59E0B]/25 bg-[#0B1E43] p-4">
+      <details className="mb-4 rounded-xl border border-[#F39C12]/25 bg-[#2A160C] p-4">
         <summary className="cursor-pointer font-black text-white">
           چرا حضور را تأیید می‌کنیم؟
         </summary>
@@ -70,7 +70,7 @@ export default async function AttendancePage({ params }: { params: Promise<{ eve
                 [registration.user.firstName, registration.user.lastName].filter(Boolean).join(" ") || registration.user.username || registration.user.telegramId.toString();
 
               return (
-                <div key={registration.id} className="grid gap-3 rounded-xl border border-white/10 bg-[#061124]/70 p-3">
+                <div key={registration.id} className="grid gap-3 rounded-xl border border-white/10 bg-[#1C1008]/70 p-3">
                   <div>
                     <p className="font-black text-white">{displayName}</p>
                     <p className="mt-1 text-sm text-slate-400">
@@ -120,7 +120,7 @@ function AttendanceButton({
       <input type="hidden" name="userId" value={userId} />
       <input type="hidden" name="status" value={status} />
       <PendingSubmitButton
-        className="w-full bg-white/10 px-2 text-xs font-bold text-slate-200 hover:bg-white/15 disabled:bg-[#F59E0B]/20 disabled:text-[#F59E0B]"
+        className="w-full bg-white/10 px-2 text-xs font-bold text-slate-200 hover:bg-white/15 disabled:bg-[#F39C12]/20 disabled:text-[#F39C12]"
         disabled={isCurrent}
         pendingLabel="…"
       >

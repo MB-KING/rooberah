@@ -1,8 +1,8 @@
-# Ham-Masir Telegram Mini App
+# رو‌به‌راه Telegram Mini App
 
-Production-ready foundation for the **هم مسیر** Telegram Mini App.
+Production-ready foundation for the **رو‌به‌راه** Telegram Mini App.
 
-Tagline: **یک مسیر، هزار تجربه**
+Tagline: **همراه هم برای رشد**
 
 This repository is intentionally not a mock-only demo. It starts with a modular Next.js application, MySQL/Prisma persistence, server-side Telegram Mini App authentication, RBAC, service/repository separation, Docker, seed data, and focused tests for important business rules.
 

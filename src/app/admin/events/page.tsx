@@ -71,12 +71,12 @@ export default async function AdminEventsPage({
         }
       />
       {banner ? (
-        <AdminCard className="mb-4 border border-[#F59E0B]/35 bg-[#F59E0B]/10">
+        <AdminCard className="mb-4 border border-[#F39C12]/35 bg-[#F39C12]/10">
           <p className="text-sm font-bold leading-7 text-[#FDE68A]">{banner}</p>
         </AdminCard>
       ) : null}
 
-      <details className="mb-4 rounded-xl border border-[#F59E0B]/25 bg-[#0B1E43] p-4">
+      <details className="mb-4 rounded-xl border border-[#F39C12]/25 bg-[#2A160C] p-4">
         <summary className="cursor-pointer font-black text-white">
           معنی وضعیت‌ها
         </summary>
@@ -118,7 +118,7 @@ export default async function AdminEventsPage({
                   ویرایش
                 </Link>
                 <Link
-                  className={`${secondaryActionClass} border-[#F59E0B]/30 text-[#F59E0B]`}
+                  className={`${secondaryActionClass} border-[#F39C12]/30 text-[#F39C12]`}
                   href={`/admin/events/${event.id}/attendance`}
                 >
                   <ClipboardCheck size={16} aria-hidden="true" />

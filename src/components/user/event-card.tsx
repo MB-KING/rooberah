@@ -121,7 +121,7 @@ export function EventCard({
                 ? "border border-emerald-400/35 bg-emerald-500/15 text-emerald-200 hover:bg-emerald-500/25"
                 : isWaitlisted
                   ? "border border-sky-400/35 bg-sky-500/15 text-sky-200 hover:bg-sky-500/25"
-                  : "bg-ember text-ink shadow-ember/20 hover:bg-amber-400"
+                  : "bg-ember text-ink shadow-ember/20 hover:bg-gold"
           )}
         >
           {isCompleted ? (

@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { APP_NAME } from "@/shared/brand";
 import { prisma } from "@/lib/prisma";
 import { sendTelegramMessage } from "@/lib/telegram-bot";
 import { formatNotificationHtml } from "@/lib/telegram-format";
@@ -54,7 +55,7 @@ export async function notifyUser(input: {
       parseMode: "HTML",
       openApp: true,
       eventPath: input.eventPath,
-      buttonText: input.buttonText ?? "🥾 باز کردن هم مسیر"
+      buttonText: input.buttonText ?? `باز کردن ${APP_NAME}`
     });
     telegramDelivered = result.ok;
   }

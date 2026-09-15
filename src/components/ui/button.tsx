@@ -28,7 +28,7 @@ export function Button({
       disabled={isDisabled}
       aria-busy={showPending || undefined}
       className={cn(
-        "inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-xl bg-ember px-4 text-sm font-black text-ink shadow-sm shadow-ember/20 transition duration-200 active:scale-[0.99] hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-70",
+        "inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-xl bg-ember px-4 text-sm font-black text-ink shadow-sm shadow-ember/20 transition duration-200 active:scale-[0.99] hover:bg-gold disabled:cursor-not-allowed disabled:opacity-70",
         className
       )}
       {...props}

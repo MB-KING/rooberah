@@ -3,6 +3,7 @@
 import { Loader2, Send, Share2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BottomSheet } from "@/components/user/bottom-sheet";
+import { APP_NAME } from "@/shared/brand";
 import {
   primaryActionClass,
   secondaryActionClass
@@ -143,7 +144,7 @@ export function ShareCardButton({
     setSuccess(null);
     try {
       await postShare("dm");
-      setSuccess("عکس کارت به چت خصوصی‌ات با ربات هم مسیر فرستاده شد.");
+      setSuccess(`عکس کارت به چت خصوصی‌ات با ربات ${APP_NAME} فرستاده شد.`);
     } catch (err) {
       setError(
         err instanceof Error

@@ -62,7 +62,7 @@ export function AdminNav({ isSuperAdmin }: { isSuperAdmin: boolean }) {
             miniAppWidthClass
           )}
         >
-          <div className="rounded-2xl border border-white/10 bg-[#07162E] p-2 shadow-[0_-8px_30px_rgba(0,0,0,0.4)]">
+          <div className="rounded-2xl border border-white/10 bg-[#21120A] p-2 shadow-[0_-8px_30px_rgba(0,0,0,0.4)]">
             <div className="mb-1 flex items-center justify-between px-2 py-1">
               <p className="text-xs font-bold text-slate-400">بخش‌های بیشتر</p>
               <button
@@ -85,7 +85,7 @@ export function AdminNav({ isSuperAdmin }: { isSuperAdmin: boolean }) {
                     className={cn(
                       "flex min-h-12 items-center gap-2 rounded-xl px-3 text-sm font-bold",
                       active
-                        ? "bg-[#F59E0B] text-[#061124]"
+                        ? "bg-[#F39C12] text-[#1C1008]"
                         : "bg-white/[0.06] text-slate-200"
                     )}
                   >
@@ -102,7 +102,7 @@ export function AdminNav({ isSuperAdmin }: { isSuperAdmin: boolean }) {
       <nav
         aria-label="منوی مدیریت"
         className={cn(
-          "fixed bottom-0 left-1/2 z-50 -translate-x-1/2 border-t border-white/10 bg-[#07162E]/95 px-2 pt-1.5 shadow-[0_-8px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl",
+          "fixed bottom-0 left-1/2 z-50 -translate-x-1/2 border-t border-white/10 bg-[#21120A]/95 px-2 pt-1.5 shadow-[0_-8px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl",
           "pb-[calc(0.45rem+env(safe-area-inset-bottom))]",
           miniAppWidthClass
         )}
@@ -121,7 +121,7 @@ export function AdminNav({ isSuperAdmin }: { isSuperAdmin: boolean }) {
                 className={cn(
                   "flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-bold leading-tight transition active:scale-95",
                   active
-                    ? "bg-[#F59E0B] text-[#061124]"
+                    ? "bg-[#F39C12] text-[#1C1008]"
                     : "text-slate-400 active:bg-white/[0.07] active:text-white"
                 )}
               >
@@ -139,7 +139,7 @@ export function AdminNav({ isSuperAdmin }: { isSuperAdmin: boolean }) {
               className={cn(
                 "flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-bold leading-tight transition active:scale-95",
                 moreOpen || moreActive
-                  ? "bg-[#F59E0B] text-[#061124]"
+                  ? "bg-[#F39C12] text-[#1C1008]"
                   : "text-slate-400 active:bg-white/[0.07] active:text-white"
               )}
             >

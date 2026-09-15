@@ -4,7 +4,7 @@
 
 :root {
   color-scheme: dark;
-  background: #061124;
+  background: #1c1008;
   color: #f8fafc;
 }
 
@@ -14,7 +14,7 @@
 
 html {
   /* Keep the Telegram Mini App frame even when opened in a wide browser. */
-  background: #030712;
+  background: #140c08;
 }
 
 body {
@@ -23,9 +23,10 @@ body {
   width: 100%;
   max-width: 430px;
   background:
-    radial-gradient(circle at 16% 8%, rgba(245, 158, 11, 0.18), transparent 20rem),
-    radial-gradient(circle at 86% 4%, rgba(30, 58, 138, 0.75), transparent 28rem),
-    linear-gradient(180deg, #061124 0%, #081A35 46%, #050A14 100%);
+    radial-gradient(circle at 16% 8%, rgba(243, 156, 18, 0.28), transparent 20rem),
+    radial-gradient(circle at 88% 0%, rgba(227, 28, 36, 0.22), transparent 22rem),
+    radial-gradient(circle at 80% 92%, rgba(245, 197, 24, 0.16), transparent 24rem),
+    linear-gradient(180deg, #1c1008 0%, #2a160c 46%, #140c08 100%);
   direction: rtl;
   font-family: var(--font-vazirmatn), Tahoma, Arial, sans-serif;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
@@ -41,7 +42,7 @@ textarea {
 }
 
 :focus-visible {
-  outline: 2px solid #f59e0b;
+  outline: 2px solid #f39c12;
   outline-offset: 3px;
 }
 
@@ -57,7 +58,7 @@ textarea {
 }
 
 ::selection {
-  background: rgba(245, 158, 11, 0.35);
+  background: rgba(243, 156, 18, 0.35);
   color: #ffffff;
 }
 

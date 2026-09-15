@@ -60,7 +60,7 @@ export default async function AdminEventFeedbackPage({
       <AdminCard className="mb-4">
         <p className="text-sm leading-7 text-slate-300">
           میانگین نظرات تأییدشده:{" "}
-          <span className="font-black text-[#F59E0B]">
+          <span className="font-black text-[#F39C12]">
             {stats.average.toFixed(1)}
           </span>{" "}
           از {stats.count.toLocaleString("fa-IR")} نظر.{" "}
@@ -69,7 +69,7 @@ export default async function AdminEventFeedbackPage({
         </p>
         <Link
           href={`/admin/events/${eventId}/edit` as Route}
-          className="mt-3 inline-flex text-sm font-bold text-[#F59E0B]"
+          className="mt-3 inline-flex text-sm font-bold text-[#F39C12]"
         >
           بازگشت به ویرایش برنامه
         </Link>
@@ -92,7 +92,7 @@ export default async function AdminEventFeedbackPage({
                   {labelOf(moderationStatusLabels, item.status)}
                 </p>
               </div>
-              <p className="mt-1 text-sm font-bold text-[#F59E0B]">
+              <p className="mt-1 text-sm font-bold text-[#F39C12]">
                 {item.rating} ستاره
               </p>
               {item.comment ? (

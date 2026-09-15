@@ -31,7 +31,7 @@ export default async function AdminSettingsPage() {
       />
       <AdminCard className="mb-5">
         <div className="mb-4 flex items-center gap-2">
-          <Settings className="text-[#F59E0B]" size={20} />
+          <Settings className="text-[#F39C12]" size={20} />
           <h2 className="font-black text-white">مشخصات جامعه</h2>
         </div>
         <form action={updateCommunityAction} className="grid gap-4">
@@ -51,7 +51,7 @@ export default async function AdminSettingsPage() {
               name="isActive"
               type="checkbox"
               defaultChecked={community.isActive}
-              className="h-4 w-4 accent-[#F59E0B]"
+              className="h-4 w-4 accent-[#F39C12]"
             />
             جامعه فعال باشد
           </label>
@@ -60,7 +60,7 @@ export default async function AdminSettingsPage() {
               name="leaderboardEnabled"
               type="checkbox"
               defaultChecked={community.leaderboardEnabled}
-              className="h-4 w-4 accent-[#F59E0B]"
+              className="h-4 w-4 accent-[#F39C12]"
             />
             جدول امتیاز فعال باشد
           </label>
@@ -69,7 +69,7 @@ export default async function AdminSettingsPage() {
               name="autoAnnounceEnabled"
               type="checkbox"
               defaultChecked={community.autoAnnounceEnabled}
-              className="h-4 w-4 accent-[#F59E0B]"
+              className="h-4 w-4 accent-[#F39C12]"
             />
             اعلان خودکار برنامه در گروه‌های تلگرام
           </label>
@@ -101,7 +101,7 @@ export default async function AdminSettingsPage() {
                   defaultValue={String(
                     ruleMap.get(type) ?? defaultStepRules[type] ?? 0
                   )}
-                  className="h-11 rounded-xl border border-white/10 bg-[#061124] px-3 text-white"
+                  className="h-11 rounded-xl border border-white/10 bg-[#1C1008] px-3 text-white"
                 />
               </label>
               <PendingSubmitButton
@@ -142,7 +142,7 @@ function Field({
         defaultValue={defaultValue}
         required={required}
         placeholder={placeholder}
-        className="h-11 rounded-xl border border-white/10 bg-[#061124] px-3 text-white outline-none focus:border-[#F59E0B]"
+        className="h-11 rounded-xl border border-white/10 bg-[#1C1008] px-3 text-white outline-none focus:border-[#F39C12]"
       />
     </label>
   );

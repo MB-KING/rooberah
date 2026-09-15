@@ -65,13 +65,13 @@ export function PersianDateField({
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="flex h-11 items-center justify-between rounded-xl border border-white/10 bg-[#061124] px-3 text-right text-white outline-none focus:border-[#F59E0B]"
+        className="flex h-11 items-center justify-between rounded-xl border border-white/10 bg-[#1C1008] px-3 text-right text-white outline-none focus:border-[#F39C12]"
       >
         <span>{formatJalaliDisplay(selected)}</span>
-        <span className="text-xs font-bold text-[#F59E0B]">شمسی</span>
+        <span className="text-xs font-bold text-[#F39C12]">شمسی</span>
       </button>
       {open ? (
-        <div className="rounded-xl border border-white/10 bg-[#061124] p-3">
+        <div className="rounded-xl border border-white/10 bg-[#1C1008] p-3">
           <div className="mb-3 flex items-center justify-between gap-2">
             <button
               type="button"
@@ -117,7 +117,7 @@ export function PersianDateField({
                   }}
                   className={`inline-flex h-9 items-center justify-center rounded-lg text-sm font-bold ${
                     active
-                      ? "bg-[#F59E0B] text-[#061124]"
+                      ? "bg-[#F39C12] text-[#1C1008]"
                       : "bg-white/[0.04] text-white hover:bg-white/10"
                   }`}
                 >

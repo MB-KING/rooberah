@@ -4,6 +4,7 @@ import {
   TelegramResourceType
 } from "@prisma/client";
 import { logger } from "@/lib/logger";
+import { APP_NAME } from "@/shared/brand";
 import { prisma } from "@/lib/prisma";
 import { sendTelegramMessage } from "@/lib/telegram-bot";
 import { escapeHtml } from "@/lib/telegram-format";
@@ -93,7 +94,7 @@ export async function handleGroupAdminCommand(input: {
   if (!admin) {
     await sendTelegramMessage({
       chatId: input.chat.id,
-      text: "⛔ فقط سوپرادمین معتبر هم مسیر می‌تواند این دستور را اجرا کند.",
+      text: `⛔ فقط سوپرادمین معتبر ${APP_NAME} می‌تواند این دستور را اجرا کند.`,
       parseMode: "HTML"
     });
     return true;
@@ -130,7 +131,7 @@ export async function handleGroupAdminCommand(input: {
       : await prisma.telegramResource.create({
           data: {
             communityId: admin.communityId,
-            name: input.chat.title ?? "گروه هم مسیر",
+            name: input.chat.title ?? `گروه ${APP_NAME}`,
             description: "ثبت‌شده از دستور /addgroup",
             link: groupLink(input.chat),
             type: TelegramResourceType.GROUP,
@@ -142,7 +143,7 @@ export async function handleGroupAdminCommand(input: {
 
     await sendTelegramMessage({
       chatId: input.chat.id,
-      text: `✅ گروه «<b>${escapeHtml(resource.name)}</b>» در هم مسیر ثبت شد.\n📢 از این به بعد اعلان برنامه‌ها اینجا ارسال می‌شود.`,
+      text: `✅ گروه «<b>${escapeHtml(resource.name)}</b>» در ${APP_NAME} ثبت شد.\n📢 از این به بعد اعلان برنامه‌ها اینجا ارسال می‌شود.`,
       parseMode: "HTML"
     });
     return true;
@@ -160,7 +161,7 @@ export async function handleGroupAdminCommand(input: {
       chatId: input.chat.id,
       text:
         updated.count > 0
-          ? "❎ گروه از منابع فعال هم مسیر حذف (غیرفعال) شد."
+          ? `❎ گروه از منابع فعال ${APP_NAME} حذف (غیرفعال) شد.`
           : "ℹ️ این گروه در سیستم ثبت نشده بود.",
       parseMode: "HTML"
     });

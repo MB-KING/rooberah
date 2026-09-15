@@ -1,7 +1,6 @@
 import Image from "next/image";
+import { APP_NAME, BRAND_ICON_SRC } from "@/shared/brand";
 import { cn } from "@/lib/cn";
-
-const brandIconSrc = "/brand/ham-masir-icon.png";
 
 export function BrandMark({
   size = 40,
@@ -14,15 +13,12 @@ export function BrandMark({
 }) {
   return (
     <div
-      className={cn(
-        "relative shrink-0 overflow-hidden rounded-[22%] ring-1 ring-white/15",
-        className
-      )}
+      className={cn("relative shrink-0 overflow-hidden rounded-full", className)}
       style={{ width: size, height: size }}
     >
       <Image
-        src={brandIconSrc}
-        alt="هم مسیر"
+        src={BRAND_ICON_SRC}
+        alt={APP_NAME}
         fill
         sizes={`${size}px`}
         className="object-cover"

@@ -1,3 +1,5 @@
+import { APP_NAME } from "@/shared/brand";
+
 type PrivacyUser = {
   id: string;
   firstName: string | null;
@@ -27,7 +29,7 @@ export function getDisplayName(user: {
   username?: string | null;
 }) {
   const name = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
-  return name || user.username || "عضو هم مسیر";
+  return name || user.username || `عضو ${APP_NAME}`;
 }
 
 export function getPublicMemberView(

@@ -16,6 +16,7 @@ import {
 } from "@/lib/share-card";
 import { requireCurrentUser } from "@/modules/auth/session";
 import { publicEventStatuses } from "@/modules/events/event.repository";
+import { APP_NAME } from "@/shared/brand";
 import { AppError, errorMessagesFa } from "@/shared/errors";
 import {
   eventReferralUrl,
@@ -46,7 +47,7 @@ function telegramDmErrorFa(reason: string) {
     text.includes("can't initiate") ||
     text.includes("user is deactivated")
   ) {
-    return "اول ربات هم مسیر را در تلگرام استارت کن، بعد دوباره امتحان کن.";
+    return `اول ربات ${APP_NAME} را در تلگرام استارت کن، بعد دوباره امتحان کن.`;
   }
   return "ارسال عکس به چت تلگرام انجام نشد. دوباره امتحان کن.";
 }

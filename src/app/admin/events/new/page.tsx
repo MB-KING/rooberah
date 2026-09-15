@@ -78,7 +78,7 @@ export default async function NewEventPage({
             <select
               name="status"
               defaultValue={EventStatus.PUBLISHED}
-              className="h-11 rounded-xl border border-white/10 bg-[#061124] px-3 text-white outline-none focus:border-[#F59E0B]"
+              className="h-11 rounded-xl border border-white/10 bg-[#1C1008] px-3 text-white outline-none focus:border-[#F39C12]"
             >
               <option value={EventStatus.DRAFT}>ذخیره به‌عنوان پیش‌نویس</option>
               <option value={EventStatus.PUBLISHED}>
@@ -90,7 +90,7 @@ export default async function NewEventPage({
             آدرس محل قرار
             <input
               name="locationAddress"
-              className="h-11 rounded-xl border border-white/10 bg-[#061124] px-3 text-white outline-none focus:border-[#F59E0B]"
+              className="h-11 rounded-xl border border-white/10 bg-[#1C1008] px-3 text-white outline-none focus:border-[#F39C12]"
               placeholder="مثلا کنار ورودی اصلی پارک"
             />
           </label>
@@ -99,7 +99,7 @@ export default async function NewEventPage({
             <textarea
               name="description"
               rows={4}
-              className="rounded-xl border border-white/10 bg-[#061124] px-3 py-3 text-white outline-none focus:border-[#F59E0B]"
+              className="rounded-xl border border-white/10 bg-[#1C1008] px-3 py-3 text-white outline-none focus:border-[#F39C12]"
               placeholder="مسیر، وسایل پیشنهادی، سطح سختی و نکته‌های مهم را کوتاه و روشن بنویس."
             />
           </label>
@@ -149,7 +149,7 @@ function Field({
         placeholder={placeholder}
         step={step}
         defaultValue={defaultValue}
-        className="h-11 rounded-xl border border-white/10 bg-[#061124] px-3 text-white outline-none focus:border-[#F59E0B]"
+        className="h-11 rounded-xl border border-white/10 bg-[#1C1008] px-3 text-white outline-none focus:border-[#F39C12]"
       />
     </label>
   );

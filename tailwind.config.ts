@@ -5,15 +5,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#061124",
-        pine: "#0B1E43",
-        night: "#07162E",
-        mint: "#EFF6FF",
-        ember: "#F59E0B",
-        skyglass: "#F8FAFC",
+        ink: "#1C1008",
+        pine: "#2A160C",
+        night: "#21120A",
+        mint: "#FFF8E8",
+        ember: "#F39C12",
+        gold: "#F5C518",
+        skyglass: "#FFFDF8",
         brand: {
-          blue: "#1E3A8A",
-          orange: "#F59E0B",
+          red: "#E31C24",
+          orange: "#F39C12",
+          gold: "#F5C518",
           gray: "#6B7280",
           white: "#FFFFFF"
         }

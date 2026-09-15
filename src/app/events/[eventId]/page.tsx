@@ -33,6 +33,7 @@ import { EventPhotoService } from "@/modules/events/event-photo.service";
 import { publicEventStatuses } from "@/modules/events/event.repository";
 import { FeedbackService } from "@/modules/feedback/feedback.service";
 import { mediaPublicPath } from "@/modules/media/media.service";
+import { APP_NAME } from "@/shared/brand";
 import { MEETING_TIME_LABEL, START_TIME_LABEL } from "@/shared/copy";
 import { errorMessagesFa, type ErrorCode } from "@/shared/errors";
 import {
@@ -74,7 +75,7 @@ export async function generateMetadata({
   });
 
   if (!event) {
-    return { title: "هم مسیر" };
+    return { title: APP_NAME };
   }
 
   const pageUrl = eventReferralUrl(event.id, referrerId);

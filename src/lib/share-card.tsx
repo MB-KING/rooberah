@@ -8,6 +8,7 @@ import {
   faTehranDateFormatter,
   faTehranTimeFormatter
 } from "@/lib/tehran-time";
+import { APP_NAME, brandColors } from "@/shared/brand";
 import { MEETING_TIME_LABEL, START_TIME_LABEL } from "@/shared/copy";
 import { publicEventStatuses } from "@/modules/events/event.repository";
 import { MediaService } from "@/modules/media/media.service";
@@ -239,8 +240,8 @@ function AvatarBadge({
         height: size,
         borderRadius: size / 2,
         overflow: "hidden",
-        border: "4px solid #F59E0B",
-        backgroundColor: "#F59E0B",
+        border: `4px solid ${brandColors.ember}`,
+        backgroundColor: brandColors.ember,
         alignItems: "center",
         justifyContent: "center",
         flexShrink: 0
@@ -264,7 +265,7 @@ function AvatarBadge({
           style={{
             display: "flex",
             fontSize: Math.round(size * 0.42),
-            color: "#061124",
+            color: brandColors.ink,
             fontWeight: 700,
             direction: "ltr"
           }}
@@ -347,8 +348,8 @@ export async function renderShareCard(input: RenderShareCardInput) {
       ? wrapWords(`نشانی ${address}`, 32, 2)
       : [];
   const brandLines = compact
-    ? [`هم مسیر · برنامه ${eventNumber}`]
-    : ["هم مسیر", `برنامه شماره ${eventNumber}`];
+    ? [`${APP_NAME} · برنامه ${eventNumber}`]
+    : [APP_NAME, `برنامه شماره ${eventNumber}`];
 
   return new ImageResponse(
     (
@@ -360,7 +361,7 @@ export async function renderShareCard(input: RenderShareCardInput) {
           flexDirection: "column",
           justifyContent: "flex-end",
           position: "relative",
-          background: "#061124",
+          background: brandColors.ink,
           color: "white",
           padding: pad,
           fontFamily: fontData ? "Vazirmatn" : "sans-serif"
@@ -391,7 +392,7 @@ export async function renderShareCard(input: RenderShareCardInput) {
             width: "100%",
             height: "100%",
             background:
-              "linear-gradient(180deg, rgba(6,17,36,0.25) 0%, rgba(6,17,36,0.88) 55%, rgba(6,17,36,0.96) 100%)",
+              "linear-gradient(180deg, rgba(28,16,8,0.25) 0%, rgba(28,16,8,0.88) 55%, rgba(28,16,8,0.96) 100%)",
             display: "flex"
           }}
         />
@@ -455,7 +456,7 @@ export async function renderShareCard(input: RenderShareCardInput) {
             </div>
           ) : null}
           {brandLines.map((line) => (
-            <RtlLine key={line} text={line} fontSize={metaSize} color="#F59E0B" />
+            <RtlLine key={line} text={line} fontSize={metaSize} color={brandColors.ember} />
           ))}
           {titleLines.map((line) => (
             <RtlLine

@@ -136,7 +136,7 @@ export default async function EditEventPage({
             <select
               name="status"
               defaultValue={event.status}
-              className="h-11 rounded-xl border border-white/10 bg-[#061124] px-3 text-white outline-none focus:border-[#F59E0B]"
+              className="h-11 rounded-xl border border-white/10 bg-[#1C1008] px-3 text-white outline-none focus:border-[#F39C12]"
             >
               <option value={EventStatus.DRAFT}>پیش‌نویس</option>
               <option value={EventStatus.PUBLISHED}>آماده ثبت‌نام</option>
@@ -152,7 +152,7 @@ export default async function EditEventPage({
             <input
               name="locationAddress"
               defaultValue={event.locationAddress ?? ""}
-              className="h-11 rounded-xl border border-white/10 bg-[#061124] px-3 text-white outline-none focus:border-[#F59E0B]"
+              className="h-11 rounded-xl border border-white/10 bg-[#1C1008] px-3 text-white outline-none focus:border-[#F39C12]"
             />
           </label>
           <label className="grid gap-2 text-sm font-bold text-slate-200">
@@ -161,7 +161,7 @@ export default async function EditEventPage({
               name="description"
               rows={4}
               defaultValue={event.description ?? ""}
-              className="rounded-xl border border-white/10 bg-[#061124] px-3 py-3 text-white outline-none focus:border-[#F59E0B]"
+              className="rounded-xl border border-white/10 bg-[#1C1008] px-3 py-3 text-white outline-none focus:border-[#F39C12]"
             />
           </label>
           <div>
@@ -207,7 +207,7 @@ function Field({
         required={required}
         defaultValue={defaultValue}
         step={step}
-        className="h-11 rounded-xl border border-white/10 bg-[#061124] px-3 text-white outline-none focus:border-[#F59E0B]"
+        className="h-11 rounded-xl border border-white/10 bg-[#1C1008] px-3 text-white outline-none focus:border-[#F39C12]"
       />
     </label>
   );

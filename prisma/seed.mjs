@@ -30,11 +30,14 @@ const stepRules = [
 async function main() {
   const community = await prisma.community.upsert({
     where: { slug: "ham-masir" },
-    update: {},
+    update: {
+      name: "رو‌به‌راه",
+      tagline: "همراه هم برای رشد"
+    },
     create: {
-      name: "هم مسیر",
+      name: "رو‌به‌راه",
       slug: "ham-masir",
-      tagline: "یک مسیر، هزار تجربه"
+      tagline: "همراه هم برای رشد"
     }
   });
 
@@ -92,8 +95,8 @@ async function main() {
     ["first-step", "قدم اول", 1],
     ["same-step", "هم قدم", 5],
     ["stable-base", "پایه ثابت", 10],
-    ["pro", "هم مسیر حرفه ای", 20],
-    ["legend", "افسانه هم مسیر", 50]
+    ["pro", "رو‌به‌راه حرفه ای", 20],
+    ["legend", "افسانه رو‌به‌راه", 50]
   ];
 
   for (const [slug, name, threshold] of badges) {
@@ -119,7 +122,7 @@ async function main() {
       communityId: community.id,
       slug: "gardanandeh",
       name: "گرداننده",
-      description: "برگزارکننده برنامه‌های هم مسیر",
+      description: "برگزارکننده برنامه‌های رو‌به‌راه",
       type: BadgeType.SPECIAL,
       threshold: 0,
       sortOrder: 0
@@ -132,7 +135,7 @@ async function main() {
       communityId: community.id,
       slug: "rahbar",
       name: "راهبر",
-      description: "راهبر جامعه هم مسیر",
+      description: "راهبر جامعه رو‌به‌راه",
       type: BadgeType.SPECIAL,
       threshold: 0,
       sortOrder: 0
@@ -185,7 +188,7 @@ async function main() {
       data: {
         communityId: community.id,
         name: "کافه هم قدم",
-        description: "پذیرایی دوستانه برای اعضای فعال هم مسیر.",
+        description: "پذیرایی دوستانه برای اعضای فعال رو‌به‌راه.",
         status: BusinessStatus.APPROVED,
         createdById: sampleUser.id,
         approvedById: superAdmin.id,

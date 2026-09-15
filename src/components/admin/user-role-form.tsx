@@ -52,7 +52,7 @@ export function UserRoleForm({
             setSelectedRole(event.target.value as Role);
             setMessage(null);
           }}
-          className="h-11 rounded-xl border border-white/10 bg-[#061124] px-3 text-white outline-none focus:border-[#F59E0B]"
+          className="h-11 rounded-xl border border-white/10 bg-[#1C1008] px-3 text-white outline-none focus:border-[#F39C12]"
         >
           {editableRoles.map((item) => (
             <option key={item} value={item}>
@@ -61,13 +61,13 @@ export function UserRoleForm({
           ))}
         </select>
       </label>
-      <p className="text-xs font-bold text-[#F59E0B]">
+      <p className="text-xs font-bold text-[#F39C12]">
         نقش فعلی: {labelOf(roleLabels, savedRole)}
       </p>
       <button
         disabled={disabled || pending}
         aria-busy={pending || undefined}
-        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F59E0B] px-3 text-sm font-black text-[#061124] disabled:cursor-not-allowed disabled:opacity-70"
+        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F39C12] px-3 text-sm font-black text-[#1C1008] disabled:cursor-not-allowed disabled:opacity-70"
         type="submit"
       >
         {pending ? (

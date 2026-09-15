@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.0.1";
+export const APP_VERSION = "1.0.2";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
@@ -12,6 +12,16 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.0.2",
+    dateLabel: "۲۴ شهریور ۱۴۰۵",
+    title: "رو‌به‌راه",
+    items: [
+      "اسم اپ شد رو‌به‌راه و شعارش همراه هم برای رشد.",
+      "لوگوی دایره‌ای جدید جای آیکن قبلی نشست.",
+      "رنگ‌ها با نارنجی، قرمز و زرد لوگو هماهنگ شد."
+    ]
+  },
   {
     version: "1.0.1",
     dateLabel: "۲۳ مرداد ۱۴۰۵",

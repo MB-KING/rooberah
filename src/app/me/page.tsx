@@ -18,6 +18,7 @@ import {
   UserPageShell
 } from "@/components/user/user-shell";
 import { prisma } from "@/lib/prisma";
+import { APP_NAME } from "@/shared/brand";
 import { requireCurrentUserPage } from "@/modules/auth/session";
 import { formatAppVersion } from "@/shared/app-version";
 import { labelOf, registrationStatusLabels } from "@/shared/labels";
@@ -77,7 +78,7 @@ export default async function MePage() {
   const displayName =
     [user.firstName, user.lastName].filter(Boolean).join(" ") ||
     user.username ||
-    "عضو هم مسیر";
+    `عضو ${APP_NAME}`;
   const earnedBadgeIds = new Set(user.badges.map((item) => item.badgeId));
   const attendanceCount = user._count.attendance;
 

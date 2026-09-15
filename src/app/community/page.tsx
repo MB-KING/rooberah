@@ -3,6 +3,7 @@ import { EmptyState } from "@/components/user/empty-state";
 import { UserCard, UserPageHeader } from "@/components/user/user-card";
 import { UserPageShell } from "@/components/user/user-shell";
 import { defaultCommunitySlug } from "@/lib/config";
+import { APP_NAME } from "@/shared/brand";
 import { prisma } from "@/lib/prisma";
 import { getOptionalCurrentUser } from "@/modules/auth/session";
 
@@ -27,7 +28,7 @@ export default async function CommunityResourcesPage() {
     <UserPageShell>
       <UserPageHeader
         title="گروه و کانال"
-        subtitle="گروه‌ها و کانال‌های رسمی هم مسیر."
+        subtitle={`گروه‌ها و کانال‌های رسمی ${APP_NAME}.`}
         backFallbackHref="/me"
       />
       <div className="grid gap-3">
@@ -35,7 +36,7 @@ export default async function CommunityResourcesPage() {
           <EmptyState
             icon={Megaphone}
             title="هنوز گروهی ثبت نشده"
-            description="گروه و کانال رسمی هم مسیر به‌زودی همین‌جا می‌آید."
+            description={`گروه و کانال رسمی ${APP_NAME} به‌زودی همین‌جا می‌آید.`}
           />
         ) : (
           resources.map((resource) => (

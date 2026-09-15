@@ -10,6 +10,7 @@ import {
   UserPageShell
 } from "@/components/user/user-shell";
 import { defaultCommunitySlug } from "@/lib/config";
+import { APP_NAME, APP_SLOGAN } from "@/shared/brand";
 import { prisma } from "@/lib/prisma";
 import { hasAnyRole } from "@/modules/auth/authorization";
 import { getOptionalCurrentUser } from "@/modules/auth/session";
@@ -60,8 +61,8 @@ async function getHomeData() {
   return {
     events,
     completedEvents,
-    communityName: community?.name ?? "هم مسیر",
-    communityTagline: community?.tagline ?? "یک مسیر، هزار تجربه",
+    communityName: community?.name ?? APP_NAME,
+    communityTagline: community?.tagline ?? APP_SLOGAN,
     canOpenAdmin: currentUser
       ? hasAnyRole(currentUser, [Role.ADMIN, Role.SUPER_ADMIN])
       : false
@@ -102,7 +103,7 @@ export default async function Home() {
             </Link>
           ) : null}
         </div>
-        <div className="h-1.5 w-full bg-gradient-to-l from-ember via-amber-400 to-transparent" />
+        <div className="h-1.5 w-full bg-gradient-to-l from-brand-red via-ember to-gold" />
       </header>
 
       <section className="space-y-3">

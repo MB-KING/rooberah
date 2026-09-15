@@ -20,7 +20,7 @@ export function TelegramLoginWidget({
     <a
       href={href}
       className={cn(
-        "inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#F59E0B] px-4 text-sm font-black text-[#061124]",
+        "inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#F39C12] px-4 text-sm font-black text-[#1C1008]",
         className
       )}
     >

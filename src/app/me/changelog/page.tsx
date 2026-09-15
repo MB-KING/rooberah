@@ -5,13 +5,14 @@ import {
   changelog,
   formatAppVersion
 } from "@/shared/app-version";
+import { APP_NAME } from "@/shared/brand";
 
 export default function ChangelogPage() {
   return (
     <UserPageShell>
       <UserPageHeader
         title="تغییرات"
-        subtitle={`از شروع هم مسیر تا نسخه ${formatAppVersion(APP_VERSION)}.`}
+        subtitle={`از شروع ${APP_NAME} تا نسخه ${formatAppVersion(APP_VERSION)}.`}
         backFallbackHref="/me"
       />
       <div className="grid gap-3">

@@ -1,6 +1,7 @@
 import { PrismaClient, Role } from "@prisma/client";
 import { defaultCommunitySlug } from "@/lib/config";
 import type { TelegramUser } from "@/modules/auth/telegram";
+import { APP_NAME, APP_SLOGAN } from "@/shared/brand";
 
 export class AuthRepository {
   constructor(private readonly db: PrismaClient) {}
@@ -9,7 +10,7 @@ export class AuthRepository {
     const community = await this.db.community.upsert({
       where: { slug: defaultCommunitySlug },
       update: {},
-      create: { slug: defaultCommunitySlug, name: "هم مسیر", tagline: "یک مسیر، هزار تجربه" }
+      create: { slug: defaultCommunitySlug, name: APP_NAME, tagline: APP_SLOGAN }
     });
 
     return this.db.user.upsert({

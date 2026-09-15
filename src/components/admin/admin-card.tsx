@@ -1,4 +1,5 @@
 ﻿import type { Route } from "next";
+import { APP_NAME } from "@/shared/brand";
 import { cn } from "@/lib/cn";
 import { BackButton } from "@/components/user/back-button";
 
@@ -39,7 +40,7 @@ export function PageTitle({
       <div className="flex items-start gap-3">
         {showBack ? <BackButton fallbackHref={backFallbackHref} /> : null}
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-[#F59E0B]">هم مسیر · ادمین</p>
+          <p className="text-sm font-bold text-ember">{APP_NAME} · ادمین</p>
           <h1 className="mt-1 break-words text-2xl font-black text-white">
             {title}
           </h1>
