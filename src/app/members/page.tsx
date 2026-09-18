@@ -160,30 +160,6 @@ export default async function MembersPage({
         statusOptions={WORK_STATUS_OPTIONS}
       />
 
-      <div className="mb-4 grid grid-cols-2 gap-2">
-        <Link
-          href={buildMembersHref({ sort: "recent", category, status: status ?? undefined, q })}
-          className={`inline-flex min-h-11 cursor-pointer items-center justify-center rounded-xl px-3 text-sm font-bold transition duration-200 ${
-            sort === "recent"
-              ? "bg-ember text-ink"
-              : "bg-white/10 text-slate-200"
-          }`}
-        >
-          تازه‌ها
-        </Link>
-        <Link
-          href={buildMembersHref({ sort: "steps", category, status: status ?? undefined, q })}
-          className={`inline-flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-bold transition duration-200 ${
-            sort === "steps"
-              ? "bg-ember text-ink"
-              : "bg-white/10 text-slate-200"
-          }`}
-        >
-          <Trophy size={15} aria-hidden="true" />
-          بیشترین امتیاز
-        </Link>
-      </div>
-
       {sort === "steps" && myRank ? (
         <UserCard className="mb-4 border-ember/25 bg-pine">
           <div className="flex items-center gap-3">
