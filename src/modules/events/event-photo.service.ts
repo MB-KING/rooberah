@@ -1,6 +1,7 @@
 import { ModerationStatus, XPTransactionType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { logActivity, notifyUser } from "@/modules/activity/activity.service";
+import { photoReviewedCopy } from "@/shared/notify-copy";
 import { assertEventContributionAllowed } from "@/modules/events/event-contribution";
 import { XPService } from "@/modules/gamification/xp.service";
 import { MediaService } from "@/modules/media/media.service";
@@ -141,18 +142,12 @@ export class EventPhotoService {
     await notifyUser({
       userId: photo.userId,
       type: "EVENT_PHOTO_REVIEWED",
-      title:
-        input.status === ModerationStatus.APPROVED
-          ? "عکست منتشر شد"
-          : "عکست تأیید نشد",
-      body:
-        input.status === ModerationStatus.APPROVED
-          ? awardedXp
-            ? `عکست در آرشیو «${photo.event.title}» نمایش داده می‌شود و امتیاز گرفتی.`
-            : `عکست در آرشیو «${photo.event.title}» نمایش داده می‌شود.`
-          : `عکست برای «${photo.event.title}» تأیید نشد.`,
-      eventPath: `/events/${photo.eventId}`,
-      buttonText: "مشاهده برنامه"
+      ...photoReviewedCopy({
+        eventTitle: photo.event.title,
+        approved: input.status === ModerationStatus.APPROVED,
+        awardedXp
+      }),
+      eventPath: `/events/${photo.eventId}`
     });
     await logActivity({
       actorUserId: input.reviewerId,

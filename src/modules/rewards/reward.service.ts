@@ -8,6 +8,7 @@ import { lockNextRewardCode, lockRewardRow } from "@/lib/db-lock";
 import { prisma } from "@/lib/prisma";
 import { notifyUser } from "@/modules/activity/activity.service";
 import { XPService } from "@/modules/gamification/xp.service";
+import { rewardRedeemedCopy } from "@/shared/notify-copy";
 import { AppError } from "@/shared/errors";
 
 const activeRedemptionStatuses: RewardRedemptionStatus[] = [
@@ -166,11 +167,7 @@ export class RewardService {
     await notifyUser({
       userId,
       type: "REWARD_REDEEMED",
-      title: "🎁 مزیت دریافت شد",
-      body: result.code
-        ? `«${result.rewardTitle}» فعال شد.\n🔑 کد: ${result.code}`
-        : `«${result.rewardTitle}» برات ثبت شد.`,
-      buttonText: "👤 مشاهده پروفایل",
+      ...rewardRedeemedCopy(result.rewardTitle, result.code),
       eventPath: "/me"
     });
 

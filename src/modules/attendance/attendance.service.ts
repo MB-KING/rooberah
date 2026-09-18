@@ -8,6 +8,10 @@ import { prisma } from "@/lib/prisma";
 import { XPService } from "@/modules/gamification/xp.service";
 import { BadgeService } from "@/modules/gamification/badge.service";
 import { logActivity, notifyUser } from "@/modules/activity/activity.service";
+import {
+  attendancePresentCopy,
+  attendanceUpdatedCopy
+} from "@/shared/notify-copy";
 import { inviteUserToFeedback } from "@/modules/events/feedback-invite.service";
 import { AppError } from "@/shared/errors";
 
@@ -95,10 +99,16 @@ export class AttendanceService {
       where: { id: input.eventId },
       select: { title: true, status: true }
     });
-    const presentBody =
-      event?.status === EventStatus.COMPLETED
-        ? `حضور تو در «${event.title}» ثبت شد. الان می‌توانی نظرت را بنویسی و عکس‌های برنامه را بفرستی.`
-        : `حضور تو در «${event?.title ?? "برنامه"}» ثبت شد. از منظره‌ها و جمع عکس بگیر؛ بعد از اتمام برنامه می‌توانی نظر و عکس بفرستی.`;
+    const attendanceCopy =
+      input.status === AttendanceStatus.PRESENT
+        ? attendancePresentCopy({
+            eventTitle: event?.title ?? "برنامه",
+            eventCompleted: event?.status === EventStatus.COMPLETED
+          })
+        : attendanceUpdatedCopy(
+            event?.title ?? "برنامه",
+            attendanceStatusText(input.status)
+          );
     await Promise.all([
       logActivity({
         actorUserId: input.verifiedById,
@@ -114,16 +124,8 @@ export class AttendanceService {
       notifyUser({
         userId: input.userId,
         type: "ATTENDANCE_UPDATED",
-        title:
-          input.status === AttendanceStatus.PRESENT
-            ? "✅ حضور تو تأیید شد"
-            : "📋 وضعیت حضورت به‌روزرسانی شد",
-        body:
-          input.status === AttendanceStatus.PRESENT
-            ? presentBody
-            : `وضعیت حضور «${event?.title ?? "برنامه"}»: ${attendanceStatusText(input.status)}`,
-        eventPath: `/events/${input.eventId}`,
-        buttonText: "👀 مشاهده برنامه"
+        ...attendanceCopy,
+        eventPath: `/events/${input.eventId}`
       })
     ]);
     if (

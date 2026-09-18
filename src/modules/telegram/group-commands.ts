@@ -94,7 +94,7 @@ export async function handleGroupAdminCommand(input: {
   if (!admin) {
     await sendTelegramMessage({
       chatId: input.chat.id,
-      text: `⛔ فقط سوپرادمین معتبر ${APP_NAME} می‌تواند این دستور را اجرا کند.`,
+      text: `⛔ فقط سوپرادمین ${escapeHtml(APP_NAME)} می‌تواند این دستور را اجرا کند.`,
       parseMode: "HTML"
     });
     return true;
@@ -143,7 +143,7 @@ export async function handleGroupAdminCommand(input: {
 
     await sendTelegramMessage({
       chatId: input.chat.id,
-      text: `✅ گروه «<b>${escapeHtml(resource.name)}</b>» در ${APP_NAME} ثبت شد.\n📢 از این به بعد اعلان برنامه‌ها اینجا ارسال می‌شود.`,
+      text: `✅ گروه «<b>${escapeHtml(resource.name)}</b>» در ${escapeHtml(APP_NAME)} ثبت شد.\nاز این به بعد اعلان برنامه‌های جدید همین‌جا می‌آید.`,
       parseMode: "HTML"
     });
     return true;
@@ -161,7 +161,7 @@ export async function handleGroupAdminCommand(input: {
       chatId: input.chat.id,
       text:
         updated.count > 0
-          ? `❎ گروه از منابع فعال ${APP_NAME} حذف (غیرفعال) شد.`
+          ? `❎ گروه از منابع فعال ${escapeHtml(APP_NAME)} خارج شد. دیگر اعلان خودکار نمی‌آید.`
           : "ℹ️ این گروه در سیستم ثبت نشده بود.",
       parseMode: "HTML"
     });
@@ -181,10 +181,10 @@ export async function handleGroupAdminCommand(input: {
           "📊 <b>وضعیت گروه</b>",
           "",
           `وضعیت: ${resource.isActive ? "✅ فعال" : "❎ غیرفعال"}`,
-          `اعلان خودکار: ${resource.receiveAnnouncements ? "🔔 روشن" : "🔕 خاموش"}`,
+          `اعلان خودکار برنامه‌ها: ${resource.receiveAnnouncements ? "🔔 روشن" : "🔕 خاموش"}`,
           `شناسه چت: <code>${escapeHtml(String(input.chat.id))}</code>`
         ].join("\n")
-      : `ℹ️ گروه ثبت نشده.\nChat ID: <code>${escapeHtml(String(input.chat.id))}</code>`,
+      : `ℹ️ گروه ثبت نشده.\nشناسه چت: <code>${escapeHtml(String(input.chat.id))}</code>`,
     parseMode: "HTML"
   });
   return true;

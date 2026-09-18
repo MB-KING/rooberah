@@ -1,4 +1,10 @@
 import { APP_NAME } from "@/shared/brand";
+import { MEETING_TIME_LABEL, START_TIME_LABEL } from "@/shared/copy";
+import {
+  helpMessageLines,
+  startMessageLines,
+  TELEGRAM_CAPTION_LIMIT
+} from "@/shared/notify-copy";
 
 /** Client-safe Telegram text helpers (no server secrets). */
 
@@ -87,46 +93,34 @@ export function formatEventAnnounceHtml(event: {
   description?: string | null;
 }) {
   const lines = [
-    `<b>برنامه جدید ${APP_NAME}</b>`,
+    `<b>برنامه جدید ${escapeHtml(APP_NAME)}</b>`,
     "────────────",
-    `<b>${escapeHtml(event.title)}</b>`,
+    `<b>${escapeHtml(truncatePlain(event.title, 80))}</b>`,
     `شماره ${escapeHtml(String(event.eventNumber))}`,
     "",
     `📅 ${escapeHtml(faDateFormatter.format(event.date))}`,
-    `🕐 جمع شدن: ${escapeHtml(faTimeFormatter.format(event.meetingTime))}`,
-    `🚶 شروع مسیر: ${escapeHtml(faTimeFormatter.format(event.startTime))}`,
-    `📍 ${escapeHtml(event.locationName)}`
+    `🕐 ${escapeHtml(MEETING_TIME_LABEL)}: ${escapeHtml(faTimeFormatter.format(event.meetingTime))}`,
+    `🚶 ${escapeHtml(START_TIME_LABEL)}: ${escapeHtml(faTimeFormatter.format(event.startTime))}`,
+    `📍 ${escapeHtml(truncatePlain(event.locationName, 80))}`
   ];
 
   const description = event.description?.trim();
   if (description) {
-    lines.push("", escapeHtml(truncatePlain(description, 180)));
+    lines.push("", escapeHtml(truncatePlain(description, 160)));
   }
 
-  lines.push("", "✅ برای جزئیات و ثبت‌نام، دکمه زیر را بزن.");
+  lines.push("", "برای جزئیات و ثبت‌نام، دکمه زیر را بزن.");
   return lines.join("\n");
 }
 
 export function formatStartMessageHtml() {
-  return [
-    `<b>به ${APP_NAME} خوش آمدی</b>`,
-    "",
-    "🥾 اینجا برنامه‌های پیاده‌روی و دورهمی‌ها را می‌بینی، ثبت‌نام می‌کنی و با بقیه همراه می‌شوی.",
-    "",
-    "👇 برای ورود، دکمه زیر را بزن."
-  ].join("\n");
+  const [title, ...rest] = startMessageLines();
+  return [`<b>${escapeHtml(title)}</b>`, ...rest.map(escapeHtml)].join("\n");
 }
 
 export function formatHelpMessageHtml() {
-  return [
-    `<b>راهنمای ${APP_NAME}</b>`,
-    "",
-    "• 📱 از دکمه زیر مینی‌اپ را باز کن",
-    "• 🥾 برنامه‌ها را ببین و ثبت‌نام کن",
-    "• 🔔 یادآوری قرار از همین ربات می‌آید",
-    "",
-    "اگر دکمه کار نکرد، منوی پایین چت را بزن."
-  ].join("\n");
+  const [title, ...rest] = helpMessageLines();
+  return [`<b>${escapeHtml(title)}</b>`, ...rest.map(escapeHtml)].join("\n");
 }
 
 export function botUsername() {

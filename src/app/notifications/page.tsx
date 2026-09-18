@@ -46,7 +46,7 @@ export default async function NotificationsPage() {
     <UserPageShell width="narrow">
         <UserPageHeader
           title="اعلان‌ها"
-          subtitle="وضعیت ثبت‌نام و حضور."
+          subtitle="ثبت‌نام، یادآوری برنامه، حضور و مزیت‌ها."
           backFallbackHref="/"
         />
 
@@ -160,7 +160,8 @@ function iconForType(type: string) {
   if (
     type.includes("REGISTRATION") ||
     type.includes("WAITLIST") ||
-    type.includes("ATTEND")
+    type.includes("ATTEND") ||
+    type.includes("REMINDER")
   ) {
     return CalendarDays;
   }
@@ -170,5 +171,8 @@ function iconForType(type: string) {
   if (type.includes("BADGE")) {
     return Trophy;
   }
-  return Sparkles;
+  if (type.includes("FEEDBACK") || type.includes("PHOTO")) {
+    return Sparkles;
+  }
+  return Bell;
 }

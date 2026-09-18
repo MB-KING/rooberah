@@ -79,33 +79,48 @@ async function main() {
     });
   }
 
-  const superAdmin = await prisma.user.upsert({
-    where: { telegramId: 1000000001n },
-    update: {},
-    create: {
-      communityId: community.id,
-      telegramId: 1000000001n,
-      username: "rooberah_admin",
-      firstName: "Admin",
-      lastName: "Rooberah",
-      roles: { create: [{ role: Role.SUPER_ADMIN }, { role: Role.ADMIN }] },
-      profile: { create: {} }
-    }
-  });
+  const allowDemoUsers = process.env.NODE_ENV !== "production";
+  const superAdmin = allowDemoUsers
+    ? await prisma.user.upsert({
+        where: { telegramId: 1000000001n },
+        update: {},
+        create: {
+          communityId: community.id,
+          telegramId: 1000000001n,
+          username: "rooberah_admin",
+          firstName: "Admin",
+          lastName: "Rooberah",
+          roles: { create: [{ role: Role.SUPER_ADMIN }, { role: Role.ADMIN }] },
+          profile: { create: {} }
+        }
+      })
+    : await prisma.user.findFirst({
+        where: {
+          deletedAt: null,
+          roles: { some: { role: { in: [Role.SUPER_ADMIN, Role.ADMIN] } } }
+        },
+        orderBy: { joinedAt: "asc" }
+      });
 
-  await prisma.user.upsert({
-    where: { telegramId: 1000000002n },
-    update: {},
-    create: {
-      communityId: community.id,
-      telegramId: 1000000002n,
-      username: "walker_one",
-      firstName: "Sample",
-      lastName: "Walker",
-      profile: { create: {} },
-      roles: { create: [{ role: Role.USER }] }
-    }
-  });
+  if (!superAdmin) {
+    throw new Error("No admin user found; seed demo users only run outside production.");
+  }
+
+  const sampleUser = allowDemoUsers
+    ? await prisma.user.upsert({
+        where: { telegramId: 1000000002n },
+        update: {},
+        create: {
+          communityId: community.id,
+          telegramId: 1000000002n,
+          username: "walker_one",
+          firstName: "Sample",
+          lastName: "Walker",
+          profile: { create: {} },
+          roles: { create: [{ role: Role.USER }] }
+        }
+      })
+    : null;
 
   const badges = [
     ["first-step", "قدم اول", 1],
@@ -157,6 +172,11 @@ async function main() {
       update: {},
       create: { communityId: community.id, level, requiredXP, name: `Level ${level}` }
     });
+  }
+
+  if (!allowDemoUsers || !sampleUser) {
+    console.log({ community: community.slug, skippedDemo: true });
+    return;
   }
 
   const nextSunday = new Date();

@@ -1,6 +1,7 @@
 import { AttendanceStatus, EventReminderKind, EventStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { notifyUser } from "@/modules/activity/activity.service";
+import { feedbackInviteCopy } from "@/shared/notify-copy";
 
 export async function invitePresentMembersToFeedback(eventId: string) {
   const event = await prisma.event.findFirst({
@@ -58,14 +59,8 @@ async function sendFeedbackInvite(input: {
   const { telegramDelivered } = await notifyUser({
     userId: input.userId,
     type: "EVENT_FEEDBACK_REQUEST",
-    title: "📝 نظرت و عکس‌هایت را بفرست",
-    body: [
-      `برنامه «${input.title}» تمام شد.`,
-      "اگر حضورت تأیید شده، نظرت را بنویس و عکس‌هایی که از مسیر و منظره گرفتی را آپلود کن.",
-      "بعد از تأیید ادمین، برای بقیه هم نمایش داده می‌شود."
-    ].join("\n"),
-    eventPath: `/events/${input.eventId}`,
-    buttonText: "📝 ثبت نظر و عکس"
+    ...feedbackInviteCopy(input.title),
+    eventPath: `/events/${input.eventId}`
   });
   if (!telegramDelivered) return 0;
 

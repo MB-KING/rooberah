@@ -42,6 +42,12 @@ import {
   rewardRedemptionStatusLabels,
   rewardStatusLabels
 } from "@/shared/labels";
+import {
+  businessStatusCopy,
+  redemptionStatusCopy,
+  rewardStatusCopy,
+  specialBadgeCopy
+} from "@/shared/notify-copy";
 import { earnStepTypes } from "@/shared/steps";
 
 const optionalPositiveInt = z.preprocess(
@@ -346,10 +352,8 @@ export async function setBusinessStatusAction(formData: FormData) {
     await notifyUser({
       userId: business.createdById,
       type: "BUSINESS_STATUS_CHANGED",
-      title: "🏪 وضعیت کسب‌وکار به‌روز شد",
-      body: `«${business.name}» الان ${labelOf(businessStatusLabels, status)} است.`,
-      eventPath: "/businesses",
-      buttonText: "👀 مشاهده کسب‌وکارها"
+      ...businessStatusCopy(business.name, labelOf(businessStatusLabels, status)),
+      eventPath: "/businesses"
     });
   await logActivity({
     actorUserId: admin.id,
@@ -406,10 +410,8 @@ export async function setRewardStatusAction(formData: FormData) {
     await notifyUser({
       userId: reward.createdById,
       type: "REWARD_STATUS_CHANGED",
-      title: "🎁 وضعیت مزیت به‌روز شد",
-      body: `«${reward.title}» الان ${labelOf(rewardStatusLabels, status)} است.`,
-      eventPath: "/rewards",
-      buttonText: "👀 مشاهده مزیت‌ها"
+      ...rewardStatusCopy(reward.title, labelOf(rewardStatusLabels, status)),
+      eventPath: "/rewards"
     });
   await logActivity({
     actorUserId: admin.id,
@@ -688,10 +690,11 @@ export async function setRedemptionStatusAction(formData: FormData) {
     notifyUser({
       userId: redemption.userId,
       type: "REDEMPTION_STATUS_CHANGED",
-      title: "📦 وضعیت دریافت مزیت به‌روز شد",
-      body: `«${redemption.reward.title}»: ${labelOf(rewardRedemptionStatusLabels, status)}`,
-      eventPath: "/me",
-      buttonText: "👤 مشاهده پروفایل"
+      ...redemptionStatusCopy(
+        redemption.reward.title,
+        labelOf(rewardRedemptionStatusLabels, status)
+      ),
+      eventPath: "/me"
     })
   ]);
   revalidatePath(`/admin/rewards/${redemption.rewardId}/edit`);
@@ -728,10 +731,8 @@ export async function assignSpecialBadgeAction(formData: FormData) {
     notifyUser({
       userId,
       type: "BADGE_EARNED",
-      title: "🏅 نشان ویژه گرفتی",
-      body: `نشان «${badge.name}» به پروفایلت اضافه شد. دمت گرم!`,
-      eventPath: "/me",
-      buttonText: "👤 مشاهده پروفایل"
+      ...specialBadgeCopy(badge.name),
+      eventPath: "/me"
     })
   ]);
   revalidatePath("/admin/users");

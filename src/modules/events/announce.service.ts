@@ -10,6 +10,7 @@ import {
   formatEventAnnounceHtml,
   isPermanentTelegramChatError
 } from "@/lib/telegram-format";
+import { notifyButtons } from "@/shared/notify-copy";
 
 type AnnounceEvent = {
   id: string;
@@ -117,7 +118,7 @@ export async function announcePublishedEvent(
             caption: text,
             openApp: true,
             eventPath: `/events/${event.id}`,
-            buttonText: "✅ مشاهده و ثبت‌نام"
+            buttonText: notifyButtons.signup
           })
         : await sendTelegramMessage({
             chatId: resource.telegramChatId,
@@ -125,7 +126,7 @@ export async function announcePublishedEvent(
             parseMode: "HTML",
             openApp: true,
             eventPath: `/events/${event.id}`,
-            buttonText: "✅ مشاهده و ثبت‌نام"
+            buttonText: notifyButtons.signup
           });
 
       if (!result.ok) {

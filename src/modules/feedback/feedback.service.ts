@@ -1,6 +1,7 @@
 import { ModerationStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { logActivity, notifyUser } from "@/modules/activity/activity.service";
+import { feedbackReviewedCopy } from "@/shared/notify-copy";
 import { assertEventContributionAllowed } from "@/modules/events/event-contribution";
 import { AppError } from "@/shared/errors";
 
@@ -105,16 +106,11 @@ export class FeedbackService {
     await notifyUser({
       userId: feedback.userId,
       type: "EVENT_FEEDBACK_REVIEWED",
-      title:
+      ...feedbackReviewedCopy(
+        feedback.event.title,
         input.status === ModerationStatus.APPROVED
-          ? "نظرت منتشر شد"
-          : "نظرت تأیید نشد",
-      body:
-        input.status === ModerationStatus.APPROVED
-          ? `نظرت برای «${feedback.event.title}» الان روی صفحه برنامه دیده می‌شود.`
-          : `نظرت برای «${feedback.event.title}» تأیید نشد. می‌توانی دوباره ارسال کنی.`,
-      eventPath: `/events/${feedback.eventId}`,
-      buttonText: "مشاهده برنامه"
+      ),
+      eventPath: `/events/${feedback.eventId}`
     });
     await logActivity({
       actorUserId: input.reviewerId,

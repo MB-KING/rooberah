@@ -5,6 +5,12 @@ import { RegistrationRepository } from "@/modules/registrations/registration.rep
 import { AppError } from "@/shared/errors";
 import { resolveRegistrationStatus } from "@/modules/registrations/registration.policy";
 import { notifyUser } from "@/modules/activity/activity.service";
+import {
+  registrationCancelledCopy,
+  registrationConfirmedCopy,
+  registrationWaitlistedCopy,
+  waitlistPromotedCopy
+} from "@/shared/notify-copy";
 
 async function lockEvent(
   tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
@@ -45,19 +51,15 @@ export class RegistrationService {
       };
     });
 
+    const registeredCopy =
+      registration.status === RegistrationStatus.WAITLISTED
+        ? registrationWaitlistedCopy(registration.eventTitle)
+        : registrationConfirmedCopy(registration.eventTitle);
     await notifyUser({
       userId,
       type: "REGISTRATION_UPDATED",
-      title:
-        registration.status === RegistrationStatus.WAITLISTED
-          ? "⏳ در لیست انتظار قرار گرفتی"
-          : "✅ ثبت‌نام انجام شد",
-      body:
-        registration.status === RegistrationStatus.WAITLISTED
-          ? `الان تو لیست انتظار «${registration.eventTitle}» هستی. اگر جا باز شود خبرت می‌کنیم.`
-          : `ثبت‌نامت برای «${registration.eventTitle}» قطعی شد. منتظر دیدارت هستیم. 🥾`,
-      eventPath: `/events/${eventId}`,
-      buttonText: "👀 مشاهده برنامه"
+      ...registeredCopy,
+      eventPath: `/events/${eventId}`
     });
 
     return registration.registration;
@@ -105,20 +107,16 @@ export class RegistrationService {
     await notifyUser({
       userId,
       type: "REGISTRATION_CANCELLED",
-      title: "↩️ ثبت‌نام لغو شد",
-      body: `ثبت‌نامت برای «${result.eventTitle}» لغو شد.`,
-      eventPath: `/events/${eventId}`,
-      buttonText: "👀 مشاهده برنامه"
+      ...registrationCancelledCopy(result.eventTitle),
+      eventPath: `/events/${eventId}`
     });
 
     if (result.promotedUserId) {
       await notifyUser({
         userId: result.promotedUserId,
         type: "WAITLIST_PROMOTED",
-        title: "🎉 جای تو در برنامه قطعی شد",
-        body: `از لیست انتظار برای «${result.eventTitle}» به ثبت‌نام قطعی منتقل شدی. منتظر دیدارت هستیم!`,
-        eventPath: `/events/${eventId}`,
-        buttonText: "👀 مشاهده برنامه"
+        ...waitlistPromotedCopy(result.eventTitle),
+        eventPath: `/events/${eventId}`
       });
     }
 

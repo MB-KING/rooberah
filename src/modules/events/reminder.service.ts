@@ -2,6 +2,10 @@ import { EventReminderKind, EventStatus, RegistrationStatus } from "@prisma/clie
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { notifyUser } from "@/modules/activity/activity.service";
+import {
+  eventDayReminderCopy,
+  eventTwoHourReminderCopy
+} from "@/shared/notify-copy";
 
 const tehranDateFormatter = new Intl.DateTimeFormat("en-CA", {
   timeZone: "Asia/Tehran",
@@ -79,15 +83,11 @@ export async function processEventReminders(now = new Date()) {
         eventId: event.id,
         userIds,
         kind: EventReminderKind.DAY_OF,
-        title: "🔔 یادآوری برنامه امروز",
-        body: [
-          `🥾 امروز «${event.title}» داری.`,
-          `🕐 جمع شدن: ${faTimeFormatter.format(event.meetingTime)}`,
-          `📍 ${event.locationName}`,
-          "",
-          "۲ ساعت قبل از قرار هم دوباره یادآوری می‌فرستیم.",
-          "از مسیر، منظره و جمع عکس بگیر؛ بعد از برنامه می‌توانی در صفحه همان برنامه آپلود کنی."
-        ].join("\n"),
+        ...eventDayReminderCopy({
+          title: event.title,
+          meetingTimeLabel: faTimeFormatter.format(event.meetingTime),
+          locationName: event.locationName
+        }),
         eventPath: `/events/${event.id}`
       });
     }
@@ -97,15 +97,12 @@ export async function processEventReminders(now = new Date()) {
         eventId: event.id,
         userIds,
         kind: EventReminderKind.TWO_HOURS_BEFORE,
-        title: "⏰ ۲ ساعت تا برنامه",
-        body: [
-          `🥾 حدود ۲ ساعت دیگر قرار «${event.title}» است.`,
-          `📅 ${faDateFormatter.format(event.date)}`,
-          `🕐 جمع شدن: ${faTimeFormatter.format(event.meetingTime)}`,
-          `📍 ${event.locationName}`,
-          "",
-          "از منظره‌ها عکس بگیر تا بعد از برنامه در آرشیو همان برنامه ثبت شود."
-        ].join("\n"),
+        ...eventTwoHourReminderCopy({
+          title: event.title,
+          dateLabel: faDateFormatter.format(event.date),
+          meetingTimeLabel: faTimeFormatter.format(event.meetingTime),
+          locationName: event.locationName
+        }),
         eventPath: `/events/${event.id}`
       });
     }
@@ -126,6 +123,7 @@ async function sendKindReminders(input: {
   kind: EventReminderKind;
   title: string;
   body: string;
+  buttonText: string;
   eventPath: string;
 }) {
   let sent = 0;
@@ -149,7 +147,7 @@ async function sendKindReminders(input: {
       title: input.title,
       body: input.body,
       eventPath: input.eventPath,
-      buttonText: "👀 مشاهده برنامه"
+      buttonText: input.buttonText
     });
 
     // Only lock the reminder after a successful Telegram delivery so
