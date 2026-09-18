@@ -1,6 +1,8 @@
 "use client";
 
 import { ChevronDown, ListFilter, Search, Trophy } from "lucide-react";
+import type { Route } from "next";
+import Link from "next/link";
 import { useState } from "react";
 import {
   primaryActionClass,
@@ -186,9 +188,9 @@ export function MembersFilters({
             اعمال فیلتر
           </button>
           {activeCount > 0 ? (
-            <a href="/members" className={secondaryActionClass}>
+            <Link href={"/members" as Route} className={secondaryActionClass}>
               پاک کردن فیلتر
-            </a>
+            </Link>
           ) : null}
         </form>
       ) : null}
