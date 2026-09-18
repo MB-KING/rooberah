@@ -1,8 +1,10 @@
-import { Eye, Save, ShieldCheck } from "lucide-react";
+import { ChevronDown, Eye, Save, ShieldCheck } from "lucide-react";
+import type { ReactNode } from "react";
 import { updateProfileAction } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { UserCard, UserPageHeader } from "@/components/user/user-card";
 import { UserPageShell } from "@/components/user/user-shell";
+import { cn } from "@/lib/cn";
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUserPage } from "@/modules/auth/session";
 import {
@@ -10,6 +12,10 @@ import {
   SOCIAL_LINK_FIELDS
 } from "@/shared/social-links";
 import { WORK_STATUS_OPTIONS } from "@/shared/work-status";
+
+const fieldControlClass =
+  "w-full rounded-xl border border-white/10 bg-ink px-3 text-start text-white outline-none focus:border-ember";
+const fieldInputClass = cn(fieldControlClass, "h-11");
 
 export const dynamic = "force-dynamic";
 
@@ -47,63 +53,59 @@ export default async function ProfileSettingsPage() {
         </div>
       </UserCard>
       <UserCard>
-        <form action={updateProfileAction} className="grid gap-5">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="grid gap-2 text-sm font-bold text-slate-200">
-              نام
-              <input
-                name="firstName"
-                required
-                maxLength={60}
-                defaultValue={user.firstName ?? ""}
-                className="h-11 rounded-xl border border-white/10 bg-ink px-3 text-white outline-none focus:border-ember"
-                placeholder="مثلاً سارا"
-                autoComplete="given-name"
-              />
-            </label>
-            <label className="grid gap-2 text-sm font-bold text-slate-200">
-              نام خانوادگی
-              <input
-                name="lastName"
-                required
-                maxLength={60}
-                defaultValue={user.lastName ?? ""}
-                className="h-11 rounded-xl border border-white/10 bg-ink px-3 text-white outline-none focus:border-ember"
-                placeholder="مثلاً محمدی"
-                autoComplete="family-name"
-              />
-            </label>
-          </div>
-          <label className="grid gap-2 text-sm font-bold text-slate-200">
-            درباره من
+        <form action={updateProfileAction} className="grid gap-5" dir="rtl">
+          <Field label="نام">
+            <input
+              name="firstName"
+              required
+              maxLength={60}
+              defaultValue={user.firstName ?? ""}
+              className={fieldInputClass}
+              placeholder="مثلاً سارا"
+              autoComplete="given-name"
+              dir="rtl"
+            />
+          </Field>
+          <Field label="نام خانوادگی">
+            <input
+              name="lastName"
+              required
+              maxLength={60}
+              defaultValue={user.lastName ?? ""}
+              className={fieldInputClass}
+              placeholder="مثلاً محمدی"
+              autoComplete="family-name"
+              dir="rtl"
+            />
+          </Field>
+          <Field label="درباره من">
             <textarea
               name="bio"
               maxLength={400}
               rows={4}
               defaultValue={profile?.bio ?? ""}
-              className="rounded-xl border border-white/10 bg-ink px-3 py-3 text-white outline-none focus:border-ember"
+              className={cn(fieldControlClass, "min-h-28 py-3")}
               placeholder="علاقه‌مندی‌ها و مسیر حرفه‌ای کوتاه"
+              dir="rtl"
             />
-          </label>
-          <label className="grid gap-2 text-sm font-bold text-slate-200">
-            کسب‌وکار
+          </Field>
+          <Field
+            label="کسب‌وکار"
+            hint="اختیاری است؛ مثلاً نام فروشگاه، استودیو یا برند شخصی."
+          >
             <input
               name="businessName"
               maxLength={120}
               defaultValue={profile?.businessName ?? ""}
-              className="h-11 rounded-xl border border-white/10 bg-ink px-3 text-white outline-none focus:border-ember"
+              className={fieldInputClass}
               placeholder="اگر کسب‌وکاری داری، همین‌جا بنویس"
+              dir="rtl"
             />
-            <span className="text-xs font-medium text-slate-400">
-              اختیاری است؛ مثلاً نام فروشگاه، استودیو یا برند شخصی.
-            </span>
-          </label>
-          <label className="grid gap-2 text-sm font-bold text-slate-200">
-            حوزه کاری
-            <select
+          </Field>
+          <Field label="حوزه کاری">
+            <SelectControl
               name="workCategoryId"
               defaultValue={user.workCategoryId ?? ""}
-              className="h-11 rounded-xl border border-white/10 bg-ink px-3 text-white"
             >
               <option value="">انتخاب نشده</option>
               {categories.map((category) => (
@@ -111,14 +113,12 @@ export default async function ProfileSettingsPage() {
                   {category.name}
                 </option>
               ))}
-            </select>
-          </label>
-          <label className="grid gap-2 text-sm font-bold text-slate-200">
-            وضعیت کاری
-            <select
+            </SelectControl>
+          </Field>
+          <Field label="وضعیت کاری">
+            <SelectControl
               name="workStatus"
               defaultValue={profile?.workStatus ?? ""}
-              className="h-11 rounded-xl border border-white/10 bg-ink px-3 text-white"
             >
               <option value="">انتخاب نشده</option>
               {WORK_STATUS_OPTIONS.map((item) => (
@@ -126,20 +126,20 @@ export default async function ProfileSettingsPage() {
                   {item.label}
                 </option>
               ))}
-            </select>
-          </label>
-          <label className="grid gap-2 text-sm font-bold text-slate-200">
-            مهارت‌ها
+            </SelectControl>
+          </Field>
+          <Field label="مهارت‌ها">
             <input
               name="skills"
               maxLength={300}
               defaultValue={profile?.skills ?? ""}
-              className="h-11 rounded-xl border border-white/10 bg-ink px-3 text-white"
+              className={fieldInputClass}
               placeholder="مثلاً طراحی، فروش، برنامه‌نویسی"
+              dir="rtl"
             />
-          </label>
+          </Field>
 
-          <div className="grid gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-3">
+          <div className="grid gap-4 rounded-xl border border-white/10 bg-white/[0.03] p-3">
             <div>
               <h3 className="text-sm font-black text-white">لینک‌های من</h3>
               <p className="mt-1 text-xs leading-5 text-slate-400">
@@ -147,22 +147,18 @@ export default async function ProfileSettingsPage() {
               </p>
             </div>
             {SOCIAL_LINK_FIELDS.map((field) => (
-              <label
-                key={field.key}
-                className="grid gap-2 text-sm font-bold text-slate-200"
-              >
-                {field.label}
+              <Field key={field.key} label={field.label}>
                 <input
                   name={field.key}
                   maxLength={200}
                   defaultValue={social[field.key] ?? ""}
-                  className="h-11 rounded-xl border border-white/10 bg-ink px-3 text-white outline-none focus:border-ember"
+                  className={cn(fieldInputClass, "text-left")}
                   placeholder={field.placeholder}
                   dir="ltr"
                   inputMode="url"
                   autoComplete="url"
                 />
-              </label>
+              </Field>
             ))}
           </div>
 
@@ -227,6 +223,56 @@ export default async function ProfileSettingsPage() {
         </form>
       </UserCard>
     </UserPageShell>
+  );
+}
+
+function Field({
+  label,
+  hint,
+  children
+}: {
+  label: string;
+  hint?: string;
+  children: ReactNode;
+}) {
+  return (
+    <label className="grid gap-2">
+      <span className="text-sm font-bold text-slate-200">{label}</span>
+      {children}
+      {hint ? (
+        <span className="text-xs font-medium leading-5 text-slate-400">
+          {hint}
+        </span>
+      ) : null}
+    </label>
+  );
+}
+
+function SelectControl({
+  name,
+  defaultValue,
+  children
+}: {
+  name: string;
+  defaultValue: string;
+  children: ReactNode;
+}) {
+  return (
+    <span className="relative block">
+      <select
+        name={name}
+        defaultValue={defaultValue}
+        className={cn(fieldInputClass, "appearance-none pe-10")}
+        dir="rtl"
+      >
+        {children}
+      </select>
+      <ChevronDown
+        size={16}
+        className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-slate-400"
+        aria-hidden="true"
+      />
+    </span>
   );
 }
 

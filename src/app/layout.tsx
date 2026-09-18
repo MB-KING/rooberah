@@ -1,16 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Vazirmatn } from "next/font/google";
+import "@fontsource-variable/vazirmatn";
 import { QueryProvider } from "@/components/query-provider";
 import { TelegramProvider } from "@/components/telegram/telegram-provider";
 import { ReferralCapture } from "@/components/user/referral-capture";
 import { APP_SLOGAN, APP_TITLE, BRAND_ICON_SRC, brandColors } from "@/shared/brand";
 import "./globals.css";
-
-const vazirmatn = Vazirmatn({
-  subsets: ["arabic", "latin"],
-  variable: "--font-vazirmatn",
-  display: "swap"
-});
 
 export const metadata: Metadata = {
   title: APP_TITLE,
@@ -32,8 +26,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="fa" dir="rtl" className={vazirmatn.variable}>
-      <body>
+    <html lang="fa" dir="rtl" suppressHydrationWarning>
+      <body suppressHydrationWarning>
         <QueryProvider>
           <TelegramProvider>
             <ReferralCapture />

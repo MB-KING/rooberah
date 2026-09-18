@@ -2,6 +2,7 @@ import {
   faTehranDateFormatter,
   faTehranTimeFormatter
 } from "@/lib/tehran-time";
+import { APP_NAME } from "@/shared/brand";
 import { MEETING_TIME_LABEL, START_TIME_LABEL } from "@/shared/copy";
 
 export const shareCardFormats = ["story", "square", "landscape"] as const;
@@ -35,7 +36,7 @@ export function shareDetailsFromEvent(event: {
 }
 
 export function eventShareText(eventTitle: string) {
-  return `من توی برنامه «${eventTitle}» شرکت می‌کنم. اگر تو هم می‌آی خوشحال می‌شم ببینمت 🥾`;
+  return `من با ${APP_NAME} می‌رم برنامه «${eventTitle}». اگر تو هم می‌آی خوشحال می‌شم ببینمت 🥾`;
 }
 
 export function eventShareDetailsText(details: EventShareDetails) {
@@ -81,9 +82,12 @@ export function twitterShareUrl(url: string, text: string) {
   return share.toString();
 }
 
-export function linkedinShareUrl(url: string) {
-  const share = new URL("https://www.linkedin.com/sharing/share-offsite/");
-  share.searchParams.set("url", url);
+export function linkedinShareUrl(url: string, text: string) {
+  const body = [text.replace(/\s+$/u, ""), url].filter(Boolean).join("\n\n");
+  const share = new URL("https://www.linkedin.com/feed/");
+  share.searchParams.set("shareActive", "true");
+  share.searchParams.set("mini", "true");
+  share.searchParams.set("text", body);
   return share.toString();
 }
 
@@ -91,7 +95,7 @@ export function publicAppUrl() {
   return (
     process.env.NEXT_PUBLIC_APP_URL ||
     process.env.APP_URL ||
-    "https://hammasir.mbking.info"
+    "https://rooberah.mbking.info"
   ).replace(/\/$/, "");
 }
 

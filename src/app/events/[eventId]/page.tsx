@@ -365,7 +365,6 @@ export default async function EventDetailsPage({
           userId={user?.id}
           shareUrl={eventReferralUrl(event.id, user?.id)}
           shareText={eventShareDetailsText(shareDetailsFromEvent(event))}
-          telegramShareText={eventShareText(event.title)}
         />
       </UserCard>
 

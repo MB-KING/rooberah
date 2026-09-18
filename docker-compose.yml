@@ -12,17 +12,22 @@ services:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ham_masir -d ham_masir"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
+  # Production-like image. Not used for daily local work.
+  # docker compose --profile prod up -d --build
   app:
+    profiles: ["prod"]
     build: .
     depends_on:
       postgres:
         condition: service_healthy
     env_file:
       - .env
+    environment:
+      DATABASE_URL: postgresql://ham_masir:ham_masir@postgres:5432/ham_masir
     ports:
       - "3000:3000"
     command: sh -c "npx prisma migrate deploy && node server.js"

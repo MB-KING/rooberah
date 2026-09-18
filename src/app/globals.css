@@ -15,6 +15,7 @@
 html {
   /* Keep the Telegram Mini App frame even when opened in a wide browser. */
   background: #140c08;
+  font-family: "Vazirmatn Variable", Tahoma, "Segoe UI", Arial, sans-serif;
 }
 
 body {
@@ -28,7 +29,6 @@ body {
     radial-gradient(circle at 80% 92%, rgba(245, 197, 24, 0.16), transparent 24rem),
     linear-gradient(180deg, #1c1008 0%, #2a160c 46%, #140c08 100%);
   direction: rtl;
-  font-family: var(--font-vazirmatn), Tahoma, Arial, sans-serif;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 

@@ -1,14 +1,9 @@
-import {
-  BriefcaseBusiness,
-  Footprints,
-  Search,
-  Trophy,
-  UsersRound
-} from "lucide-react";
+import { BriefcaseBusiness, Footprints, Trophy, UsersRound } from "lucide-react";
 import type { Prisma } from "@prisma/client";
 import type { Route } from "next";
 import Link from "next/link";
 import { EmptyState } from "@/components/user/empty-state";
+import { MembersFilters } from "@/components/user/members-filters";
 import { APP_NAME } from "@/shared/brand";
 import { UserAvatar } from "@/components/user/user-avatar";
 import { UserCard, UserPageHeader } from "@/components/user/user-card";
@@ -17,6 +12,7 @@ import {
   secondaryActionClass,
   UserPageShell
 } from "@/components/user/user-shell";
+import { memberSearchOr } from "@/lib/member-search";
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUserPage } from "@/modules/auth/session";
 import { BadgeService } from "@/modules/gamification/badge.service";
@@ -84,33 +80,7 @@ export default async function MembersPage({
       }
     },
     ...(category ? { workCategoryId: category } : {}),
-    ...(q
-      ? {
-          OR: [
-            { firstName: { contains: q, mode: "insensitive" } },
-            { lastName: { contains: q, mode: "insensitive" } },
-            { username: { contains: q, mode: "insensitive" } },
-            {
-              profile: {
-                is: { skills: { contains: q, mode: "insensitive" } }
-              }
-            },
-            {
-              profile: { is: { bio: { contains: q, mode: "insensitive" } } }
-            },
-            {
-              profile: {
-                is: { businessName: { contains: q, mode: "insensitive" } }
-              }
-            },
-            {
-              workCategory: {
-                is: { name: { contains: q, mode: "insensitive" } }
-              }
-            }
-          ]
-        }
-      : {})
+    ...(q ? { OR: memberSearchOr(q) } : {})
   };
 
   const community = await prisma.community.findUnique({
@@ -176,39 +146,19 @@ export default async function MembersPage({
         subtitle={
           sort === "steps"
             ? "رتبه‌بندی همراهان بر اساس امتیاز."
-            : "تخصص و وضعیت کاری را جستجو کن."
+            : "نام، تخصص، کسب‌وکار یا مهارت را جستجو کن."
         }
         backFallbackHref="/me"
       />
 
-      <form action="/members" className="mb-4">
-        {sort === "steps" ? <input type="hidden" name="sort" value="steps" /> : null}
-        {category ? <input type="hidden" name="category" value={category} /> : null}
-        {status ? <input type="hidden" name="status" value={status} /> : null}
-        <label className="grid gap-2 text-sm font-bold text-slate-200">
-          جستجوی تخصص
-          <span className="relative">
-            <Search
-              size={16}
-              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-              aria-hidden="true"
-            />
-            <input
-              name="q"
-              defaultValue={q}
-              maxLength={80}
-              placeholder="مثلاً برنامه‌نویسی، طراحی، فروش"
-              className="h-11 w-full rounded-xl border border-white/10 bg-ink pr-10 pl-3 text-sm font-medium text-white outline-none focus:border-ember"
-            />
-          </span>
-        </label>
-        <button
-          type="submit"
-          className="mt-2 inline-flex min-h-11 w-full cursor-pointer items-center justify-center rounded-xl bg-ember text-sm font-black text-ink transition duration-200"
-        >
-          جستجو
-        </button>
-      </form>
+      <MembersFilters
+        q={q}
+        category={category ?? ""}
+        status={status ?? ""}
+        sort={sort}
+        categories={categories}
+        statusOptions={WORK_STATUS_OPTIONS}
+      />
 
       <div className="mb-4 grid grid-cols-2 gap-2">
         <Link
@@ -250,75 +200,13 @@ export default async function MembersPage({
         </UserCard>
       ) : null}
 
-      {categories.length > 0 ? (
-        <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
-          <Link
-            href={buildMembersHref({ sort, status: status ?? undefined, q })}
-            className={`shrink-0 cursor-pointer rounded-xl px-3 py-2 text-xs font-bold transition duration-200 ${
-              !category
-                ? "bg-ember text-ink"
-                : "bg-white/10 text-slate-200"
-            }`}
-          >
-            همه تخصص‌ها
-          </Link>
-          {categories.map((item) => (
-            <Link
-              key={item.id}
-              href={buildMembersHref({
-                sort,
-                category: item.id,
-                status: status ?? undefined,
-                q
-              })}
-              className={`shrink-0 cursor-pointer rounded-xl px-3 py-2 text-xs font-bold transition duration-200 ${
-                category === item.id
-                  ? "bg-ember text-ink"
-                  : "bg-white/10 text-slate-200"
-              }`}
-            >
-              {item.name}
-            </Link>
-          ))}
-        </div>
-      ) : null}
-
-      <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
-        <Link
-          href={buildMembersHref({ sort, category, q })}
-          className={`shrink-0 cursor-pointer rounded-xl px-3 py-2 text-xs font-bold transition duration-200 ${
-            !status ? "bg-ember text-ink" : "bg-white/10 text-slate-200"
-          }`}
-        >
-          هر وضعیت
-        </Link>
-        {WORK_STATUS_OPTIONS.map((item) => (
-          <Link
-            key={item.value}
-            href={buildMembersHref({
-              sort,
-              category,
-              status: item.value,
-              q
-            })}
-            className={`shrink-0 cursor-pointer rounded-xl px-3 py-2 text-xs font-bold transition duration-200 ${
-              status === item.value
-                ? "bg-ember text-ink"
-                : "bg-white/10 text-slate-200"
-            }`}
-          >
-            {item.label}
-          </Link>
-        ))}
-      </div>
-
       <div className="grid gap-3">
         {members.length === 0 ? (
           <EmptyState
             icon={UsersRound}
             title={
               q || status || category
-                ? "کسی با این تخصص پیدا نشد"
+                ? "کسی با این جستجو پیدا نشد"
                 : "هنوز پروفایل عمومی وجود ندارد"
             }
             description={

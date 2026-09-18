@@ -139,29 +139,17 @@ npm install
 cp .env.example .env
 ```
 
-3. Start MySQL:
+3. Start Postgres (Docker) and the local app:
 
 ```bash
-docker compose up -d mysql
-```
-
-4. Run Prisma migration:
-
-```bash
-npm run prisma:migrate
-```
-
-5. Seed development data:
-
-```bash
-npm run prisma:seed
-```
-
-6. Start the app:
-
-```bash
+npm run db:up
+npm run db:setup
 npm run dev
 ```
+
+Open `http://localhost:3000`. Seed admin is `DEV_TELEGRAM_ID=1000000001`.
+
+Do not deploy to the VPS unless asked.
 
 ## Telegram Bot Setup
 

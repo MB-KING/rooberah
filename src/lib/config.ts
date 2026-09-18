@@ -8,12 +8,13 @@ const envSchema = z.object({
     .string()
     .min(1)
     .refine((value) => {
-      if (isVitest) {
+      if (isVitest || process.env.NODE_ENV === "development") {
         return true;
       }
       return (
         value !== "development-token" &&
-        value !== "replace-with-your-telegram-bot-token"
+        value !== "replace-with-your-telegram-bot-token" &&
+        value !== "local-dev-telegram-token"
       );
     }, "TELEGRAM_BOT_TOKEN must be set to a real bot token"),
   TELEGRAM_BOT_USERNAME: z.string().optional(),

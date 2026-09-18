@@ -35,7 +35,7 @@ const config: Config = {
         "sheet-up": "sheet-up 200ms ease-out"
       },
       fontFamily: {
-        sans: ["var(--font-vazirmatn)", "Tahoma", "Arial", "sans-serif"]
+        sans: ["Vazirmatn Variable", "Tahoma", "Segoe UI", "Arial", "sans-serif"]
       }
     }
   },

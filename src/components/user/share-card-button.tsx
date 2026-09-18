@@ -41,13 +41,11 @@ export function ShareCardButton({
   eventId,
   shareUrl,
   shareText,
-  telegramShareText,
   userId
 }: {
   eventId: string;
   shareUrl: string;
   shareText: string;
-  telegramShareText?: string;
   userId?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -187,14 +185,25 @@ export function ShareCardButton({
             ? err.message
             : "ارسال در تلگرام انجام نشد."
         );
-        openTelegramShare(telegramShareUrl(shareUrl, telegramText));
+        openTelegramShare(telegramShareUrl(shareUrl, shareText));
       }
     } finally {
       setBusy(null);
     }
   }
 
-  const telegramText = telegramShareText?.trim() || shareText.split("\n")[0] || shareText;
+  async function shareOnLinkedIn() {
+    const caption = [shareText.replace(/\s+$/u, ""), shareUrl]
+      .filter(Boolean)
+      .join("\n\n");
+    try {
+      await navigator.clipboard.writeText(caption);
+    } catch {
+      // Clipboard is optional; the LinkedIn composer still gets the text.
+    }
+    openExternalHttps(linkedinShareUrl(shareUrl, shareText));
+  }
+
   const formatBusy =
     busy === "story" || busy === "square" || busy === "landscape";
 
@@ -234,14 +243,14 @@ export function ShareCardButton({
           </button>
           <button
             type="button"
-            onClick={() => openExternalHttps(twitterShareUrl(shareUrl, telegramText))}
+            onClick={() => openExternalHttps(twitterShareUrl(shareUrl, shareText))}
             className={`${secondaryActionClass}`}
           >
             اشتراک در ایکس
           </button>
           <button
             type="button"
-            onClick={() => openExternalHttps(linkedinShareUrl(shareUrl))}
+            onClick={() => void shareOnLinkedIn()}
             className={`${secondaryActionClass}`}
           >
             اشتراک در لینکدین

@@ -70,7 +70,7 @@ function photoBlobFromBuffer(buffer: Buffer, contentType: string) {
 export function appPublicUrl() {
   return (
     process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
-    "https://hammasir.mbking.info"
+    "https://rooberah.mbking.info"
   );
 }
 

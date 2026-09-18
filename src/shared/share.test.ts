@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   eventShareCaption,
   eventShareDetailsText,
-  eventShareTelegramCaption
+  eventShareTelegramCaption,
+  eventShareText,
+  linkedinShareUrl,
+  twitterShareUrl
 } from "@/shared/share";
 
 describe("event share copy", () => {
@@ -17,7 +20,7 @@ describe("event share copy", () => {
 
   it("includes date, both times, place and address", () => {
     const text = eventShareDetailsText(details);
-    expect(text).toContain("تست");
+    expect(text).toContain("با رو به راه می‌رم برنامه «تست»");
     expect(text).toContain("سه‌شنبه ۲۴ مرداد ۱۴۰۴");
     expect(text).toContain("ساعت جمع شدن ۱۹:۴۵");
     expect(text).toContain("ساعت شروع مسیر ۲۰:۱۵");
@@ -25,9 +28,13 @@ describe("event share copy", () => {
     expect(text).toContain("بلوار جنوبی");
   });
 
-  it("keeps the Telegram caption short without clocks or urls", () => {
+  it("says the person is going with رو به راه", () => {
+    expect(eventShareText("تست")).toContain("با رو به راه می‌رم");
+  });
+
+  it("keeps the Telegram photo caption short without clocks or urls", () => {
     const caption = eventShareTelegramCaption("تست");
-    expect(caption).toContain("تست");
+    expect(caption).toContain("با رو به راه می‌رم برنامه «تست»");
     expect(caption).toContain("اگر تو هم می‌آی");
     expect(caption).not.toContain("شما");
     expect(caption).not.toContain("۱۹:۴۵");
@@ -40,5 +47,17 @@ describe("event share copy", () => {
       "https://hammasir.mbking.info/events/1"
     );
     expect(caption).toContain("https://hammasir.mbking.info/events/1");
+  });
+
+  it("uses the same caption body for LinkedIn and X", () => {
+    const text = eventShareDetailsText(details);
+    const url = "https://rooberah.mbking.info/events/1";
+    const linkedin = new URL(linkedinShareUrl(url, text));
+    const twitter = new URL(twitterShareUrl(url, text));
+    expect(linkedin.searchParams.get("text")).toContain("با رو به راه می‌رم");
+    expect(linkedin.searchParams.get("text")).toContain(url);
+    expect(twitter.searchParams.get("text")).toContain("با رو به راه می‌رم");
+    expect(twitter.searchParams.get("text")).toContain("ساعت جمع شدن ۱۹:۴۵");
+    expect(twitter.searchParams.get("text")).toContain(url);
   });
 });
