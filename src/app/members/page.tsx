@@ -1,15 +1,18 @@
 import {
   BriefcaseBusiness,
   Footprints,
+  Search,
   Trophy,
   UsersRound
 } from "lucide-react";
+import type { Prisma } from "@prisma/client";
 import type { Route } from "next";
 import Link from "next/link";
 import { EmptyState } from "@/components/user/empty-state";
 import { APP_NAME } from "@/shared/brand";
 import { UserAvatar } from "@/components/user/user-avatar";
 import { UserCard, UserPageHeader } from "@/components/user/user-card";
+import { WorkStatusBadge } from "@/components/user/work-status-badge";
 import {
   secondaryActionClass,
   UserPageShell
@@ -18,6 +21,10 @@ import { prisma } from "@/lib/prisma";
 import { requireCurrentUserPage } from "@/modules/auth/session";
 import { BadgeService } from "@/modules/gamification/badge.service";
 import { formatSteps } from "@/shared/steps";
+import {
+  parseWorkStatus,
+  WORK_STATUS_OPTIONS
+} from "@/shared/work-status";
 
 export const dynamic = "force-dynamic";
 
@@ -26,11 +33,15 @@ type SortMode = "recent" | "steps";
 function buildMembersHref(input: {
   sort: SortMode;
   category?: string;
+  status?: string;
+  q?: string;
   page?: number;
 }) {
   const params = new URLSearchParams();
   if (input.sort === "steps") params.set("sort", "steps");
   if (input.category) params.set("category", input.category);
+  if (input.status) params.set("status", input.status);
+  if (input.q?.trim()) params.set("q", input.q.trim());
   if (input.page && input.page > 1) params.set("page", String(input.page));
   const query = params.toString();
   return (query ? `/members?${query}` : "/members") as Route;
@@ -39,15 +50,68 @@ function buildMembersHref(input: {
 export default async function MembersPage({
   searchParams
 }: {
-  searchParams: Promise<{ category?: string; sort?: string; page?: string }>;
+  searchParams: Promise<{
+    category?: string;
+    sort?: string;
+    page?: string;
+    q?: string;
+    status?: string;
+  }>;
 }) {
   const currentUser = await requireCurrentUserPage();
   await new BadgeService().syncCommunityRoleBadges(currentUser.communityId);
-  const { category, sort: sortRaw, page: pageRaw } = await searchParams;
+  const {
+    category,
+    sort: sortRaw,
+    page: pageRaw,
+    q: qRaw,
+    status: statusRaw
+  } = await searchParams;
   const sort: SortMode = sortRaw === "steps" ? "steps" : "recent";
+  const q = qRaw?.trim() ?? "";
+  const status = parseWorkStatus(statusRaw);
   const page = Math.max(Number(pageRaw ?? 1) || 1, 1);
   const take = 20;
   const skip = (page - 1) * take;
+
+  const listedWhere: Prisma.UserWhereInput = {
+    communityId: currentUser.communityId,
+    deletedAt: null,
+    profile: {
+      is: {
+        showInMembersDirectory: true,
+        ...(status ? { workStatus: status } : {})
+      }
+    },
+    ...(category ? { workCategoryId: category } : {}),
+    ...(q
+      ? {
+          OR: [
+            { firstName: { contains: q, mode: "insensitive" } },
+            { lastName: { contains: q, mode: "insensitive" } },
+            { username: { contains: q, mode: "insensitive" } },
+            {
+              profile: {
+                is: { skills: { contains: q, mode: "insensitive" } }
+              }
+            },
+            {
+              profile: { is: { bio: { contains: q, mode: "insensitive" } } }
+            },
+            {
+              profile: {
+                is: { businessName: { contains: q, mode: "insensitive" } }
+              }
+            },
+            {
+              workCategory: {
+                is: { name: { contains: q, mode: "insensitive" } }
+              }
+            }
+          ]
+        }
+      : {})
+  };
 
   const community = await prisma.community.findUnique({
     where: { id: currentUser.communityId },
@@ -60,20 +124,10 @@ export default async function MembersPage({
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }]
     }),
     prisma.user.count({
-      where: {
-        communityId: currentUser.communityId,
-        deletedAt: null,
-        profile: { is: { showInMembersDirectory: true } },
-        ...(category ? { workCategoryId: category } : {})
-      }
+      where: listedWhere
     }),
     prisma.user.findMany({
-      where: {
-        communityId: currentUser.communityId,
-        deletedAt: null,
-        profile: { is: { showInMembersDirectory: true } },
-        ...(category ? { workCategoryId: category } : {})
-      },
+      where: listedWhere,
       orderBy:
         sort === "steps"
           ? [{ xp: "desc" }, { joinedAt: "asc" }]
@@ -122,14 +176,43 @@ export default async function MembersPage({
         subtitle={
           sort === "steps"
             ? "رتبه‌بندی همراهان بر اساس امتیاز."
-            : "اعضایی که می‌خواهند در جامعه دیده شوند."
+            : "تخصص و وضعیت کاری را جستجو کن."
         }
         backFallbackHref="/me"
       />
 
+      <form action="/members" className="mb-4">
+        {sort === "steps" ? <input type="hidden" name="sort" value="steps" /> : null}
+        {category ? <input type="hidden" name="category" value={category} /> : null}
+        {status ? <input type="hidden" name="status" value={status} /> : null}
+        <label className="grid gap-2 text-sm font-bold text-slate-200">
+          جستجوی تخصص
+          <span className="relative">
+            <Search
+              size={16}
+              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+              aria-hidden="true"
+            />
+            <input
+              name="q"
+              defaultValue={q}
+              maxLength={80}
+              placeholder="مثلاً برنامه‌نویسی، طراحی، فروش"
+              className="h-11 w-full rounded-xl border border-white/10 bg-ink pr-10 pl-3 text-sm font-medium text-white outline-none focus:border-ember"
+            />
+          </span>
+        </label>
+        <button
+          type="submit"
+          className="mt-2 inline-flex min-h-11 w-full cursor-pointer items-center justify-center rounded-xl bg-ember text-sm font-black text-ink transition duration-200"
+        >
+          جستجو
+        </button>
+      </form>
+
       <div className="mb-4 grid grid-cols-2 gap-2">
         <Link
-          href={buildMembersHref({ sort: "recent", category })}
+          href={buildMembersHref({ sort: "recent", category, status: status ?? undefined, q })}
           className={`inline-flex min-h-11 cursor-pointer items-center justify-center rounded-xl px-3 text-sm font-bold transition duration-200 ${
             sort === "recent"
               ? "bg-ember text-ink"
@@ -139,7 +222,7 @@ export default async function MembersPage({
           تازه‌ها
         </Link>
         <Link
-          href={buildMembersHref({ sort: "steps", category })}
+          href={buildMembersHref({ sort: "steps", category, status: status ?? undefined, q })}
           className={`inline-flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-bold transition duration-200 ${
             sort === "steps"
               ? "bg-ember text-ink"
@@ -170,19 +253,24 @@ export default async function MembersPage({
       {categories.length > 0 ? (
         <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
           <Link
-            href={buildMembersHref({ sort })}
+            href={buildMembersHref({ sort, status: status ?? undefined, q })}
             className={`shrink-0 cursor-pointer rounded-xl px-3 py-2 text-xs font-bold transition duration-200 ${
               !category
                 ? "bg-ember text-ink"
                 : "bg-white/10 text-slate-200"
             }`}
           >
-            همه
+            همه تخصص‌ها
           </Link>
           {categories.map((item) => (
             <Link
               key={item.id}
-              href={buildMembersHref({ sort, category: item.id })}
+              href={buildMembersHref({
+                sort,
+                category: item.id,
+                status: status ?? undefined,
+                q
+              })}
               className={`shrink-0 cursor-pointer rounded-xl px-3 py-2 text-xs font-bold transition duration-200 ${
                 category === item.id
                   ? "bg-ember text-ink"
@@ -195,12 +283,49 @@ export default async function MembersPage({
         </div>
       ) : null}
 
+      <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+        <Link
+          href={buildMembersHref({ sort, category, q })}
+          className={`shrink-0 cursor-pointer rounded-xl px-3 py-2 text-xs font-bold transition duration-200 ${
+            !status ? "bg-ember text-ink" : "bg-white/10 text-slate-200"
+          }`}
+        >
+          هر وضعیت
+        </Link>
+        {WORK_STATUS_OPTIONS.map((item) => (
+          <Link
+            key={item.value}
+            href={buildMembersHref({
+              sort,
+              category,
+              status: item.value,
+              q
+            })}
+            className={`shrink-0 cursor-pointer rounded-xl px-3 py-2 text-xs font-bold transition duration-200 ${
+              status === item.value
+                ? "bg-ember text-ink"
+                : "bg-white/10 text-slate-200"
+            }`}
+          >
+            {item.label}
+          </Link>
+        ))}
+      </div>
+
       <div className="grid gap-3">
         {members.length === 0 ? (
           <EmptyState
             icon={UsersRound}
-            title="هنوز پروفایل عمومی وجود ندارد"
-            description="از تنظیمات پروفایل می‌توانی خودت را در فهرست همراهان نشان بدهی."
+            title={
+              q || status || category
+                ? "کسی با این تخصص پیدا نشد"
+                : "هنوز پروفایل عمومی وجود ندارد"
+            }
+            description={
+              q || status || category
+                ? "عبارت یا فیلتر را عوض کن و دوباره بگرد."
+                : "از تنظیمات پروفایل می‌توانی خودت را در فهرست همراهان نشان بدهی."
+            }
             action={
               <Link className={secondaryActionClass} href="/me/settings">
                 تنظیمات پروفایل
@@ -246,12 +371,17 @@ export default async function MembersPage({
                           {formatSteps(member.xp)}
                         </p>
                       ) : null}
-                      {member.profile?.showWorkCategory !== false &&
-                      member.workCategory ? (
-                        <p className="mt-1 text-xs font-bold text-ember">
-                          {member.workCategory.name}
-                        </p>
-                      ) : null}
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        {member.profile?.showWorkStatus !== false ? (
+                          <WorkStatusBadge status={member.profile?.workStatus} />
+                        ) : null}
+                        {member.profile?.showWorkCategory !== false &&
+                        member.workCategory ? (
+                          <span className="text-xs font-bold text-ember">
+                            {member.workCategory.name}
+                          </span>
+                        ) : null}
+                      </div>
                       {member.profile?.showTelegramUsername &&
                       member.username ? (
                         <p className="mt-1 text-sm text-slate-400" dir="ltr">
@@ -311,7 +441,13 @@ export default async function MembersPage({
       <div className="mt-4 flex gap-2">
         {page > 1 ? (
           <Link
-            href={buildMembersHref({ sort, category, page: page - 1 })}
+            href={buildMembersHref({
+              sort,
+              category,
+              status: status ?? undefined,
+              q,
+              page: page - 1
+            })}
             className="inline-flex h-11 flex-1 cursor-pointer items-center justify-center rounded-xl bg-white/10 text-sm font-bold text-white transition duration-200"
           >
             قبلی
@@ -319,7 +455,13 @@ export default async function MembersPage({
         ) : null}
         {page < totalPages ? (
           <Link
-            href={buildMembersHref({ sort, category, page: page + 1 })}
+            href={buildMembersHref({
+              sort,
+              category,
+              status: status ?? undefined,
+              q,
+              page: page + 1
+            })}
             className="inline-flex h-11 flex-1 cursor-pointer items-center justify-center rounded-xl bg-ember text-sm font-black text-ink transition duration-200 active:scale-[0.99]"
           >
             بعدی

@@ -3,7 +3,7 @@ import { Vazirmatn } from "next/font/google";
 import { QueryProvider } from "@/components/query-provider";
 import { TelegramProvider } from "@/components/telegram/telegram-provider";
 import { ReferralCapture } from "@/components/user/referral-capture";
-import { APP_NAME, APP_SLOGAN, BRAND_ICON_SRC, brandColors } from "@/shared/brand";
+import { APP_SLOGAN, APP_TITLE, BRAND_ICON_SRC, brandColors } from "@/shared/brand";
 import "./globals.css";
 
 const vazirmatn = Vazirmatn({
@@ -13,7 +13,7 @@ const vazirmatn = Vazirmatn({
 });
 
 export const metadata: Metadata = {
-  title: APP_NAME,
+  title: APP_TITLE,
   description: APP_SLOGAN,
   icons: {
     icon: BRAND_ICON_SRC,

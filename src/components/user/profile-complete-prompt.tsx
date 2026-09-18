@@ -10,7 +10,7 @@ import {
   secondaryActionClass
 } from "@/components/user/user-action-styles";
 
-const DISMISS_KEY = "hammasir_profile_prompt_dismissed";
+const DISMISS_KEY = "rooberah_profile_prompt_dismissed";
 
 export function ProfileCompletePrompt({
   needsCompletion

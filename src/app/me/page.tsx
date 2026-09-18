@@ -13,6 +13,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { UserAvatar } from "@/components/user/user-avatar";
 import { UserCard, UserPageHeader } from "@/components/user/user-card";
+import { WorkStatusBadge } from "@/components/user/work-status-badge";
 import {
   secondaryActionInlineClass,
   UserPageShell
@@ -25,13 +26,19 @@ import { labelOf, registrationStatusLabels } from "@/shared/labels";
 
 export const dynamic = "force-dynamic";
 
-export default async function MePage() {
+export default async function MePage({
+  searchParams
+}: {
+  searchParams: Promise<{ profile?: string }>;
+}) {
   const currentUser = await requireCurrentUserPage();
+  const { profile: profileSaved } = await searchParams;
   const [user, badges, unreadNotifications] = await Promise.all([
     prisma.user.findUnique({
       where: { id: currentUser.id },
       include: {
         profile: true,
+        workCategory: true,
         badges: {
           include: { badge: true },
           orderBy: { earnedAt: "desc" },
@@ -114,6 +121,12 @@ export default async function MePage() {
         showBack={false}
       />
 
+      {profileSaved === "saved" ? (
+        <UserCard className="mb-4 border-ember/25 bg-ember/10">
+          <p className="text-sm font-bold text-ember">پروفایل ذخیره شد.</p>
+        </UserCard>
+      ) : null}
+
       <UserCard>
         <div className="flex items-center gap-3">
           <UserAvatar photoUrl={user.photoUrl} name={displayName} size={56} />
@@ -124,6 +137,16 @@ export default async function MePage() {
             <p className="truncate text-sm text-slate-400" dir="ltr">
               @{user.username ?? "بدون نام کاربری"}
             </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {user.profile?.showWorkStatus !== false ? (
+                <WorkStatusBadge status={user.profile?.workStatus} />
+              ) : null}
+              {user.workCategory ? (
+                <span className="text-xs font-bold text-ember">
+                  {user.workCategory.name}
+                </span>
+              ) : null}
+            </div>
             {user.profile?.businessName ? (
               <p className="mt-1 truncate text-sm text-slate-300">
                 {user.profile.businessName}
@@ -133,11 +156,28 @@ export default async function MePage() {
           <Link
             href="/me/settings"
             className={secondaryActionInlineClass}
-            aria-label="تنظیمات"
+            aria-label="ویرایش پروفایل"
           >
             <Settings size={16} aria-hidden="true" />
           </Link>
         </div>
+        {user.profile?.bio ? (
+          <p className="mt-4 text-sm leading-7 text-slate-300">
+            {user.profile.bio}
+          </p>
+        ) : null}
+        {user.profile?.skills ? (
+          <p className="mt-3 text-sm text-slate-300">
+            <span className="font-bold text-ember">مهارت‌ها: </span>
+            {user.profile.skills}
+          </p>
+        ) : null}
+        <Link
+          href="/me/settings"
+          className="mt-4 inline-flex min-h-11 cursor-pointer items-center text-sm font-bold text-ember"
+        >
+          ویرایش پروفایل
+        </Link>
         <div className="mt-5 grid grid-cols-3 gap-3">
           <Metric label="امتیاز" value={user.xp} />
           <Metric label="حضور" value={attendanceCount} />

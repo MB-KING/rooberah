@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.0.2";
+export const APP_VERSION = "1.1.0";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
@@ -12,6 +12,17 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.1.0",
+    dateLabel: "۲۷ شهریور ۱۴۰۵",
+    title: "پروفایل و همراهان",
+    items: [
+      "اسم نمایشی شد رو به راه | rooberah.",
+      "در پروفایل می‌توانی وضعیت کاری بگذاری: استخدام، جویای کار، کار تیمی، فریلنس.",
+      "فهرست همراهان با جستجوی تخصص و فیلتر وضعیت کاری کار می‌کند.",
+      "کارت پروفایل خودت بایو، مهارت و وضعیت را نشان می‌دهد."
+    ]
+  },
   {
     version: "1.0.2",
     dateLabel: "۲۴ شهریور ۱۴۰۵",

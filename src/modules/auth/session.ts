@@ -106,7 +106,7 @@ export async function getOptionalCurrentUser() {
 }
 
 export async function redirectToTelegramLogin(): Promise<never> {
-  const currentPath = (await headers()).get("x-ham-masir-path");
+  const currentPath = (await headers()).get("x-rooberah-path");
   const next = safeInternalPath(currentPath);
   if (next === "/") {
     redirect("/open-in-telegram");

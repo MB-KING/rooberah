@@ -1,6 +1,6 @@
-# رو‌به‌راه Telegram Mini App
+# رو به راه | rooberah
 
-Production-ready foundation for the **رو‌به‌راه** Telegram Mini App.
+Production-ready foundation for the **رو به راه | rooberah** Telegram Mini App.
 
 Tagline: **همراه هم برای رشد**
 

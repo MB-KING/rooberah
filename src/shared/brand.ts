@@ -1,4 +1,6 @@
-export const APP_NAME = "رو‌به‌راه";
+export const APP_NAME = "رو به راه";
+export const APP_LATIN = "rooberah";
+export const APP_TITLE = "رو به راه | rooberah";
 export const APP_SLOGAN = "همراه هم برای رشد";
 export const BRAND_ICON_SRC = "/brand/roobeh-rah-icon.jpg";
 

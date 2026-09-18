@@ -9,6 +9,7 @@ import {
   readSocialLinks,
   SOCIAL_LINK_FIELDS
 } from "@/shared/social-links";
+import { WORK_STATUS_OPTIONS } from "@/shared/work-status";
 
 export const dynamic = "force-dynamic";
 
@@ -113,6 +114,21 @@ export default async function ProfileSettingsPage() {
             </select>
           </label>
           <label className="grid gap-2 text-sm font-bold text-slate-200">
+            وضعیت کاری
+            <select
+              name="workStatus"
+              defaultValue={profile?.workStatus ?? ""}
+              className="h-11 rounded-xl border border-white/10 bg-ink px-3 text-white"
+            >
+              <option value="">انتخاب نشده</option>
+              {WORK_STATUS_OPTIONS.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-2 text-sm font-bold text-slate-200">
             مهارت‌ها
             <input
               name="skills"
@@ -180,6 +196,12 @@ export default async function ProfileSettingsPage() {
               label="نمایش حوزه کاری"
               description="حوزه کاری در پروفایل عمومی دیده شود."
               defaultChecked={profile?.showWorkCategory ?? true}
+            />
+            <Toggle
+              name="showWorkStatus"
+              label="نمایش وضعیت کاری"
+              description="وضعیت کاری مثل استخدام یا آماده کار تیمی دیده شود."
+              defaultChecked={profile?.showWorkStatus ?? true}
             />
             <Toggle
               name="showSkills"

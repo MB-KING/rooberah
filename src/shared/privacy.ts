@@ -19,6 +19,8 @@ type PrivacyUser = {
     showSkills?: boolean;
     showSocialLinks?: boolean;
     showWorkCategory?: boolean;
+    workStatus?: string | null;
+    showWorkStatus?: boolean;
   } | null;
   workCategory?: { id: string; name: string } | null;
 };
@@ -43,6 +45,7 @@ export function getPublicMemberView(
   const showWork = profile?.showWorkCategory !== false;
   const showAttendance = profile?.showAttendanceCount !== false;
   const showBusiness = profile?.showBusiness !== false;
+  const showWorkStatus = profile?.showWorkStatus !== false;
 
   return {
     id: user.id,
@@ -60,6 +63,8 @@ export function getPublicMemberView(
       showWork && user.workCategory
         ? { id: user.workCategory.id, name: user.workCategory.name }
         : null,
+    workStatus:
+      showWorkStatus && profile?.workStatus ? profile.workStatus : null,
     xp: options?.includeXp ? (user.xp ?? 0) : null,
     attendanceCount:
       showAttendance && options?.attendanceCount != null

@@ -69,7 +69,12 @@ const profileSchema = z.object({
   showAttendanceCount: z.preprocess((value) => value === "on", z.boolean()),
   showSkills: z.preprocess((value) => value === "on", z.boolean()),
   showSocialLinks: z.preprocess((value) => value === "on", z.boolean()),
-  showWorkCategory: z.preprocess((value) => value === "on", z.boolean())
+  showWorkCategory: z.preprocess((value) => value === "on", z.boolean()),
+  workStatus: z
+    .enum(["HIRING", "OPEN_TO_WORK", "OPEN_TO_TEAM", "FREELANCE", "NOT_AVAILABLE"])
+    .optional()
+    .or(z.literal("")),
+  showWorkStatus: z.preprocess((value) => value === "on", z.boolean())
 });
 
 const feedbackSchema = z.object({
@@ -177,7 +182,9 @@ export async function updateProfileAction(formData: FormData) {
     showAttendanceCount: input.showAttendanceCount,
     showSkills: input.showSkills,
     showSocialLinks: input.showSocialLinks,
-    showWorkCategory: input.showWorkCategory
+    showWorkCategory: input.showWorkCategory,
+    workStatus: input.workStatus ? input.workStatus : null,
+    showWorkStatus: input.showWorkStatus
   };
 
   const [profile] = await Promise.all([

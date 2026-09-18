@@ -46,4 +46,4 @@ export const config = envSchema.parse({
   TELEGRAM_STORAGE_CHAT_ID: process.env.TELEGRAM_STORAGE_CHAT_ID
 });
 
-export const defaultCommunitySlug = "ham-masir";
+export const defaultCommunitySlug = "rooberah";

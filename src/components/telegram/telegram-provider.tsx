@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { pathFromStartParam } from "@/lib/telegram-format";
 
-const START_PARAM_KEY = "ham_masir_start_param";
+const START_PARAM_KEY = "rooberah_start_param";
 
 declare global {
   interface Window {

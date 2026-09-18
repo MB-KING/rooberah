@@ -286,7 +286,7 @@ export async function sendTelegramPhotoBuffer(input: {
 }): Promise<TelegramSendResult> {
   const chatId = input.chatId.toString();
   const contentType = input.contentType || "image/png";
-  const filename = input.filename || "ham-masir-share.png";
+  const filename = input.filename || "rooberah-share.png";
   const keyboard = input.openApp
     ? buildAppKeyboard({
         chatId,

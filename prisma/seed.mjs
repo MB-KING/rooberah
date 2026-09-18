@@ -28,15 +28,23 @@ const stepRules = [
 ];
 
 async function main() {
-  const community = await prisma.community.upsert({
+  await prisma.community.updateMany({
     where: { slug: "ham-masir" },
+    data: {
+      slug: "rooberah",
+      name: "رو به راه",
+      tagline: "همراه هم برای رشد"
+    }
+  });
+  const community = await prisma.community.upsert({
+    where: { slug: "rooberah" },
     update: {
-      name: "رو‌به‌راه",
+      name: "رو به راه",
       tagline: "همراه هم برای رشد"
     },
     create: {
-      name: "رو‌به‌راه",
-      slug: "ham-masir",
+      name: "رو به راه",
+      slug: "rooberah",
       tagline: "همراه هم برای رشد"
     }
   });
@@ -69,9 +77,9 @@ async function main() {
     create: {
       communityId: community.id,
       telegramId: 1000000001n,
-      username: "ham_masir_admin",
+      username: "rooberah_admin",
       firstName: "Admin",
-      lastName: "Ham Masir",
+      lastName: "Rooberah",
       roles: { create: [{ role: Role.SUPER_ADMIN }, { role: Role.ADMIN }] },
       profile: { create: {} }
     }

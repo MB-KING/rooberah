@@ -162,7 +162,7 @@ export async function POST(
     const sent = await sendTelegramPhotoBuffer({
       chatId: user.telegramId,
       photo: png.buffer,
-      filename: `ham-masir-${format}.png`,
+      filename: `rooberah-${format}.png`,
       contentType: "image/png",
       caption,
       openApp: true,

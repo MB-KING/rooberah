@@ -5,6 +5,7 @@ import { UserCard, UserPageHeader } from "@/components/user/user-card";
 import { UserPageShell } from "@/components/user/user-shell";
 import { prisma } from "@/lib/prisma";
 import { mediaPublicPath } from "@/modules/media/media.service";
+import { WorkStatusBadge } from "@/components/user/work-status-badge";
 import { getPublicMemberView } from "@/shared/privacy";
 import { readSocialLinks, socialLinkLabel } from "@/shared/social-links";
 import { formatSteps } from "@/shared/steps";
@@ -78,11 +79,14 @@ export default async function PublicMemberPage({
             {view.username ? (
               <p className="text-sm text-slate-400">@{view.username}</p>
             ) : null}
-            {view.workCategory ? (
-              <p className="mt-1 text-sm font-bold text-ember">
-                {view.workCategory.name}
-              </p>
-            ) : null}
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <WorkStatusBadge status={view.workStatus} />
+              {view.workCategory ? (
+                <span className="text-sm font-bold text-ember">
+                  {view.workCategory.name}
+                </span>
+              ) : null}
+            </div>
             {view.businessName ? (
               <p className="mt-1 text-sm text-slate-300">
                 کسب‌وکار: {view.businessName}
@@ -90,8 +94,14 @@ export default async function PublicMemberPage({
             ) : null}
           </div>
         </div>
+        {view.skills ? (
+          <p className="mt-4 text-sm text-slate-300">
+            <span className="font-bold text-ember">مهارت‌ها: </span>
+            {view.skills}
+          </p>
+        ) : null}
         {view.bio ? (
-          <p className="mt-4 text-sm leading-7 text-slate-300">{view.bio}</p>
+          <p className="mt-3 text-sm leading-7 text-slate-300">{view.bio}</p>
         ) : null}
         <div className="mt-4 grid grid-cols-2 gap-2">
           <Metric label="امتیاز" value={formatSteps(view.xp ?? 0)} />
@@ -102,12 +112,6 @@ export default async function PublicMemberPage({
             />
           ) : null}
         </div>
-        {view.skills ? (
-          <p className="mt-4 text-sm text-slate-300">
-            <span className="font-bold text-ember">مهارت‌ها: </span>
-            {view.skills}
-          </p>
-        ) : null}
         {Object.keys(social).length > 0 ? (
           <div className="mt-4 grid gap-2">
             <p className="text-xs font-bold text-slate-400">لینک‌ها</p>
