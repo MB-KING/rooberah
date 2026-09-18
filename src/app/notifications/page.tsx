@@ -47,7 +47,7 @@ export default async function NotificationsPage() {
         <UserPageHeader
           title="اعلان‌ها"
           subtitle="وضعیت ثبت‌نام و حضور."
-          backFallbackHref="/me"
+          backFallbackHref="/"
         />
 
         <UserCard className="mb-4 border-ember/25 bg-pine">

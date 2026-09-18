@@ -1,13 +1,16 @@
 import { XPTransactionType } from "@prisma/client";
 
-/** Default امتیاز amounts when StepRule rows are missing. */
+/**
+ * حضور واحد اصلی امتیاز است. فعالیت‌های جانبی نباید از یک برنامه جلو بزنند.
+ * ATTEND_EVENT = 100
+ */
 export const defaultStepRules: Partial<Record<XPTransactionType, number>> = {
   ATTEND_EVENT: 100,
-  REFER_USER: 50,
-  CREATE_REWARD: 75,
-  COMPLETE_PROFILE: 25,
-  ATTEND_SPECIAL_EVENT: 150,
-  EVENT_PHOTO: 25
+  ATTEND_SPECIAL_EVENT: 140,
+  COMPLETE_PROFILE: 20,
+  REFER_USER: 20,
+  CREATE_REWARD: 30,
+  EVENT_PHOTO: 10
 };
 
 export const earnStepTypes: XPTransactionType[] = [

@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, Footprints, Trophy, UsersRound } from "lucide-react";
+import { Trophy, UsersRound } from "lucide-react";
 import type { Prisma } from "@prisma/client";
 import type { Route } from "next";
 import Link from "next/link";
@@ -19,22 +19,19 @@ import { BadgeService } from "@/modules/gamification/badge.service";
 import { formatSteps } from "@/shared/steps";
 import {
   parseWorkStatus,
+  workStatusTone,
   WORK_STATUS_OPTIONS
 } from "@/shared/work-status";
 
 export const dynamic = "force-dynamic";
 
-type SortMode = "recent" | "steps";
-
 function buildMembersHref(input: {
-  sort: SortMode;
   category?: string;
   status?: string;
   q?: string;
   page?: number;
 }) {
   const params = new URLSearchParams();
-  if (input.sort === "steps") params.set("sort", "steps");
   if (input.category) params.set("category", input.category);
   if (input.status) params.set("status", input.status);
   if (input.q?.trim()) params.set("q", input.q.trim());
@@ -48,7 +45,6 @@ export default async function MembersPage({
 }: {
   searchParams: Promise<{
     category?: string;
-    sort?: string;
     page?: string;
     q?: string;
     status?: string;
@@ -58,12 +54,10 @@ export default async function MembersPage({
   await new BadgeService().syncCommunityRoleBadges(currentUser.communityId);
   const {
     category,
-    sort: sortRaw,
     page: pageRaw,
     q: qRaw,
     status: statusRaw
   } = await searchParams;
-  const sort: SortMode = sortRaw === "steps" ? "steps" : "recent";
   const q = qRaw?.trim() ?? "";
   const status = parseWorkStatus(statusRaw);
   const page = Math.max(Number(pageRaw ?? 1) || 1, 1);
@@ -98,10 +92,7 @@ export default async function MembersPage({
     }),
     prisma.user.findMany({
       where: listedWhere,
-      orderBy:
-        sort === "steps"
-          ? [{ xp: "desc" }, { joinedAt: "asc" }]
-          : [{ joinedAt: "desc" }],
+      orderBy: [{ xp: "desc" }, { joinedAt: "asc" }],
       take,
       skip,
       include: {
@@ -122,7 +113,7 @@ export default async function MembersPage({
   ]);
 
   let myRank: number | null = null;
-  if (sort === "steps" && community?.leaderboardEnabled) {
+  if (community?.leaderboardEnabled) {
     const better = await prisma.user.count({
       where: {
         communityId: currentUser.communityId,
@@ -141,36 +132,35 @@ export default async function MembersPage({
 
   return (
     <UserPageShell>
-      <UserPageHeader
-        title="همراهان"
-        subtitle={
-          sort === "steps"
-            ? "رتبه‌بندی همراهان بر اساس امتیاز."
-            : "نام، تخصص، کسب‌وکار یا مهارت را جستجو کن."
-        }
-        backFallbackHref="/me"
-      />
+      <UserPageHeader title="همراهان" backFallbackHref="/" />
 
       <MembersFilters
         q={q}
         category={category ?? ""}
         status={status ?? ""}
-        sort={sort}
         categories={categories}
         statusOptions={WORK_STATUS_OPTIONS}
       />
 
-      {sort === "steps" && myRank ? (
-        <UserCard className="mb-4 border-ember/25 bg-pine">
+      {myRank ? (
+        <UserCard className="mb-4 border-ember/25 bg-pine !p-3">
           <div className="flex items-center gap-3">
-            <Trophy className="text-ember" size={22} />
-            <div>
-              <p className="font-black text-white">
-                رتبه تو: {myRank.toLocaleString("fa-IR")}
-              </p>
-              <p className="text-sm text-slate-300">
-                {formatSteps(currentUser.xp)}
-              </p>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ember/15 text-ember">
+              <Trophy size={18} aria-hidden="true" />
+            </div>
+            <div className="grid min-w-0 flex-1 grid-cols-2 gap-3">
+              <div>
+                <p className="text-[11px] font-bold text-slate-400">رتبه تو</p>
+                <p className="mt-0.5 text-lg font-black leading-none text-white">
+                  {myRank.toLocaleString("fa-IR")}
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] font-bold text-slate-400">امتیاز</p>
+                <p className="mt-0.5 text-lg font-black leading-none text-white">
+                  {currentUser.xp.toLocaleString("fa-IR")}
+                </p>
+              </div>
             </div>
           </div>
         </UserCard>
@@ -203,97 +193,103 @@ export default async function MembersPage({
               member.username ||
               `عضو ${APP_NAME}`;
             const rank = skip + index + 1;
+            const showWorkStatus = member.profile?.showWorkStatus !== false;
+            const showBusiness = member.profile?.showBusiness !== false;
+            const workplace = showBusiness
+              ? member.profile?.businessName?.trim() || null
+              : null;
+            const statusTone = showWorkStatus
+              ? workStatusTone(member.profile?.workStatus)
+              : null;
+            const workplaces = [
+              workplace,
+              ...(showBusiness
+                ? member.businessMemberships.map(({ business }) => business.name)
+                : [])
+            ].filter((item, index, list): item is string =>
+              Boolean(item && list.indexOf(item) === index)
+            );
+            const chips = [
+              ...member.badges.map((item) => item.badge.name),
+              member.profile?.showWorkCategory !== false
+                ? member.workCategory?.name
+                : null,
+              member.profile?.showAttendanceCount &&
+              member._count.attendance > 0
+                ? `${member._count.attendance} حضور`
+                : null,
+              ...workplaces
+            ].filter((item): item is string => Boolean(item));
+
             return (
               <Link
                 key={member.id}
                 href={`/members/${member.id}` as Route}
                 className="block cursor-pointer"
               >
-                <UserCard>
-                  <div className="flex items-start gap-3">
-                    {sort === "steps" ? (
-                      <span className="w-8 shrink-0 pt-2 text-center text-sm font-black text-ember">
-                        {rank.toLocaleString("fa-IR")}
-                      </span>
-                    ) : null}
+                <UserCard
+                  className={
+                    statusTone
+                      ? `transition duration-200 ${statusTone.card}`
+                      : "transition duration-200 hover:border-ember/30"
+                  }
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="w-6 shrink-0 text-center text-sm font-black text-ember">
+                      {rank.toLocaleString("fa-IR")}
+                    </span>
                     <UserAvatar
                       photoUrl={member.photoUrl}
                       name={name}
-                      size={44}
+                      size={48}
                     />
                     <div className="min-w-0 flex-1">
-                      <h2 className="font-black text-white">
-                        {name}
-                        {member.id === currentUser.id ? (
-                          <span className="mr-2 text-xs text-ember">
-                            (خودت)
-                          </span>
-                        ) : null}
-                      </h2>
-                      {sort === "steps" ? (
-                        <p className="mt-1 text-sm text-slate-400">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <h2 className="truncate font-black text-white">
+                              {name}
+                            </h2>
+                            {member.id === currentUser.id ? (
+                              <span className="shrink-0 rounded-full bg-ember/15 px-2 py-0.5 text-[11px] font-bold text-ember">
+                                خودت
+                              </span>
+                            ) : null}
+                          </div>
+                          {member.profile?.showTelegramUsername &&
+                          member.username ? (
+                            <p className="mt-0.5 truncate text-xs text-slate-400">
+                              <span dir="ltr">@{member.username}</span>
+                            </p>
+                          ) : null}
+                        </div>
+                        <p className="shrink-0 pt-0.5 text-xs font-bold text-slate-400">
                           {formatSteps(member.xp)}
                         </p>
-                      ) : null}
-                      <div className="mt-2 flex flex-wrap items-center gap-2">
-                        {member.profile?.showWorkStatus !== false ? (
-                          <WorkStatusBadge status={member.profile?.workStatus} />
-                        ) : null}
-                        {member.profile?.showWorkCategory !== false &&
-                        member.workCategory ? (
-                          <span className="text-xs font-bold text-ember">
-                            {member.workCategory.name}
-                          </span>
-                        ) : null}
                       </div>
-                      {member.profile?.showTelegramUsername &&
-                      member.username ? (
-                        <p className="mt-1 text-sm text-slate-400" dir="ltr">
-                          @{member.username}
-                        </p>
-                      ) : null}
-                      {member.badges.length > 0 ? (
+                      {showWorkStatus || chips.length > 0 ? (
                         <div className="mt-2 flex flex-wrap gap-1.5">
-                          {member.badges.map((item) => (
+                          {showWorkStatus ? (
+                            <WorkStatusBadge
+                              status={member.profile?.workStatus}
+                            />
+                          ) : null}
+                          {chips.map((chip) => (
                             <span
-                              key={item.id}
-                              className="rounded-lg bg-ember/15 px-2 py-1 text-[11px] font-bold text-amber-400"
+                              key={chip}
+                              className="rounded-full bg-white/[0.07] px-2 py-1 text-[11px] font-bold text-slate-300"
                             >
-                              {item.badge.name}
+                              {chip}
                             </span>
                           ))}
                         </div>
                       ) : null}
                     </div>
                   </div>
-                  {member.profile?.bio && sort === "recent" ? (
-                    <p className="mt-3 text-sm leading-7 text-slate-300">
+                  {member.profile?.bio ? (
+                    <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-300">
                       {member.profile.bio}
                     </p>
-                  ) : null}
-                  {sort === "recent" ? (
-                    <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-300">
-                      {member.profile?.showAttendanceCount ? (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.07] px-3 py-1.5">
-                          <Footprints size={14} className="text-ember" />
-                          {member._count.attendance} حضور
-                        </span>
-                      ) : null}
-                      {member.profile?.showBusiness
-                        ? member.businessMemberships.map(({ business }) => (
-                            <span
-                              key={business.id}
-                              className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.07] px-3 py-1.5"
-                            >
-                              <BriefcaseBusiness
-                                size={14}
-                                className="text-ember"
-                              />
-                              {business.name}
-                            </span>
-                          ))
-                        : null}
-                    </div>
                   ) : null}
                 </UserCard>
               </Link>
@@ -306,7 +302,6 @@ export default async function MembersPage({
         {page > 1 ? (
           <Link
             href={buildMembersHref({
-              sort,
               category,
               status: status ?? undefined,
               q,
@@ -320,7 +315,6 @@ export default async function MembersPage({
         {page < totalPages ? (
           <Link
             href={buildMembersHref({
-              sort,
               category,
               status: status ?? undefined,
               q,

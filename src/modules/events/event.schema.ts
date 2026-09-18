@@ -16,7 +16,7 @@ export const createEventSchema = z.object({
   locationAddress: z.string().optional(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
-  capacity: z.number().int().positive().optional(),
+  capacity: z.number().int().positive().optional().nullable(),
   status: z.nativeEnum(EventStatus).default(EventStatus.DRAFT)
 });
 

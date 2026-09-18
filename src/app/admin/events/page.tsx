@@ -106,8 +106,11 @@ export default async function AdminEventsPage({
                 {event.locationName}
               </p>
               <p className="mt-2 text-sm text-slate-400">
-                {event._count.registrations} ثبت‌نام، {event._count.attendance}{" "}
-                حضور
+                {event._count.registrations} ثبت‌نام
+                {event.capacity == null
+                  ? " · ظرفیت نامحدود"
+                  : ` از ${event.capacity}`}
+                ، {event._count.attendance} حضور
               </p>
               <div className="mt-4 grid gap-2">
                 <Link

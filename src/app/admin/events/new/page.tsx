@@ -1,6 +1,7 @@
 import { EventStatus } from "@prisma/client";
 import { createEventAction } from "@/app/admin/actions";
 import { AdminCard, PageTitle } from "@/components/admin/admin-card";
+import { CapacityField } from "@/components/admin/capacity-field";
 import { LocationMapPicker } from "@/components/admin/location-map-picker";
 import { PersianDateField } from "@/components/admin/persian-date-field";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,9 @@ export default async function NewEventPage({
 
       {error ? (
         <AdminCard className="mb-4 border-red-400/30 bg-red-500/10">
-          <p className="text-sm font-bold text-red-200">{error}</p>
+          <p role="alert" className="text-sm font-bold text-red-200">
+            {error}
+          </p>
         </AdminCard>
       ) : null}
 
@@ -71,7 +74,7 @@ export default async function NewEventPage({
             required
             placeholder="بوستان آب و آتش"
           />
-          <Field label="ظرفیت" name="capacity" type="number" placeholder="80" />
+          <CapacityField />
           <LocationMapPicker />
           <label className="grid gap-2 text-sm font-bold text-slate-200">
             وضعیت نمایش

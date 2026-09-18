@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { updateEventAction } from "@/app/admin/actions";
 import { AdminCard, PageTitle } from "@/components/admin/admin-card";
 import { EventImageUploadForm } from "@/components/admin/event-image-upload-form";
+import { CapacityField } from "@/components/admin/capacity-field";
 import { LocationMapPicker } from "@/components/admin/location-map-picker";
 import { PersianDateField } from "@/components/admin/persian-date-field";
 import { Button } from "@/components/ui/button";
@@ -45,7 +46,9 @@ export default async function EditEventPage({
       />
       {error ? (
         <AdminCard className="mb-4 border-red-400/30 bg-red-500/10">
-          <p className="text-sm font-bold text-red-200">{error}</p>
+          <p role="alert" className="text-sm font-bold text-red-200">
+            {error}
+          </p>
         </AdminCard>
       ) : null}
       <div className="mb-4 flex flex-wrap gap-2">
@@ -121,12 +124,7 @@ export default async function EditEventPage({
             required
             defaultValue={event.locationName}
           />
-          <Field
-            label="ظرفیت"
-            name="capacity"
-            type="number"
-            defaultValue={event.capacity ? String(event.capacity) : ""}
-          />
+          <CapacityField defaultCapacity={event.capacity} />
           <LocationMapPicker
             latitude={event.latitude != null ? Number(event.latitude) : null}
             longitude={event.longitude != null ? Number(event.longitude) : null}

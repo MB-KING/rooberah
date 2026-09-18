@@ -5,7 +5,10 @@ import { assertEventContributionAllowed } from "@/modules/events/event-contribut
 import { XPService } from "@/modules/gamification/xp.service";
 import { MediaService } from "@/modules/media/media.service";
 import { AppError } from "@/shared/errors";
-import { MAX_EVENT_PHOTOS_PER_USER } from "@/shared/event-photos";
+import {
+  MAX_EVENT_PHOTOS_PER_USER,
+  MAX_EVENT_PHOTO_XP_PER_EVENT
+} from "@/shared/event-photos";
 
 const authorSelect = {
   id: true,
@@ -106,14 +109,26 @@ export class EventPhotoService {
       }
     });
 
+    let awardedXp = false;
     if (input.status === ModerationStatus.APPROVED) {
-      await this.xp.award(
-        photo.userId,
-        XPTransactionType.EVENT_PHOTO,
-        "EventPhoto",
-        photo.id,
-        `عکس تأییدشده برنامه ${photo.event.eventNumber}`
-      );
+      const alreadyAwarded = await prisma.eventPhoto.count({
+        where: {
+          eventId: photo.eventId,
+          userId: photo.userId,
+          status: ModerationStatus.APPROVED,
+          id: { not: photo.id }
+        }
+      });
+      if (alreadyAwarded < MAX_EVENT_PHOTO_XP_PER_EVENT) {
+        await this.xp.award(
+          photo.userId,
+          XPTransactionType.EVENT_PHOTO,
+          "EventPhoto",
+          photo.id,
+          `عکس تأییدشده برنامه ${photo.event.eventNumber}`
+        );
+        awardedXp = true;
+      }
     } else if (previous === ModerationStatus.APPROVED) {
       await this.xp.revoke(
         photo.userId,
@@ -132,7 +147,9 @@ export class EventPhotoService {
           : "عکست تأیید نشد",
       body:
         input.status === ModerationStatus.APPROVED
-          ? `عکست در آرشیو «${photo.event.title}» نمایش داده می‌شود و امتیاز گرفتی.`
+          ? awardedXp
+            ? `عکست در آرشیو «${photo.event.title}» نمایش داده می‌شود و امتیاز گرفتی.`
+            : `عکست در آرشیو «${photo.event.title}» نمایش داده می‌شود.`
           : `عکست برای «${photo.event.title}» تأیید نشد.`,
       eventPath: `/events/${photo.eventId}`,
       buttonText: "مشاهده برنامه"

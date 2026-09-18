@@ -185,7 +185,7 @@ export async function createEventAction(formData: FormData) {
         locationAddress: input.locationAddress || undefined,
         latitude: input.latitude,
         longitude: input.longitude,
-        capacity: input.capacity,
+        capacity: input.capacity ?? null,
         status: input.status
       }
     );

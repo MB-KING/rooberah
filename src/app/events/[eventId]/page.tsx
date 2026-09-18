@@ -233,7 +233,7 @@ export default async function EventDetailsPage({
 
       {error && error in errorMessagesFa ? (
         <UserCard className="mb-4 border-red-400/30 bg-red-500/10">
-          <p className="text-sm font-bold text-red-200">
+          <p role="alert" className="text-sm font-bold text-red-200">
             {errorMessagesFa[error as ErrorCode]}
           </p>
         </UserCard>
@@ -336,10 +336,10 @@ export default async function EventDetailsPage({
           {isCompleted ? null : (
             <Info
               icon={<UsersRound size={18} />}
-              label="ظرفیت باقی‌مانده"
+              label={remainingCapacity == null ? "ظرفیت" : "ظرفیت باقی‌مانده"}
               value={
                 remainingCapacity == null
-                  ? "بدون محدودیت"
+                  ? "نامحدود"
                   : `${remainingCapacity} نفر`
               }
             />

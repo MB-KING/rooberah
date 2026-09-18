@@ -7,9 +7,11 @@ import { AdminCard, PageTitle } from "@/components/admin/admin-card";
 import { UserRoleForm } from "@/components/admin/user-role-form";
 import { Button } from "@/components/ui/button";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
+import { formatJalaliPretty } from "@/lib/jalali";
 import { prisma } from "@/lib/prisma";
 import { requireSuperAdminPage } from "@/modules/auth/admin-session";
 import { hasRole } from "@/modules/auth/authorization";
+import { formatPhone } from "@/shared/phone";
 
 function primaryRole(roles: Array<{ role: Role }>) {
   if (roles.some((item) => item.role === Role.SUPER_ADMIN)) {
@@ -28,6 +30,7 @@ export default async function AdminUsersPage() {
       where: { deletedAt: null },
       orderBy: { joinedAt: "desc" },
       include: {
+        profile: { select: { phoneNumber: true, birthDate: true } },
         roles: true,
         badges: { include: { badge: true }, orderBy: { earnedAt: "desc" } },
         _count: {
@@ -87,6 +90,18 @@ export default async function AdminUsersPage() {
                     <p className="mt-1 text-sm text-slate-400">
                       @{user.username ?? "بدون نام کاربری"}
                     </p>
+                    {user.profile?.phoneNumber ? (
+                      <p className="mt-2 text-sm font-bold text-[#F39C12]" dir="ltr">
+                        {formatPhone(user.profile.phoneNumber)}
+                      </p>
+                    ) : (
+                      <p className="mt-2 text-xs text-slate-500">شماره تلفن ندارد.</p>
+                    )}
+                    {user.profile?.birthDate ? (
+                      <p className="mt-1 text-xs font-bold text-slate-300">
+                        تولد {formatJalaliPretty(user.profile.birthDate)}
+                      </p>
+                    ) : null}
                     <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs text-slate-300">
                       <Metric label="امتیاز" value={user.xp} />
                       <Metric label="حضور" value={user._count.attendance} />

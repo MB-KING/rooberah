@@ -1,14 +1,26 @@
-import { workStatusLabel, type WorkStatusValue } from "@/shared/work-status";
+import { cn } from "@/lib/cn";
+import {
+  visibleWorkStatus,
+  workStatusLabel,
+  workStatusTone
+} from "@/shared/work-status";
 
 export function WorkStatusBadge({
   status
 }: {
-  status: WorkStatusValue | string | null | undefined;
+  status: string | null | undefined;
 }) {
-  const label = workStatusLabel(status);
-  if (!label) return null;
+  const visible = visibleWorkStatus(status);
+  const label = workStatusLabel(visible);
+  const tone = workStatusTone(visible);
+  if (!label || !tone) return null;
   return (
-    <span className="inline-flex items-center rounded-full bg-ember/15 px-2.5 py-1 text-[11px] font-bold text-ember">
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-bold",
+        tone.chip
+      )}
+    >
       {label}
     </span>
   );

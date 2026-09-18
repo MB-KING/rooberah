@@ -7,7 +7,12 @@ describe("xpRules", () => {
     expect(xpRules[XPTransactionType.ATTEND_EVENT]).toBe(100);
   });
 
-  it("awards XP when an event photo is approved", () => {
-    expect(xpRules[XPTransactionType.EVENT_PHOTO]).toBe(25);
+  it("keeps photos as a small bonus next to attendance", () => {
+    expect(xpRules[XPTransactionType.EVENT_PHOTO]).toBe(10);
+    expect(xpRules[XPTransactionType.REFER_USER]).toBe(20);
+    expect(xpRules[XPTransactionType.CREATE_REWARD]).toBe(30);
+    expect(
+      (xpRules[XPTransactionType.EVENT_PHOTO] ?? 0) * 2
+    ).toBeLessThan(xpRules[XPTransactionType.ATTEND_EVENT]);
   });
 });

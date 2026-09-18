@@ -13,12 +13,12 @@ export const xpRules: Record<
   Exclude<XPTransactionType, "SPEND_REWARD" | "ADMIN_ADJUSTMENT">,
   number
 > = {
-  ATTEND_EVENT: 100,
-  REFER_USER: 50,
-  CREATE_REWARD: 75,
-  COMPLETE_PROFILE: 25,
-  ATTEND_SPECIAL_EVENT: 150,
-  EVENT_PHOTO: 25
+  ATTEND_EVENT: defaultStepRules.ATTEND_EVENT ?? 100,
+  REFER_USER: defaultStepRules.REFER_USER ?? 20,
+  CREATE_REWARD: defaultStepRules.CREATE_REWARD ?? 30,
+  COMPLETE_PROFILE: defaultStepRules.COMPLETE_PROFILE ?? 20,
+  ATTEND_SPECIAL_EVENT: defaultStepRules.ATTEND_SPECIAL_EVENT ?? 140,
+  EVENT_PHOTO: defaultStepRules.EVENT_PHOTO ?? 10
 };
 
 type Tx = Prisma.TransactionClient;

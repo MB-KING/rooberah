@@ -1,10 +1,11 @@
-import { ChevronDown, Eye, Save, ShieldCheck } from "lucide-react";
+import { ChevronDown, Eye, ShieldCheck } from "lucide-react";
 import type { ReactNode } from "react";
-import { updateProfileAction } from "@/app/actions";
-import { Button } from "@/components/ui/button";
+import { PersianDateField } from "@/components/admin/persian-date-field";
+import { ProfileSettingsForm } from "@/components/user/profile-settings-form";
 import { UserCard, UserPageHeader } from "@/components/user/user-card";
 import { UserPageShell } from "@/components/user/user-shell";
 import { cn } from "@/lib/cn";
+import { tehranDateInputValue } from "@/lib/tehran-time";
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUserPage } from "@/modules/auth/session";
 import {
@@ -53,7 +54,7 @@ export default async function ProfileSettingsPage() {
         </div>
       </UserCard>
       <UserCard>
-        <form action={updateProfileAction} className="grid gap-5" dir="rtl">
+        <ProfileSettingsForm>
           <Field label="نام">
             <input
               name="firstName"
@@ -78,6 +79,29 @@ export default async function ProfileSettingsPage() {
               dir="rtl"
             />
           </Field>
+          <Field
+            label="شماره تلفن"
+            hint="فقط ادمین‌ها می‌بینند؛ در پروفایل عمومی نیست."
+          >
+            <input
+              name="phone"
+              maxLength={20}
+              defaultValue={profile?.phoneNumber ?? ""}
+              className={cn(fieldInputClass, "text-left")}
+              placeholder="0912xxxxxxx"
+              inputMode="tel"
+              autoComplete="tel"
+              dir="ltr"
+            />
+          </Field>
+          <PersianDateField
+            name="birthDate"
+            label="تاریخ تولد"
+            optional
+            defaultValue={
+              profile?.birthDate ? tehranDateInputValue(profile.birthDate) : ""
+            }
+          />
           <Field label="درباره من">
             <textarea
               name="bio"
@@ -90,15 +114,15 @@ export default async function ProfileSettingsPage() {
             />
           </Field>
           <Field
-            label="کسب‌وکار"
-            hint="اختیاری است؛ مثلاً نام فروشگاه، استودیو یا برند شخصی."
+            label="محل کار یا کسب‌وکار"
+            hint="اختیاری است؛ محل کار فعلی‌ات، یا نام فروشگاه، استودیو و برند شخصی."
           >
             <input
               name="businessName"
               maxLength={120}
               defaultValue={profile?.businessName ?? ""}
               className={fieldInputClass}
-              placeholder="اگر کسب‌وکاری داری، همین‌جا بنویس"
+              placeholder="مثلاً شرکت الف، کافه خودم یا استودیو طراحی"
               dir="rtl"
             />
           </Field>
@@ -177,8 +201,8 @@ export default async function ProfileSettingsPage() {
             />
             <Toggle
               name="showBusiness"
-              label="نمایش کسب‌وکار"
-              description="نام کسب‌وکاری که بالا نوشتی در پروفایل عمومی دیده شود."
+              label="نمایش محل کار یا کسب‌وکار"
+              description="محل کار فعلی یا کسب‌وکاری که بالا نوشتی دیده شود."
               defaultChecked={profile?.showBusiness ?? true}
             />
             <Toggle
@@ -196,7 +220,7 @@ export default async function ProfileSettingsPage() {
             <Toggle
               name="showWorkStatus"
               label="نمایش وضعیت کاری"
-              description="وضعیت کاری مثل استخدام یا آماده کار تیمی دیده شود."
+              description="وضعیت‌هایی مثل استخدام یا آماده کار تیمی دیده شود."
               defaultChecked={profile?.showWorkStatus ?? true}
             />
             <Toggle
@@ -212,15 +236,7 @@ export default async function ProfileSettingsPage() {
               defaultChecked={profile?.showSocialLinks ?? true}
             />
           </div>
-          <Button
-            type="submit"
-            className="w-full"
-            pendingLabel="در حال ذخیره…"
-          >
-            <Save size={18} aria-hidden="true" />
-            ذخیره تنظیمات
-          </Button>
-        </form>
+        </ProfileSettingsForm>
       </UserCard>
     </UserPageShell>
   );

@@ -104,7 +104,7 @@ export function EventCard({
               isCompleted
                 ? `${event._count.registrations} نفر همراه`
                 : remaining == null
-                  ? `${event._count.registrations} نفر همراه`
+                  ? `${event._count.registrations} نفر همراه · ظرفیت نامحدود`
                   : `${event._count.registrations} همراه · ${remaining} جای خالی`
             }
           />

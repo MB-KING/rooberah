@@ -13,7 +13,7 @@ export default function ChangelogPage() {
       <UserPageHeader
         title="تغییرات"
         subtitle={`از شروع ${APP_NAME} تا نسخه ${formatAppVersion(APP_VERSION)}.`}
-        backFallbackHref="/me"
+        backFallbackHref="/"
       />
       <div className="grid gap-3">
         {changelog.map((release) => (

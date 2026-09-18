@@ -1,14 +1,22 @@
+import { Globe, Linkedin } from "lucide-react";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { UserAvatar } from "@/components/user/user-avatar";
 import { UserCard, UserPageHeader } from "@/components/user/user-card";
 import { UserPageShell } from "@/components/user/user-shell";
 import { prisma } from "@/lib/prisma";
+import { formatJalaliPretty } from "@/lib/jalali";
 import { mediaPublicPath } from "@/modules/media/media.service";
+import { adminRoles } from "@/modules/auth/admin-session";
+import { hasAnyRole } from "@/modules/auth/authorization";
+import { getOptionalCurrentUser } from "@/modules/auth/session";
 import { WorkStatusBadge } from "@/components/user/work-status-badge";
+import { cn } from "@/lib/cn";
 import { getPublicMemberView } from "@/shared/privacy";
+import { formatPhone } from "@/shared/phone";
 import { readSocialLinks, socialLinkLabel } from "@/shared/social-links";
 import { formatSteps } from "@/shared/steps";
+import { workStatusTone } from "@/shared/work-status";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +26,8 @@ export default async function PublicMemberPage({
   params: Promise<{ userId: string }>;
 }) {
   const { userId } = await params;
+  const viewer = await getOptionalCurrentUser();
+  const canSeePhone = Boolean(viewer && hasAnyRole(viewer, adminRoles));
   const member = await prisma.user.findFirst({
     where: { id: userId, deletedAt: null },
     include: {
@@ -59,78 +69,105 @@ export default async function PublicMemberPage({
   });
 
   const social = readSocialLinks(view.socialLinks);
+  const skills = (view.skills ?? "")
+    .split(/[,،]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const statusTone = workStatusTone(view.workStatus);
+  const chips = [
+    view.workCategory?.name,
+    view.businessName
+  ].filter((item): item is string => Boolean(item));
 
   return (
     <UserPageShell>
-      <UserPageHeader
-        title={view.displayName}
-        subtitle="پروفایل همراه"
-        backFallbackHref="/members"
-      />
-      <UserCard className="mb-4">
-        <div className="flex items-center gap-3">
+      <UserPageHeader title={view.displayName} backFallbackHref="/members" />
+      <UserCard className={cn("mb-4", statusTone?.card)}>
+        <div className="flex items-start gap-3">
           <UserAvatar
             photoUrl={view.photoUrl}
             name={view.displayName}
-            size={72}
+            size={56}
           />
-          <div>
-            <h2 className="text-xl font-black text-white">{view.displayName}</h2>
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate text-lg font-black text-white">
+              {view.displayName}
+            </h2>
             {view.username ? (
-              <p className="text-sm text-slate-400">@{view.username}</p>
-            ) : null}
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <WorkStatusBadge status={view.workStatus} />
-              {view.workCategory ? (
-                <span className="text-sm font-bold text-ember">
-                  {view.workCategory.name}
-                </span>
-              ) : null}
-            </div>
-            {view.businessName ? (
-              <p className="mt-1 text-sm text-slate-300">
-                کسب‌وکار: {view.businessName}
+              <p className="mt-0.5 truncate text-xs text-slate-400" dir="ltr">
+                @{view.username}
               </p>
+            ) : null}
+            {canSeePhone && member.profile?.phoneNumber ? (
+              <p className="mt-1 text-xs font-bold text-ember" dir="ltr">
+                {formatPhone(member.profile.phoneNumber)}
+              </p>
+            ) : null}
+            {view.workStatus || chips.length > 0 ? (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                <WorkStatusBadge status={view.workStatus} />
+                {chips.map((chip) => (
+                  <span
+                    key={chip}
+                    className="rounded-full bg-white/[0.07] px-2 py-1 text-[11px] font-bold text-slate-300"
+                  >
+                    {chip}
+                  </span>
+                ))}
+              </div>
             ) : null}
           </div>
         </div>
-        {view.skills ? (
-          <p className="mt-4 text-sm text-slate-300">
-            <span className="font-bold text-ember">مهارت‌ها: </span>
-            {view.skills}
+        {view.birthDate ? (
+          <p className="mt-3 text-xs font-bold text-slate-400">
+            تولد {formatJalaliPretty(view.birthDate)}
           </p>
         ) : null}
         {view.bio ? (
-          <p className="mt-3 text-sm leading-7 text-slate-300">{view.bio}</p>
+          <p className="mt-3 text-sm leading-6 text-slate-300">{view.bio}</p>
         ) : null}
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <Metric label="امتیاز" value={formatSteps(view.xp ?? 0)} />
+        {skills.length > 0 ? (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {skills.map((skill) => (
+              <span
+                key={skill}
+                className="rounded-full bg-white/[0.07] px-2 py-1 text-[11px] font-bold text-slate-300"
+              >
+                {skill}
+              </span>
+            ))}
+          </div>
+        ) : null}
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-slate-400">
+          <span>
+            <span className="text-white">{formatSteps(view.xp ?? 0)}</span>
+          </span>
           {view.attendanceCount != null ? (
-            <Metric
-              label="حضور"
-              value={`${view.attendanceCount.toLocaleString("fa-IR")} برنامه`}
-            />
+            <span>
+              <span className="text-white">
+                {view.attendanceCount.toLocaleString("fa-IR")}
+              </span>{" "}
+              حضور
+            </span>
           ) : null}
         </div>
         {Object.keys(social).length > 0 ? (
-          <div className="mt-4 grid gap-2">
-            <p className="text-xs font-bold text-slate-400">لینک‌ها</p>
-            <div className="grid gap-2">
-              {Object.entries(social).map(([key, value]) => (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {Object.entries(social).map(([key, value]) => {
+              const Icon = key === "linkedin" ? Linkedin : Globe;
+              return (
                 <a
                   key={key}
                   href={value}
                   target="_blank"
                   rel="noreferrer"
-              className="flex min-h-11 w-full cursor-pointer items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-3 text-sm font-bold text-slate-200 transition duration-200 hover:border-ember/40 hover:text-white"
+                  className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 text-xs font-bold text-slate-200 transition duration-200 hover:border-ember/40 hover:text-white"
                 >
-                  <span>{socialLinkLabel(key)}</span>
-                  <span className="truncate text-xs font-medium text-ember" dir="ltr">
-                    باز کردن
-                  </span>
+                  <Icon size={14} aria-hidden="true" />
+                  {socialLinkLabel(key)}
                 </a>
-              ))}
-            </div>
+              );
+            })}
           </div>
         ) : null}
       </UserCard>
@@ -190,11 +227,3 @@ export default async function PublicMemberPage({
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl bg-white/[0.05] p-3">
-      <p className="text-xs font-bold text-ember">{label}</p>
-      <p className="mt-1 text-sm font-black text-white">{value}</p>
-    </div>
-  );
-}

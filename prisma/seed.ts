@@ -28,12 +28,11 @@ const workCategories = [
 
 const stepRules: Array<[XPTransactionType, number]> = [
   [XPTransactionType.ATTEND_EVENT, 100],
-  [XPTransactionType.REFER_USER, 50],
-  [XPTransactionType.CREATE_REWARD, 75],
-  [XPTransactionType.COMPLETE_PROFILE, 25],
-  [XPTransactionType.ATTEND_SPECIAL_EVENT, 150],
-  [XPTransactionType.EVENT_PHOTO, 25],
-  [XPTransactionType.EVENT_PHOTO, 25]
+  [XPTransactionType.ATTEND_SPECIAL_EVENT, 140],
+  [XPTransactionType.COMPLETE_PROFILE, 20],
+  [XPTransactionType.REFER_USER, 20],
+  [XPTransactionType.CREATE_REWARD, 30],
+  [XPTransactionType.EVENT_PHOTO, 10]
 ];
 
 async function main() {
@@ -132,19 +131,6 @@ async function main() {
     });
   }
 
-  await prisma.badge.upsert({
-    where: { communityId_slug: { communityId: community.id, slug: "gardanandeh" } },
-    update: { name: "گرداننده", type: BadgeType.SPECIAL, isActive: true },
-    create: {
-      communityId: community.id,
-      slug: "gardanandeh",
-      name: "گرداننده",
-      description: "برگزارکننده برنامه‌های رو‌به‌راه",
-      type: BadgeType.SPECIAL,
-      threshold: 0,
-      sortOrder: 0
-    }
-  });
   await prisma.badge.upsert({
     where: { communityId_slug: { communityId: community.id, slug: "rahbar" } },
     update: { name: "راهبر", type: BadgeType.SPECIAL, isActive: true },

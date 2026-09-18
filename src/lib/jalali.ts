@@ -35,6 +35,21 @@ export function formatJalaliDisplay(j: JalaliDate) {
   return `${j.jy}/${pad(j.jm)}/${pad(j.jd)}`;
 }
 
+export function formatJalaliPretty(isoOrDate: string | Date) {
+  const iso =
+    typeof isoOrDate === "string"
+      ? isoOrDate.slice(0, 10)
+      : new Intl.DateTimeFormat("en-CA", {
+          timeZone: "Asia/Tehran",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit"
+        }).format(isoOrDate);
+  const jalali = jalaliFromGregorianIso(iso);
+  if (!jalali) return null;
+  return `${formatFaNumber(jalali.jd)} ${jalaliMonthNames[jalali.jm - 1]} ${formatFaNumber(jalali.jy)}`;
+}
+
 export function todayJalali(): JalaliDate {
   // Use Tehran calendar day, not the server's local timezone.
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -79,6 +94,10 @@ export function jalaliWeekdayIndex(j: JalaliDate) {
   const g = toGregorian(j.jy, j.jm, j.jd);
   const date = new Date(g.gy, g.gm - 1, g.gd);
   return (date.getDay() + 1) % 7;
+}
+
+export function formatFaNumber(value: number) {
+  return String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
 }
 
 function pad(n: number) {

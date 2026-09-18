@@ -21,6 +21,8 @@ import { logActivity } from "@/modules/activity/activity.service";
 import { AppError } from "@/shared/errors";
 import { Prisma } from "@prisma/client";
 import { buildSocialLinks } from "@/shared/social-links";
+import { normalizePhone } from "@/shared/phone";
+import { tehranWallTimeToUtc } from "@/lib/tehran-time";
 
 const createBusinessSchema = z.object({
   name: z.string().min(2),
@@ -74,7 +76,9 @@ const profileSchema = z.object({
     .enum(["HIRING", "OPEN_TO_WORK", "OPEN_TO_TEAM", "FREELANCE", "NOT_AVAILABLE"])
     .optional()
     .or(z.literal("")),
-  showWorkStatus: z.preprocess((value) => value === "on", z.boolean())
+  showWorkStatus: z.preprocess((value) => value === "on", z.boolean()),
+  phone: z.string().max(20).optional(),
+  birthDate: z.string().optional().or(z.literal(""))
 });
 
 const feedbackSchema = z.object({
@@ -162,57 +166,78 @@ export async function redeemRewardAction(formData: FormData) {
 }
 
 export async function updateProfileAction(formData: FormData) {
-  const user = await requireCurrentUserPage();
-  const input = profileSchema.parse(Object.fromEntries(formData));
-  const socialLinks = buildSocialLinks({
-    website: input.website,
-    linkedin: input.linkedin
-  });
+  try {
+    const user = await requireCurrentUserPage();
+    const input = profileSchema.parse(Object.fromEntries(formData));
+    const socialLinks = buildSocialLinks({
+      website: input.website,
+      linkedin: input.linkedin
+    });
 
-  const profileData = {
-    bio: input.bio?.trim() ? input.bio.trim() : null,
-    skills: input.skills?.trim() ? input.skills.trim() : null,
-    businessName: input.businessName?.trim()
-      ? input.businessName.trim()
-      : null,
-    socialLinks: socialLinks === null ? Prisma.JsonNull : socialLinks,
-    showInMembersDirectory: input.showInMembersDirectory,
-    showTelegramUsername: input.showTelegramUsername,
-    showBusiness: input.showBusiness,
-    showAttendanceCount: input.showAttendanceCount,
-    showSkills: input.showSkills,
-    showSocialLinks: input.showSocialLinks,
-    showWorkCategory: input.showWorkCategory,
-    workStatus: input.workStatus ? input.workStatus : null,
-    showWorkStatus: input.showWorkStatus
-  };
+    const phoneRaw = input.phone?.trim() ?? "";
+    const phoneNumber = phoneRaw ? normalizePhone(phoneRaw) : null;
+    if (phoneRaw && !phoneNumber) {
+      return { ok: false as const };
+    }
+    const birthDate = input.birthDate
+      ? tehranWallTimeToUtc(input.birthDate, "00:00")
+      : null;
+    if (birthDate && birthDate > new Date()) {
+      return { ok: false as const };
+    }
 
-  const [profile] = await Promise.all([
-    prisma.userProfile.upsert({
-      where: { userId: user.id },
-      update: profileData,
-      create: { userId: user.id, ...profileData }
-    }),
-    prisma.user.update({
-      where: { id: user.id },
-      data: {
-        firstName: input.firstName,
-        lastName: input.lastName,
-        workCategoryId: input.workCategoryId ? input.workCategoryId : null
-      }
-    })
-  ]);
+    const profileData = {
+      bio: input.bio?.trim() ? input.bio.trim() : null,
+      skills: input.skills?.trim() ? input.skills.trim() : null,
+      businessName: input.businessName?.trim()
+        ? input.businessName.trim()
+        : null,
+      phoneNumber,
+      birthDate,
+      socialLinks: socialLinks === null ? Prisma.JsonNull : socialLinks,
+      showInMembersDirectory: input.showInMembersDirectory,
+      showTelegramUsername: input.showTelegramUsername,
+      showBusiness: input.showBusiness,
+      showAttendanceCount: input.showAttendanceCount,
+      showSkills: input.showSkills,
+      showSocialLinks: input.showSocialLinks,
+      showWorkCategory: input.showWorkCategory,
+      workStatus: input.workStatus ? input.workStatus : null,
+      showWorkStatus: input.showWorkStatus
+    };
 
-  await new XPService().award(
-    user.id,
-    XPTransactionType.COMPLETE_PROFILE,
-    "UserProfile",
-    profile.id,
-    "تکمیل تنظیمات پروفایل"
-  );
-  revalidatePath("/me");
-  revalidatePath("/members");
-  redirect("/me?profile=saved");
+    const [profile] = await Promise.all([
+      prisma.userProfile.upsert({
+        where: { userId: user.id },
+        update: profileData,
+        create: { userId: user.id, ...profileData }
+      }),
+      prisma.user.update({
+        where: { id: user.id },
+        data: {
+          firstName: input.firstName,
+          lastName: input.lastName,
+          workCategoryId: input.workCategoryId ? input.workCategoryId : null
+        }
+      })
+    ]);
+
+    await new XPService().award(
+      user.id,
+      XPTransactionType.COMPLETE_PROFILE,
+      "UserProfile",
+      profile.id,
+      "تکمیل تنظیمات پروفایل"
+    );
+    revalidatePath("/me");
+    revalidatePath("/me/settings");
+    revalidatePath("/");
+    revalidatePath("/members");
+    return { ok: true as const };
+  } catch (error) {
+    unstable_rethrow(error);
+    return { ok: false as const };
+  }
 }
 
 export async function submitEventFeedbackAction(formData: FormData) {

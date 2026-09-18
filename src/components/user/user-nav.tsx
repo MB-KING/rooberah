@@ -1,13 +1,18 @@
 "use client";
 
-import { CalendarDays, Home, UserRound, UsersRound } from "lucide-react";
+import { CalendarDays, Home, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { miniAppWidthClass } from "@/components/user/mini-app";
 
 const items = [
-  { href: "/", label: "خانه", Icon: Home, match: ["/"] },
+  {
+    href: "/",
+    label: "خانه",
+    Icon: Home,
+    match: ["/", "/me", "/notifications", "/community"]
+  },
   {
     href: "/events",
     label: "برنامه‌ها",
@@ -19,12 +24,6 @@ const items = [
     label: "همراهان",
     Icon: UsersRound,
     match: ["/members", "/leaderboard"]
-  },
-  {
-    href: "/me",
-    label: "پروفایل",
-    Icon: UserRound,
-    match: ["/me", "/notifications", "/community"]
   }
 ] as const;
 
@@ -48,7 +47,7 @@ export function UserNav() {
         miniAppWidthClass
       )}
     >
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         {items.map(({ href, label, Icon, match }) => {
           const active = isActive(pathname, match);
 

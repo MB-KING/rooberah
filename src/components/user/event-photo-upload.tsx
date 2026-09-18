@@ -74,8 +74,8 @@ export function EventPhotoUploadForm({
         </p>
       ) : null}
       <p className="text-sm leading-7 text-slate-400">
-        تا {remaining.toLocaleString("fa-IR")} عکس دیگر می‌توانی بفرستی. عکس
-        تأییدشده امتیاز می‌گیرد.
+        تا {remaining.toLocaleString("fa-IR")} عکس دیگر می‌توانی بفرستی. دو
+        عکس تأییدشده اول امتیاز می‌گیرند.
       </p>
       <label className="grid gap-2 text-sm font-bold text-slate-200">
         عکس برنامه

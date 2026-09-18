@@ -1,7 +1,8 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
+import { useDialogFocus } from "@/components/user/use-dialog-focus";
 
 export function PhotoLightbox({
   src,
@@ -15,20 +16,8 @@ export function PhotoLightbox({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = previous;
-    };
-  }, [open]);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogFocus(open, dialogRef, () => setOpen(false));
 
   return (
     <>
@@ -40,7 +29,14 @@ export function PhotoLightbox({
         {children}
       </button>
       {open ? (
-        <div className="fixed inset-0 z-[80] bg-black/95 animate-fade-in">
+        <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={alt}
+          tabIndex={-1}
+          className="fixed inset-0 z-[80] bg-black/95 animate-fade-in outline-none"
+        >
           <button
             type="button"
             onClick={() => setOpen(false)}

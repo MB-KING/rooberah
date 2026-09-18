@@ -14,6 +14,16 @@ describe("resolveRegistrationStatus", () => {
     ).toBe(RegistrationStatus.REGISTERED);
   });
 
+  it("registers without limit when capacity is unlimited", () => {
+    expect(
+      resolveRegistrationStatus({
+        eventStatus: EventStatus.PUBLISHED,
+        capacity: null,
+        registeredCount: 240
+      })
+    ).toBe(RegistrationStatus.REGISTERED);
+  });
+
   it("waitlists when capacity is full", () => {
     expect(
       resolveRegistrationStatus({

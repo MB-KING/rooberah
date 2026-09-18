@@ -21,6 +21,7 @@ type PrivacyUser = {
     showWorkCategory?: boolean;
     workStatus?: string | null;
     showWorkStatus?: boolean;
+    birthDate?: Date | string | null;
   } | null;
   workCategory?: { id: string; name: string } | null;
 };
@@ -65,6 +66,7 @@ export function getPublicMemberView(
         : null,
     workStatus:
       showWorkStatus && profile?.workStatus ? profile.workStatus : null,
+    birthDate: profile?.birthDate ? new Date(profile.birthDate) : null,
     xp: options?.includeXp ? (user.xp ?? 0) : null,
     attendanceCount:
       showAttendance && options?.attendanceCount != null

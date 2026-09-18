@@ -1,26 +1,25 @@
 import { BadgeType, PrismaClient, Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { ROLE_BADGES } from "@/shared/role-badges";
+import { RETIRED_ROLE_BADGE_SLUGS, ROLE_BADGE } from "@/shared/role-badges";
 
 export class BadgeService {
   constructor(private readonly db: PrismaClient = prisma) {}
 
   async syncCommunityRoleBadges(communityId: string) {
-    const [host, lead, users] = await Promise.all([
-      this.ensureRoleBadge(communityId, ROLE_BADGES.host),
-      this.ensureRoleBadge(communityId, ROLE_BADGES.lead),
+    const [lead, users] = await Promise.all([
+      this.ensureRoleBadge(communityId, ROLE_BADGE),
       this.db.user.findMany({
         where: { communityId, deletedAt: null },
         select: { id: true, roles: { select: { role: true } } }
-      })
+      }),
+      this.retireHostBadge(communityId)
     ]);
 
     for (const user of users) {
       const roles = user.roles.map((item) => item.role);
-      const isSuper = roles.includes(Role.SUPER_ADMIN);
-      const isHost = isSuper || roles.includes(Role.ADMIN);
-      await this.setRoleBadge(user.id, host.id, isHost);
-      await this.setRoleBadge(user.id, lead.id, isSuper);
+      const isLead =
+        roles.includes(Role.SUPER_ADMIN) || roles.includes(Role.ADMIN);
+      await this.setRoleBadge(user.id, lead.id, isLead);
     }
   }
 
@@ -33,15 +32,28 @@ export class BadgeService {
       }
     });
     if (!user) return;
-    const [host, lead] = await Promise.all([
-      this.ensureRoleBadge(user.communityId, ROLE_BADGES.host),
-      this.ensureRoleBadge(user.communityId, ROLE_BADGES.lead)
+    const [lead] = await Promise.all([
+      this.ensureRoleBadge(user.communityId, ROLE_BADGE),
+      this.retireHostBadge(user.communityId)
     ]);
     const roles = user.roles.map((item) => item.role);
-    const isSuper = roles.includes(Role.SUPER_ADMIN);
-    const isHost = isSuper || roles.includes(Role.ADMIN);
-    await this.setRoleBadge(userId, host.id, isHost);
-    await this.setRoleBadge(userId, lead.id, isSuper);
+    const isLead =
+      roles.includes(Role.SUPER_ADMIN) || roles.includes(Role.ADMIN);
+    await this.setRoleBadge(userId, lead.id, isLead);
+  }
+
+  private async retireHostBadge(communityId: string) {
+    const retired = await this.db.badge.findMany({
+      where: {
+        communityId,
+        slug: { in: [...RETIRED_ROLE_BADGE_SLUGS] }
+      },
+      select: { id: true }
+    });
+    if (retired.length === 0) return;
+    const ids = retired.map((item) => item.id);
+    await this.db.userBadge.deleteMany({ where: { badgeId: { in: ids } } });
+    await this.db.badge.deleteMany({ where: { id: { in: ids } } });
   }
 
   private async ensureRoleBadge(

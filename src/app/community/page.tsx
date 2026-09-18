@@ -29,7 +29,7 @@ export default async function CommunityResourcesPage() {
       <UserPageHeader
         title="گروه و کانال"
         subtitle={`گروه‌ها و کانال‌های رسمی ${APP_NAME}.`}
-        backFallbackHref="/me"
+        backFallbackHref="/"
       />
       <div className="grid gap-3">
         {resources.length === 0 ? (
