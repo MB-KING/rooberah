@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
     }
   },
   images: {
+    unoptimized: true,
     localPatterns: [{ pathname: "/brand/**" }],
     remotePatterns: [
       { protocol: "https", hostname: "t.me" },

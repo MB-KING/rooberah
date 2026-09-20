@@ -23,6 +23,7 @@ export function BrandMark({
         sizes={`${size}px`}
         className="object-cover"
         priority={priority}
+        unoptimized
       />
     </div>
   );
