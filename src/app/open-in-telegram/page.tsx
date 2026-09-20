@@ -53,7 +53,7 @@ export default async function OpenInTelegramPage({
           className={`${secondaryActionClass} mt-6`}
         >
           <Send size={17} aria-hidden="true" />
-          باز کردن ربات @{username ?? "HamMasirClubBot"}
+          باز کردن ربات @{username}
         </a>
         <Link
           href="/"

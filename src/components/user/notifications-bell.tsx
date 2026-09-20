@@ -5,11 +5,13 @@ import { getOptionalCurrentUser } from "@/modules/auth/session";
 
 export async function NotificationsBell() {
   const user = await getOptionalCurrentUser();
-  const unreadCount = user
-    ? await prisma.notification.count({
-        where: { userId: user.id, readAt: null }
-      })
-    : 0;
+  if (!user) {
+    return null;
+  }
+
+  const unreadCount = await prisma.notification.count({
+    where: { userId: user.id, readAt: null }
+  });
 
   return (
     <Link

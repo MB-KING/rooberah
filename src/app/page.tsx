@@ -1,4 +1,4 @@
-import { Role, BadgeType } from "@prisma/client";
+import { Role, BadgeType, EventStatus } from "@prisma/client";
 import {
   Award,
   ChevronLeft,
@@ -11,6 +11,7 @@ import {
 import type { Route } from "next";
 import Link from "next/link";
 import { BrandMark } from "@/components/brand/brand-mark";
+import { GuestHome } from "@/components/user/guest-home";
 import { NotificationsBell } from "@/components/user/notifications-bell";
 import { UserAvatar } from "@/components/user/user-avatar";
 import { ProfileProgressCard } from "@/components/user/profile-progress";
@@ -56,6 +57,25 @@ export default async function Home({
   const canOpenAdmin = currentUser
     ? hasAnyRole(currentUser, [Role.ADMIN, Role.SUPER_ADMIN])
     : false;
+
+  const upcomingEvents = currentUser
+    ? []
+    : await prisma.event.findMany({
+        where: {
+          status: {
+            in: [EventStatus.PUBLISHED, EventStatus.REGISTRATION_CLOSED]
+          },
+          deletedAt: null,
+          date: { gte: new Date(Date.now() - 12 * 60 * 60 * 1000) }
+        },
+        orderBy: { date: "asc" },
+        take: 3,
+        include: {
+          _count: {
+            select: { registrations: { where: { status: "REGISTERED" } } }
+          }
+        }
+      });
 
   const [user, badges] = currentUser
     ? await Promise.all([
@@ -352,7 +372,9 @@ export default async function Home({
             )}
           </UserCard>
         </>
-      ) : null}
+      ) : (
+        <GuestHome upcoming={upcomingEvents} />
+      )}
 
       <p className="mt-8 text-center">
         <Link
