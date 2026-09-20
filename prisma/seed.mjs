@@ -93,7 +93,7 @@ async function main() {
         orderBy: { joinedAt: "asc" }
       });
 
-  if (!superAdmin) {
+  if (allowDemoUsers && !superAdmin) {
     throw new Error("No admin user found; seed demo users only run outside production.");
   }
 
