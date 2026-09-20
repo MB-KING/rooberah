@@ -174,7 +174,7 @@ async function main() {
     });
   }
 
-  if (!allowDemoUsers || !sampleUser) {
+  if (!allowDemoUsers || !sampleUser || !superAdmin) {
     console.log({ community: community.slug, skippedDemo: true });
     return;
   }
