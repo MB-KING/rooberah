@@ -68,8 +68,8 @@ export function GuestHome({ upcoming }: { upcoming: GuestEvent[] }) {
         {upcoming.length === 0 ? (
           <UserCard>
             <p className="text-sm leading-7 text-slate-400">
-              فعلاً برنامهٔ بازی برای نمایش نیست. وارد شو تا وقتی برنامه جدید
-              آمد خبرت کنیم.
+              فعلاً برنامه‌ای برای نمایش نیست. وارد شو تا وقتی برنامه جدید آمد
+              خبرت کنیم.
             </p>
           </UserCard>
         ) : (
