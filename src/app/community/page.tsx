@@ -23,6 +23,7 @@ export default async function CommunityResourcesPage() {
         orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }]
       })
     : [];
+  const gateOn = community?.requireTelegramMembership ?? false;
 
   return (
     <UserPageShell>
@@ -62,6 +63,9 @@ export default async function CommunityResourcesPage() {
                   </div>
                   <p className="mt-1 text-xs font-bold text-ember">
                     {resource.type === "CHANNEL" ? "کانال" : "گروه"}
+                    {gateOn && resource.requiredForAccess
+                      ? " · لازم برای ثبت‌نام"
+                      : ""}
                   </p>
                   {resource.description ? (
                     <p className="mt-2 text-sm leading-6 text-slate-300">

@@ -139,8 +139,9 @@ model Community {
   slug                  String             @unique
   tagline               String?
   isActive              Boolean            @default(true)
-  leaderboardEnabled    Boolean            @default(true)
-  autoAnnounceEnabled   Boolean            @default(false)
+  leaderboardEnabled         Boolean            @default(true)
+  autoAnnounceEnabled        Boolean            @default(false)
+  requireTelegramMembership  Boolean            @default(false)
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
   users                 User[]
@@ -602,6 +603,7 @@ model TelegramResource {
   isActive             Boolean              @default(true)
   sortOrder            Int                  @default(0)
   receiveAnnouncements Boolean              @default(false)
+  requiredForAccess    Boolean              @default(true)
   createdAt            DateTime             @default(now())
   updatedAt            DateTime             @updatedAt
   community            Community            @relation(fields: [communityId], references: [id])

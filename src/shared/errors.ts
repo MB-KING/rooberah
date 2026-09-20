@@ -5,6 +5,7 @@ export type ErrorCode =
   | "EVENT_NOT_FOUND"
   | "ALREADY_REGISTERED"
   | "REGISTRATION_CLOSED"
+  | "MEMBERSHIP_REQUIRED"
   | "REGISTRATION_NOT_FOUND"
   | "ATTENDANCE_ALREADY_VERIFIED"
   | "NOT_ELIGIBLE_FOR_REWARD"
@@ -31,6 +32,7 @@ export const errorMessagesFa: Record<ErrorCode, string> = {
   EVENT_NOT_FOUND: "این برنامه پیدا نشد.",
   ALREADY_REGISTERED: "قبلا برای این برنامه ثبت‌نام کرده‌ای.",
   REGISTRATION_CLOSED: "ثبت‌نام این برنامه بسته شده است.",
+  MEMBERSHIP_REQUIRED: "اول باید عضو کانال و گروه رسمی بشوی تا بتوانی ثبت‌نام کنی.",
   REGISTRATION_NOT_FOUND: "ثبت‌نام فعالی برای این برنامه پیدا نشد.",
   ATTENDANCE_ALREADY_VERIFIED: "حضور این عضو قبلا بررسی شده است.",
   NOT_ELIGIBLE_FOR_REWARD: "هنوز شرایط دریافت این مزیت را نداری.",

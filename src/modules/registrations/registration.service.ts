@@ -5,6 +5,7 @@ import { RegistrationRepository } from "@/modules/registrations/registration.rep
 import { AppError } from "@/shared/errors";
 import { resolveRegistrationStatus } from "@/modules/registrations/registration.policy";
 import { notifyUser } from "@/modules/activity/activity.service";
+import { assertRequiredTelegramMembership } from "@/modules/telegram/membership-gate";
 import {
   registrationCancelledCopy,
   registrationConfirmedCopy,
@@ -24,6 +25,19 @@ async function lockEvent(
 
 export class RegistrationService {
   async register(userId: string, eventId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId, deletedAt: null },
+      select: { id: true, communityId: true, telegramId: true }
+    });
+    if (!user) {
+      throw new AppError("UNAUTHORIZED", "User not found", 401);
+    }
+    await assertRequiredTelegramMembership({
+      communityId: user.communityId,
+      userId: user.id,
+      telegramId: user.telegramId
+    });
+
     const registration = await prisma.$transaction(async (tx) => {
       await lockEvent(tx, eventId);
 

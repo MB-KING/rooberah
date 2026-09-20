@@ -821,6 +821,7 @@ export async function upsertTelegramResourceAction(formData: FormData) {
     sortOrder: z.coerce.number().int().parse(formData.get("sortOrder") ?? 0),
     isActive: formData.get("isActive") === "on",
     receiveAnnouncements: formData.get("receiveAnnouncements") === "on",
+    requiredForAccess: formData.get("requiredForAccess") === "on",
     telegramChatId: (() => {
       const raw = String(formData.get("telegramChatId") ?? "").trim();
       return raw ? BigInt(raw) : null;
@@ -834,6 +835,28 @@ export async function upsertTelegramResourceAction(formData: FormData) {
     });
   }
   revalidatePath("/admin/telegram");
+  revalidatePath("/community");
+  revalidatePath("/");
+}
+
+export async function updateMembershipGateAction(formData: FormData) {
+  const admin = await requireSuperAdminPage();
+  const requireTelegramMembership =
+    formData.get("requireTelegramMembership") === "on";
+  await prisma.community.update({
+    where: { id: admin.communityId },
+    data: { requireTelegramMembership }
+  });
+  await logActivity({
+    actorUserId: admin.id,
+    action: "COMMUNITY_UPDATED",
+    entityType: "Community",
+    entityId: admin.communityId,
+    metadata: { requireTelegramMembership }
+  });
+  revalidatePath("/admin/telegram");
+  revalidatePath("/");
+  revalidatePath("/events");
   revalidatePath("/community");
 }
 

@@ -33,6 +33,8 @@ import { BadgeService } from "@/modules/gamification/badge.service";
 import { getOptionalCurrentUser } from "@/modules/auth/session";
 import { formatAppVersion } from "@/shared/app-version";
 import { APP_NAME, APP_SLOGAN } from "@/shared/brand";
+import { MembershipGateAlert } from "@/components/user/membership-gate-alert";
+import { getMissingRequiredMemberships } from "@/modules/telegram/membership-gate";
 
 export const dynamic = "force-dynamic";
 
@@ -124,6 +126,13 @@ export default async function Home({
     .map((item) => item.trim())
     .filter(Boolean);
   const profileProgress = user ? getProfileProgress(user) : null;
+  const missingMemberships = currentUser
+    ? await getMissingRequiredMemberships({
+        communityId: currentUser.communityId,
+        userId: currentUser.id,
+        telegramId: currentUser.telegramId
+      })
+    : [];
   const earnedBadgeIds = new Set(user?.badges.map((item) => item.badgeId) ?? []);
   const nextBadges = badges
     .filter((badge) => !earnedBadgeIds.has(badge.id))
@@ -182,6 +191,8 @@ export default async function Home({
           <p className="text-sm font-bold text-ember">پروفایل ذخیره شد.</p>
         </UserCard>
       ) : null}
+
+      {user ? <MembershipGateAlert missing={missingMemberships} /> : null}
 
       {user ? (
         <>

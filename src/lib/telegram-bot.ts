@@ -378,3 +378,37 @@ export async function savePreparedInlinePhoto(input: {
   });
   return { id: result.id, expirationDate: result.expiration_date };
 }
+
+export type TelegramChatMemberLookup =
+  | { kind: "status"; status: string }
+  | { kind: "not_member" }
+  | { kind: "unverifiable"; reason: string };
+
+export async function lookupTelegramChatMember(
+  chatId: bigint | number | string,
+  telegramUserId: bigint | number
+): Promise<TelegramChatMemberLookup> {
+  const response = await fetch(`${apiBase}/getChatMember`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: String(chatId),
+      user_id: Number(telegramUserId.toString())
+    }),
+    cache: "no-store"
+  });
+  const payload = (await response.json()) as {
+    ok: boolean;
+    description?: string;
+    result?: { status?: string };
+  };
+  if (payload.ok && payload.result?.status) {
+    return { kind: "status", status: payload.result.status };
+  }
+
+  const description = payload.description ?? "unknown";
+  if (/user not found|PARTICIPANT_ID_INVALID|USER_ID_INVALID/i.test(description)) {
+    return { kind: "not_member" };
+  }
+  return { kind: "unverifiable", reason: description };
+}

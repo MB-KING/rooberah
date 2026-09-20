@@ -38,13 +38,23 @@ export function EventActions({
   eventId,
   registrationStatus,
   requiresLogin = false,
-  autoRegister = false
+  autoRegister = false,
+  membershipBlocked = false
 }: {
   eventId: string;
   registrationStatus?: RegistrationStatus | null;
   requiresLogin?: boolean;
   autoRegister?: boolean;
+  membershipBlocked?: boolean;
 }) {
+  if (membershipBlocked) {
+    return (
+      <p className="text-center text-sm font-bold leading-6 text-ember">
+        اول عضو کانال و گروه شو، بعد ثبت‌نام کن.
+      </p>
+    );
+  }
+
   if (autoRegister) {
     return <AutoRegisterAfterLogin eventId={eventId} />;
   }

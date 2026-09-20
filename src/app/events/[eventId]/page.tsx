@@ -36,6 +36,8 @@ import { mediaPublicPath } from "@/modules/media/media.service";
 import { APP_NAME } from "@/shared/brand";
 import { MEETING_TIME_LABEL, START_TIME_LABEL } from "@/shared/copy";
 import { errorMessagesFa, type ErrorCode } from "@/shared/errors";
+import { MembershipGateAlert } from "@/components/user/membership-gate-alert";
+import { getMissingRequiredMemberships } from "@/modules/telegram/membership-gate";
 import {
   eventStatusLabels,
   labelOf,
@@ -215,6 +217,14 @@ export default async function EventDetailsPage({
   const canContribute =
     event.status === "COMPLETED" && attendance?.status === "PRESENT";
   const isCompleted = event.status === "COMPLETED";
+  const missingMemberships = user
+    ? await getMissingRequiredMemberships({
+        communityId: user.communityId,
+        userId: user.id,
+        telegramId: user.telegramId
+      })
+    : [];
+  const membershipBlocked = missingMemberships.length > 0;
 
   return (
     <UserPageShell
@@ -238,6 +248,10 @@ export default async function EventDetailsPage({
           </p>
         </UserCard>
       ) : null}
+      <MembershipGateAlert
+        missing={missingMemberships}
+        refreshHref={`/events/${event.id}`}
+      />
       {ok === "registered" ? (
         <UserCard className="mb-4 border-emerald-400/30 bg-emerald-500/10">
           <p className="text-sm font-bold text-emerald-200">
@@ -516,8 +530,12 @@ export default async function EventDetailsPage({
               eventId={event.id}
               registrationStatus={registrationStatus}
               requiresLogin={!user}
+              membershipBlocked={membershipBlocked}
               autoRegister={Boolean(
-                user && register === "1" && !registrationStatus
+                user &&
+                  register === "1" &&
+                  !registrationStatus &&
+                  !membershipBlocked
               )}
             />
           </div>

@@ -1,5 +1,6 @@
 import {
   deleteTelegramResourceAction,
+  updateMembershipGateAction,
   upsertTelegramResourceAction
 } from "@/app/admin/actions";
 import { AdminCard, PageTitle } from "@/components/admin/admin-card";
@@ -10,10 +11,16 @@ import { requireSuperAdminPage } from "@/modules/auth/admin-session";
 
 export default async function AdminTelegramPage() {
   const admin = await requireSuperAdminPage();
-  const resources = await prisma.telegramResource.findMany({
-    where: { communityId: admin.communityId },
-    orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }]
-  });
+  const [community, resources] = await Promise.all([
+    prisma.community.findUnique({
+      where: { id: admin.communityId },
+      select: { requireTelegramMembership: true }
+    }),
+    prisma.telegramResource.findMany({
+      where: { communityId: admin.communityId },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }]
+    })
+  ]);
 
   return (
     <>
@@ -21,6 +28,28 @@ export default async function AdminTelegramPage() {
         title="گروه و کانال تلگرام"
         subtitle="منابع رسمی و تنظیم اعلان انتشار برنامه."
       />
+      <AdminCard className="mb-5">
+        <h2 className="mb-2 font-black text-white">عضویت اجباری</h2>
+        <p className="mb-3 text-xs leading-6 text-slate-400">
+          اگر روشن باشد، کسی که عضو کانال و گروه‌های اجباری نباشد نمی‌تواند در
+          برنامه‌ها ثبت‌نام کند و در صفحه خانه هشدار می‌بیند. ربات باید ادمین
+          همان چت باشد و Chat ID پر شده باشد.
+        </p>
+        <form action={updateMembershipGateAction} className="grid gap-3">
+          <label className="flex items-center gap-2 text-sm font-bold text-slate-200">
+            <input
+              name="requireTelegramMembership"
+              type="checkbox"
+              defaultChecked={community?.requireTelegramMembership ?? false}
+              className="h-4 w-4 accent-[#F39C12]"
+            />
+            حضور در کانال و گروه برای ثبت‌نام اجباری باشد
+          </label>
+          <Button type="submit" className="w-full" pendingLabel="در حال ذخیره…">
+            ذخیره این تنظیم
+          </Button>
+        </form>
+      </AdminCard>
       <AdminCard className="mb-5">
         <h2 className="mb-3 font-black text-white">افزودن منبع</h2>
         <form action={upsertTelegramResourceAction} className="grid gap-3">
@@ -52,6 +81,15 @@ export default async function AdminTelegramPage() {
               className="accent-[#F39C12]"
             />
             دریافت اعلان برنامه جدید
+          </label>
+          <label className="flex items-center gap-2 text-sm font-bold text-slate-200">
+            <input
+              name="requiredForAccess"
+              type="checkbox"
+              defaultChecked
+              className="accent-[#F39C12]"
+            />
+            عضویت برای ثبت‌نام لازم است
           </label>
           <p className="text-xs leading-6 text-slate-400">
             برای ارسال خودکار، Chat ID را پر کن (مثلاً از /addgroup داخل گروه) و
@@ -117,6 +155,15 @@ export default async function AdminTelegramPage() {
                   className="accent-[#F39C12]"
                 />
                 دریافت اعلان
+              </label>
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-200">
+                <input
+                  name="requiredForAccess"
+                  type="checkbox"
+                  defaultChecked={resource.requiredForAccess}
+                  className="accent-[#F39C12]"
+                />
+                عضویت برای ثبت‌نام لازم است
               </label>
               <div className="flex gap-2">
                 <Button
