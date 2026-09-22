@@ -131,20 +131,43 @@ export function botUsername() {
   ).replace(/^@/, "");
 }
 
-/** Deep link that opens the Mini App from groups/channels (url buttons). */
-export function telegramDeepLink(path?: string) {
-  const username = botUsername();
+export function miniAppShortName() {
+  return (
+    process.env.TELEGRAM_MINI_APP_SHORT_NAME ??
+    process.env.NEXT_PUBLIC_TELEGRAM_MINI_APP_SHORT_NAME ??
+    ""
+  )
+    .replace(/^\//, "")
+    .trim();
+}
+
+export function startParamFromPath(path?: string) {
   if (!path || path === "/") {
-    return `https://t.me/${username}?startapp=home`;
+    return "home";
   }
 
   const eventMatch = path.match(/^\/events\/([0-9a-f-]{36})$/i);
   if (eventMatch) {
-    return `https://t.me/${username}?startapp=e_${eventMatch[1]}`;
+    return `e_${eventMatch[1]}`;
   }
 
-  const compact = path.replace(/^\//, "").replace(/\//g, "__").slice(0, 64);
-  return `https://t.me/${username}?startapp=${compact}`;
+  return path.replace(/^\//, "").replace(/\//g, "__").slice(0, 64);
+}
+
+/**
+ * Group/channel URL buttons cannot use web_app.
+ * `?startapp=` on the bot username needs a Main Mini App in BotFather
+ * and otherwise returns BOT_INVALID. Prefer the named Mini App link,
+ * otherwise open the bot with /start so a private web_app button can follow.
+ */
+export function telegramDeepLink(path?: string) {
+  const username = botUsername();
+  const startapp = startParamFromPath(path);
+  const shortName = miniAppShortName();
+  if (shortName) {
+    return `https://t.me/${username}/${shortName}?startapp=${startapp}`;
+  }
+  return `https://t.me/${username}?start=${startapp}`;
 }
 
 export function isPermanentTelegramChatError(reason: string) {

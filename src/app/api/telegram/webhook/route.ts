@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
 import { sendHelpMessage, sendStartMessage } from "@/lib/telegram-bot";
+import { pathFromStartParam } from "@/lib/telegram-format";
 import {
   deactivateTelegramResourceByChatId,
   handleGroupAdminCommand,
@@ -61,11 +62,12 @@ export async function POST(request: Request) {
     if (chatId && isPrivate) {
       if (/^\/help(?:@\w+)?/i.test(text)) {
         await sendHelpMessage(chatId);
-      } else if (
-        /^\/start(?:@\w+)?/i.test(text) ||
-        /^\/app(?:@\w+)?/i.test(text)
-      ) {
+      } else if (/^\/app(?:@\w+)?/i.test(text)) {
         await sendStartMessage(chatId);
+      } else if (/^\/start(?:@\w+)?/i.test(text)) {
+        const payload = text.replace(/^\/start(?:@\w+)?\s*/i, "").trim();
+        const eventPath = payload ? pathFromStartParam(payload) : null;
+        await sendStartMessage(chatId, eventPath);
       }
     }
 

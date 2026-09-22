@@ -1,5 +1,6 @@
 import { config } from "@/lib/config";
 import { APP_NAME } from "@/shared/brand";
+import { notifyButtons } from "@/shared/notify-copy";
 import { logger } from "@/lib/logger";
 import {
   formatHelpMessageHtml,
@@ -129,7 +130,10 @@ export async function setupTelegramBot() {
   return { appUrl: url, webhook: `${url}/api/telegram/webhook` };
 }
 
-export async function sendStartMessage(chatId: number | string | bigint) {
+export async function sendStartMessage(
+  chatId: number | string | bigint,
+  eventPath?: string | null
+) {
   const id = chatId.toString();
   return callTelegram<TelegramMessage>("sendMessage", {
     chat_id: id,
@@ -138,7 +142,8 @@ export async function sendStartMessage(chatId: number | string | bigint) {
     disable_web_page_preview: true,
     reply_markup: buildAppKeyboard({
       chatId: id,
-      buttonText: `باز کردن ${APP_NAME}`
+      eventPath: eventPath || undefined,
+      buttonText: eventPath ? notifyButtons.signup : `باز کردن ${APP_NAME}`
     })
   });
 }
@@ -223,6 +228,31 @@ export async function sendTelegramMessage(input: {
   } catch (error) {
     const reason = error instanceof Error ? error.message : "unknown";
     logger.warn("telegram_send_failed", { chatId, reason });
+    return { ok: false, reason };
+  }
+}
+
+export async function editTelegramReplyMarkup(input: {
+  chatId: number | string | bigint;
+  messageId: number;
+  eventPath?: string;
+  buttonText?: string;
+}): Promise<TelegramSendResult> {
+  const chatId = input.chatId.toString();
+  try {
+    await callTelegram("editMessageReplyMarkup", {
+      chat_id: chatId,
+      message_id: input.messageId,
+      reply_markup: buildAppKeyboard({
+        chatId,
+        eventPath: input.eventPath,
+        buttonText: input.buttonText
+      })
+    });
+    return { ok: true, messageId: input.messageId };
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : "unknown";
+    logger.warn("telegram_edit_markup_failed", { chatId, reason });
     return { ok: false, reason };
   }
 }
