@@ -187,6 +187,16 @@ async function sendWithHtmlFallback(input: {
   }
 }
 
+function withThread<T extends Record<string, unknown>>(
+  body: T,
+  threadId?: number | null
+): T {
+  if (threadId && threadId > 0) {
+    return { ...body, message_thread_id: threadId };
+  }
+  return body;
+}
+
 export async function sendTelegramMessage(input: {
   chatId: number | string | bigint;
   text: string;
@@ -194,6 +204,7 @@ export async function sendTelegramMessage(input: {
   eventPath?: string;
   buttonText?: string;
   parseMode?: "HTML";
+  threadId?: number | null;
 }): Promise<TelegramSendResult> {
   const chatId = input.chatId.toString();
   const keyboard = input.openApp
@@ -211,18 +222,27 @@ export async function sendTelegramMessage(input: {
             method: "sendMessage",
             htmlText: input.text,
             textField: "text",
-            body: {
-              chat_id: chatId,
-              disable_web_page_preview: true,
-              reply_markup: keyboard
-            }
+            body: withThread(
+              {
+                chat_id: chatId,
+                disable_web_page_preview: true,
+                reply_markup: keyboard
+              },
+              input.threadId
+            )
           })
-        : await callTelegram<TelegramMessage>("sendMessage", {
-            chat_id: chatId,
-            text: input.text,
-            disable_web_page_preview: true,
-            reply_markup: keyboard
-          });
+        : await callTelegram<TelegramMessage>(
+            "sendMessage",
+            withThread(
+              {
+                chat_id: chatId,
+                text: input.text,
+                disable_web_page_preview: true,
+                reply_markup: keyboard
+              },
+              input.threadId
+            )
+          );
 
     return { ok: true, messageId: result.message_id };
   } catch (error) {
@@ -264,6 +284,7 @@ export async function sendTelegramPhoto(input: {
   openApp?: boolean;
   eventPath?: string;
   buttonText?: string;
+  threadId?: number | null;
 }): Promise<TelegramSendResult> {
   const chatId = input.chatId.toString();
   const keyboard = input.openApp
@@ -282,11 +303,14 @@ export async function sendTelegramPhoto(input: {
       method: "sendPhoto",
       htmlText: caption,
       textField: "caption",
-      body: {
-        chat_id: chatId,
-        photo: input.photoFileId,
-        reply_markup: keyboard
-      }
+      body: withThread(
+        {
+          chat_id: chatId,
+          photo: input.photoFileId,
+          reply_markup: keyboard
+        },
+        input.threadId
+      )
     });
     return { ok: true, messageId: result.message_id };
   } catch (error) {
@@ -299,7 +323,8 @@ export async function sendTelegramPhoto(input: {
       parseMode: "HTML",
       openApp: input.openApp,
       eventPath: input.eventPath,
-      buttonText: input.buttonText
+      buttonText: input.buttonText,
+      threadId: input.threadId
     });
   }
 }
@@ -313,6 +338,7 @@ export async function sendTelegramPhotoBuffer(input: {
   openApp?: boolean;
   eventPath?: string;
   buttonText?: string;
+  threadId?: number | null;
 }): Promise<TelegramSendResult> {
   const chatId = input.chatId.toString();
   const contentType = input.contentType || "image/png";
@@ -332,6 +358,9 @@ export async function sendTelegramPhotoBuffer(input: {
     form.append("caption", text);
     if (html) form.append("parse_mode", "HTML");
     if (keyboard) form.append("reply_markup", JSON.stringify(keyboard));
+    if (input.threadId && input.threadId > 0) {
+      form.append("message_thread_id", String(input.threadId));
+    }
     form.append("photo", photoBlobFromBuffer(input.photo, contentType), filename);
     return form;
   };

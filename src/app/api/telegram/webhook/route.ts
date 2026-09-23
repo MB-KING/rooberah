@@ -13,6 +13,8 @@ type TelegramUpdate = {
     chat?: { id?: number; type?: string; title?: string; username?: string };
     from?: { id?: number; username?: string; first_name?: string };
     text?: string;
+    message_thread_id?: number;
+    is_topic_message?: boolean;
   };
   my_chat_member?: {
     chat?: { id?: number; type?: string };
@@ -45,6 +47,7 @@ export async function POST(request: Request) {
           title: message.chat.title,
           username: message.chat.username
         },
+        threadId: message.is_topic_message ? message.message_thread_id : undefined,
         from: message.from?.id
           ? {
               id: message.from.id,

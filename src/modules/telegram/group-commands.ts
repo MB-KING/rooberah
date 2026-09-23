@@ -64,6 +64,7 @@ export async function deactivateTelegramResourceByChatId(chatId: number) {
 export async function handleGroupAdminCommand(input: {
   text: string;
   chat: Chat;
+  threadId?: number;
   from?: FromUser;
 }) {
   const text = input.text.trim();
@@ -85,7 +86,8 @@ export async function handleGroupAdminCommand(input: {
     await sendTelegramMessage({
       chatId: input.chat.id,
       text: "⚠️ شناسه کاربر مشخص نیست.",
-      parseMode: "HTML"
+      parseMode: "HTML",
+      threadId: input.threadId
     });
     return true;
   }
@@ -95,7 +97,8 @@ export async function handleGroupAdminCommand(input: {
     await sendTelegramMessage({
       chatId: input.chat.id,
       text: `⛔ فقط سوپرادمین ${escapeHtml(APP_NAME)} می‌تواند این دستور را اجرا کند.`,
-      parseMode: "HTML"
+      parseMode: "HTML",
+      threadId: input.threadId
     });
     return true;
   }
@@ -104,7 +107,8 @@ export async function handleGroupAdminCommand(input: {
     await sendTelegramMessage({
       chatId: input.chat.id,
       text: "👥 این دستور را داخل گروه اجرا کن.",
-      parseMode: "HTML"
+      parseMode: "HTML",
+      threadId: input.threadId
     });
     return true;
   }
@@ -125,7 +129,8 @@ export async function handleGroupAdminCommand(input: {
             link: groupLink(input.chat),
             isActive: true,
             type: TelegramResourceType.GROUP,
-            receiveAnnouncements: true
+            receiveAnnouncements: true,
+            telegramThreadId: input.threadId ?? existing.telegramThreadId
           }
         })
       : await prisma.telegramResource.create({
@@ -136,15 +141,20 @@ export async function handleGroupAdminCommand(input: {
             link: groupLink(input.chat),
             type: TelegramResourceType.GROUP,
             telegramChatId: BigInt(input.chat.id),
+            telegramThreadId: input.threadId ?? null,
             isActive: true,
             receiveAnnouncements: true
           }
         });
 
+    const topicNote = resource.telegramThreadId
+      ? `\nاعلان‌ها فقط در تاپیک <code>${resource.telegramThreadId}</code> می‌روند.`
+      : "";
     await sendTelegramMessage({
       chatId: input.chat.id,
-      text: `✅ گروه «<b>${escapeHtml(resource.name)}</b>» در ${escapeHtml(APP_NAME)} ثبت شد.\nاز این به بعد اعلان برنامه‌های جدید همین‌جا می‌آید.`,
-      parseMode: "HTML"
+      text: `✅ گروه «<b>${escapeHtml(resource.name)}</b>» در ${escapeHtml(APP_NAME)} ثبت شد.\nاز این به بعد اعلان برنامه‌های جدید همین‌جا می‌آید.${topicNote}`,
+      parseMode: "HTML",
+      threadId: input.threadId
     });
     return true;
   }
@@ -163,7 +173,8 @@ export async function handleGroupAdminCommand(input: {
         updated.count > 0
           ? `❎ گروه از منابع فعال ${escapeHtml(APP_NAME)} خارج شد. دیگر اعلان خودکار نمی‌آید.`
           : "ℹ️ این گروه در سیستم ثبت نشده بود.",
-      parseMode: "HTML"
+      parseMode: "HTML",
+      threadId: input.threadId
     });
     return true;
   }
@@ -182,10 +193,16 @@ export async function handleGroupAdminCommand(input: {
           "",
           `وضعیت: ${resource.isActive ? "✅ فعال" : "❎ غیرفعال"}`,
           `اعلان خودکار برنامه‌ها: ${resource.receiveAnnouncements ? "🔔 روشن" : "🔕 خاموش"}`,
-          `شناسه چت: <code>${escapeHtml(String(input.chat.id))}</code>`
+          `شناسه چت: <code>${escapeHtml(String(input.chat.id))}</code>`,
+          `شناسه تاپیک: <code>${escapeHtml(String(resource.telegramThreadId ?? input.threadId ?? "—"))}</code>`
         ].join("\n")
-      : `ℹ️ گروه ثبت نشده.\nشناسه چت: <code>${escapeHtml(String(input.chat.id))}</code>`,
-    parseMode: "HTML"
+      : `ℹ️ گروه ثبت نشده.\nشناسه چت: <code>${escapeHtml(String(input.chat.id))}</code>${
+          input.threadId
+            ? `\nشناسه تاپیک: <code>${escapeHtml(String(input.threadId))}</code>`
+            : ""
+        }`,
+    parseMode: "HTML",
+    threadId: input.threadId
   });
   return true;
 }

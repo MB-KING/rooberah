@@ -118,7 +118,8 @@ export async function announcePublishedEvent(
             caption: text,
             openApp: true,
             eventPath: `/events/${event.id}`,
-            buttonText: notifyButtons.signup
+            buttonText: notifyButtons.signup,
+            threadId: resource.telegramThreadId
           })
         : await sendTelegramMessage({
             chatId: resource.telegramChatId,
@@ -126,7 +127,8 @@ export async function announcePublishedEvent(
             parseMode: "HTML",
             openApp: true,
             eventPath: `/events/${event.id}`,
-            buttonText: notifyButtons.signup
+            buttonText: notifyButtons.signup,
+            threadId: resource.telegramThreadId
           });
 
       if (!result.ok) {

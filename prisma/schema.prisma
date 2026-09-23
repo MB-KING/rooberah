@@ -600,6 +600,7 @@ model TelegramResource {
   link                 String
   type                 TelegramResourceType
   telegramChatId       BigInt?
+  telegramThreadId     Int?
   isActive             Boolean              @default(true)
   sortOrder            Int                  @default(0)
   receiveAnnouncements Boolean              @default(false)

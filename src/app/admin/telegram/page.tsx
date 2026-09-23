@@ -68,6 +68,12 @@ export default async function AdminTelegramPage() {
             </select>
           </label>
           <Field name="telegramChatId" label="Chat ID (اختیاری)" placeholder="-100..." />
+          <Field
+            name="telegramThreadId"
+            label="شناسه تاپیک / کتگوری"
+            type="number"
+            placeholder="مثلاً 12"
+          />
           <Field name="sortOrder" label="ترتیب" type="number" defaultValue="0" />
           <label className="flex items-center gap-2 text-sm font-bold text-slate-200">
             <input name="isActive" type="checkbox" defaultChecked className="accent-[#F39C12]" />
@@ -92,8 +98,9 @@ export default async function AdminTelegramPage() {
             عضویت برای ثبت‌نام لازم است
           </label>
           <p className="text-xs leading-6 text-slate-400">
-            برای ارسال خودکار، Chat ID را پر کن (مثلاً از /addgroup داخل گروه) و
-            مطمئن شو ربات ادمین گروه است.
+            برای ارسال خودکار، Chat ID را پر کن. اگر گروه فروم است، داخل همان
+            کتگوری بزن /addgroup یا شناسه تاپیک را اینجا بگذار تا پیام فقط همان‌جا
+            برود. ربات باید ادمین گروه باشد.
           </p>
           <Button type="submit" className="w-full" pendingLabel="در حال ذخیره…">
             ذخیره
@@ -129,6 +136,17 @@ export default async function AdminTelegramPage() {
                 defaultValue={
                   resource.telegramChatId != null
                     ? resource.telegramChatId.toString()
+                    : ""
+                }
+              />
+              <Field
+                name="telegramThreadId"
+                label="شناسه تاپیک / کتگوری"
+                type="number"
+                placeholder="خالی = جنرال"
+                defaultValue={
+                  resource.telegramThreadId != null
+                    ? String(resource.telegramThreadId)
                     : ""
                 }
               />

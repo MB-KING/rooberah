@@ -825,6 +825,12 @@ export async function upsertTelegramResourceAction(formData: FormData) {
     telegramChatId: (() => {
       const raw = String(formData.get("telegramChatId") ?? "").trim();
       return raw ? BigInt(raw) : null;
+    })(),
+    telegramThreadId: (() => {
+      const raw = String(formData.get("telegramThreadId") ?? "").trim();
+      if (!raw) return null;
+      const value = Number(raw);
+      return Number.isInteger(value) && value > 0 ? value : null;
     })()
   };
   if (id) {
