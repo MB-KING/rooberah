@@ -48,6 +48,7 @@ import {
   rewardStatusCopy,
   specialBadgeCopy
 } from "@/shared/notify-copy";
+import { AppError, errorMessagesFa } from "@/shared/errors";
 import { earnStepTypes } from "@/shared/steps";
 
 const optionalPositiveInt = z.preprocess(
@@ -76,6 +77,9 @@ const eventFormSchema = z.object({
 function formErrorMessage(error: unknown) {
   if (error instanceof z.ZodError) {
     return error.issues[0]?.message || "اطلاعات فرم کامل نیست.";
+  }
+  if (error instanceof AppError) {
+    return errorMessagesFa[error.code] || error.message;
   }
   if (
     error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -304,6 +308,29 @@ export async function setEventStatusAction(formData: FormData) {
   if (announceQuery) {
     redirect(`/admin/events?${announceQuery}` as never);
   }
+}
+
+export async function purgeEventAction(formData: FormData) {
+  const admin = await requireEventManagerPage();
+  const eventId = z.string().uuid().parse(formData.get("eventId"));
+  try {
+    await new EventService().purgeEvent(eventId, admin.id);
+  } catch (error) {
+    if (isRedirectError(error)) throw error;
+    logger.warn("purge_event_failed", {
+      eventId,
+      reason: error instanceof Error ? error.message : "unknown"
+    });
+    redirect(
+      `/admin/events?error=${encodeURIComponent(formErrorMessage(error))}` as never
+    );
+  }
+  revalidatePath("/");
+  revalidatePath("/events");
+  revalidatePath("/admin");
+  revalidatePath("/admin/events");
+  revalidatePath(`/events/${eventId}`);
+  redirect("/admin/events?purged=1" as never);
 }
 
 export async function verifyAttendanceAction(formData: FormData) {

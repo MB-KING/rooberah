@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { updateEventAction } from "@/app/admin/actions";
 import { AdminCard, PageTitle } from "@/components/admin/admin-card";
+import { EventDeleteButton } from "@/components/admin/event-delete-button";
 import { EventImageUploadForm } from "@/components/admin/event-image-upload-form";
 import { CapacityField } from "@/components/admin/capacity-field";
 import { LocationMapPicker } from "@/components/admin/location-map-picker";
@@ -172,6 +173,16 @@ export default async function EditEventPage({
             </Button>
           </div>
         </form>
+      </AdminCard>
+      <AdminCard className="mt-4 border-red-400/25">
+        <h2 className="font-black text-red-200">حذف کامل</h2>
+        <p className="mt-2 text-sm leading-7 text-slate-300">
+          برنامه، ثبت‌نام‌ها، حضور، نظرات، عکس‌ها و امتیازهای همین برنامه برای
+          همیشه پاک می‌شوند. برای برنامه‌های تستی از این دکمه استفاده کن.
+        </p>
+        <div className="mt-4">
+          <EventDeleteButton eventId={event.id} />
+        </div>
       </AdminCard>
     </>
   );

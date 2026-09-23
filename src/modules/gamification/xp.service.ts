@@ -182,6 +182,22 @@ export class XPService {
     });
   }
 
+  async revokeMatching(where: Prisma.XPTransactionWhereInput) {
+    return this.db.$transaction(async (tx) => {
+      const rows = await tx.xPTransaction.findMany({
+        where,
+        select: { userId: true }
+      });
+      if (rows.length === 0) return [];
+      await tx.xPTransaction.deleteMany({ where });
+      const userIds = [...new Set(rows.map((row) => row.userId))];
+      for (const userId of userIds) {
+        await this.recalculate(tx, userId);
+      }
+      return userIds;
+    });
+  }
+
   private async recalculate(tx: Tx, userId: string) {
     const totalXP = await tx.xPTransaction.aggregate({
       where: { userId },

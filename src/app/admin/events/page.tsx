@@ -1,6 +1,7 @@
 import { CalendarPlus2, ClipboardCheck, Images, Pencil } from "lucide-react";
 import Link from "next/link";
 import { AdminCard, PageTitle } from "@/components/admin/admin-card";
+import { EventDeleteButton } from "@/components/admin/event-delete-button";
 import { EventStatusActions } from "@/components/admin/event-status-actions";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
@@ -13,7 +14,13 @@ function announceBanner(params: {
   announce?: string;
   sent?: string;
   failed?: string;
+  purged?: string;
+  error?: string;
 }) {
+  if (params.error) return params.error;
+  if (params.purged === "1") {
+    return "برنامه و تمام داده‌های مربوط به آن حذف شد.";
+  }
   if (!params.announce) return null;
   if (params.announce === "sent") {
     const sent = params.sent ?? "1";
@@ -38,7 +45,13 @@ function announceBanner(params: {
 export default async function AdminEventsPage({
   searchParams
 }: {
-  searchParams: Promise<{ announce?: string; sent?: string; failed?: string }>;
+  searchParams: Promise<{
+    announce?: string;
+    sent?: string;
+    failed?: string;
+    purged?: string;
+    error?: string;
+  }>;
 }) {
   await requireEventManagerPage();
   const params = await searchParams;
@@ -71,8 +84,22 @@ export default async function AdminEventsPage({
         }
       />
       {banner ? (
-        <AdminCard className="mb-4 border border-[#F39C12]/35 bg-[#F39C12]/10">
-          <p className="text-sm font-bold leading-7 text-[#FDE68A]">{banner}</p>
+        <AdminCard
+          className={
+            params.error
+              ? "mb-4 border border-red-400/30 bg-red-500/10"
+              : "mb-4 border border-[#F39C12]/35 bg-[#F39C12]/10"
+          }
+        >
+          <p
+            className={
+              params.error
+                ? "text-sm font-bold leading-7 text-red-200"
+                : "text-sm font-bold leading-7 text-[#FDE68A]"
+            }
+          >
+            {banner}
+          </p>
         </AdminCard>
       ) : null}
 
@@ -136,6 +163,9 @@ export default async function AdminEventsPage({
                 </Link>
               </div>
               <EventStatusActions eventId={event.id} status={event.status} />
+              <div className="mt-2">
+                <EventDeleteButton eventId={event.id} />
+              </div>
             </AdminCard>
           ))
         )}
