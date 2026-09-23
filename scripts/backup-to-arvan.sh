@@ -66,10 +66,10 @@ collect() {
   mkdir -p "$dest"
 
   if command -v sudo >/dev/null && id postgres >/dev/null 2>&1; then
-    sudo -u postgres pg_dump -d "$DB_NAME" -F c -f "$dest/database.dump"
+    sudo -u postgres pg_dump -d "$DB_NAME" -F c > "$dest/database.dump"
     sudo -u postgres pg_dump -d "$DB_NAME" | gzip -9 > "$dest/database.sql.gz"
   else
-    pg_dump -d "$DB_NAME" -F c -f "$dest/database.dump"
+    pg_dump -d "$DB_NAME" -F c > "$dest/database.dump"
     pg_dump -d "$DB_NAME" | gzip -9 > "$dest/database.sql.gz"
   fi
 
