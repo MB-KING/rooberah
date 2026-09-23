@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Daily backup of production Postgres + app secrets/config to Arvan Object Storage.
+# Uploads to https://rooberah.s3.ir-thr-at1.arvanstorage.ir/daily/
 # Credentials live only on the VPS: /etc/rooberah/backup.env
 set -euo pipefail
 umask 077
@@ -19,17 +20,15 @@ set +a
 
 S3_BUCKET="${S3_BUCKET:-rooberah}"
 KEEP="${BACKUP_KEEP:-2}"
-ENDPOINT_URL="${S3_ENDPOINT_URL:-https://s3.ir-thr-at1.arvanstorage.ir}"
+ENDPOINT="${S3_ENDPOINT:-s3.ir-thr-at1.arvanstorage.ir}"
+ENDPOINT="${ENDPOINT#https://}"
+ENDPOINT="${ENDPOINT#http://}"
 REGION="${AWS_DEFAULT_REGION:-ir-thr-at1}"
 PREFIX="${S3_PREFIX:-daily}"
 APP_DIR="${APP_DIR:-/opt/rooberah/app}"
 DB_NAME="${DB_NAME:-rooberah}"
 LOG_FILE="${BACKUP_LOG:-/var/log/rooberah-backup.log}"
-
-export AWS_ACCESS_KEY_ID
-export AWS_SECRET_ACCESS_KEY
-export AWS_DEFAULT_REGION="$REGION"
-export AWS_EC2_METADATA_DISABLED=true
+RCLONE_CONF="${RCLONE_CONFIG_FILE:-/etc/rooberah/rclone.conf}"
 
 STAMP="$(TZ=Asia/Tehran date +%Y%m%d-%H%M%S)"
 WORK="$(mktemp -d)"
@@ -40,33 +39,26 @@ log() {
   echo "$(TZ=Asia/Tehran date '+%Y-%m-%d %H:%M:%S') $*" | tee -a "$LOG_FILE"
 }
 
-s3() {
-  aws --endpoint-url "$ENDPOINT_URL" --region "$REGION" \
-    --cli-connect-timeout 30 --cli-read-timeout 120 "$@"
-}
-
-ensure_path_style() {
-  mkdir -p /root/.aws
-  if ! grep -q "addressing_style" /root/.aws/config 2>/dev/null; then
-    cat > /root/.aws/config <<'EOF'
-[default]
-region = ir-thr-at1
-s3 =
-    addressing_style = path
-    signature_version = s3v4
+write_rclone_config() {
+  cat > "$RCLONE_CONF" <<EOF
+[arvan]
+type = s3
+provider = Other
+env_auth = false
+access_key_id = ${AWS_ACCESS_KEY_ID}
+secret_access_key = ${AWS_SECRET_ACCESS_KEY}
+endpoint = ${ENDPOINT}
+region = ${REGION}
+location_constraint = ${REGION}
+acl = private
+force_path_style = true
+disable_http2 = true
 EOF
-    chmod 600 /root/.aws/config
-  fi
+  chmod 600 "$RCLONE_CONF"
 }
 
-ensure_bucket() {
-  if s3 s3api head-bucket --bucket "$S3_BUCKET" >/dev/null 2>&1; then
-    return 0
-  fi
-  if s3 s3api create-bucket --bucket "$S3_BUCKET" --create-bucket-configuration LocationConstraint="$REGION" >/dev/null 2>&1; then
-    return 0
-  fi
-  s3 s3api create-bucket --bucket "$S3_BUCKET" >/dev/null
+remote() {
+  rclone --config "$RCLONE_CONF" "$@"
 }
 
 collect() {
@@ -96,6 +88,7 @@ collect() {
     echo "stamp=$STAMP"
     echo "host=$(hostname -f 2>/dev/null || hostname)"
     echo "app=$APP_DIR"
+    echo "target=https://${S3_BUCKET}.${ENDPOINT}/${PREFIX}/"
     if [[ -d "$APP_DIR/.git" ]]; then
       echo "git=$(git -C "$APP_DIR" log -1 --oneline)"
     fi
@@ -105,8 +98,8 @@ collect() {
 prune() {
   local keys=()
   mapfile -t keys < <(
-    s3 s3 ls "s3://${S3_BUCKET}/${PREFIX}/" \
-      | awk '/rooberah-.*\.tar\.gz$/ { print $4 }' \
+    remote lsf "arvan:${S3_BUCKET}/${PREFIX}/" \
+      | awk '/^rooberah-.*\.tar\.gz$/ { print $1 }' \
       | sort
   )
   local count="${#keys[@]}"
@@ -118,15 +111,14 @@ prune() {
   local i
   for (( i = 0; i < drop; i++ )); do
     log "delete old backup ${keys[$i]}"
-    s3 s3 rm "s3://${S3_BUCKET}/${PREFIX}/${keys[$i]}"
+    remote deletefile "arvan:${S3_BUCKET}/${PREFIX}/${keys[$i]}"
   done
 }
 
 main() {
-  mkdir -p "$(dirname "$LOG_FILE")"
+  mkdir -p "$(dirname "$LOG_FILE")" /etc/rooberah
   log "backup start $STAMP"
-  ensure_path_style
-  ensure_bucket
+  write_rclone_config
 
   local folder="$WORK/rooberah-$STAMP"
   collect "$folder"
@@ -136,8 +128,8 @@ main() {
   local size
   size="$(du -h "$ARCHIVE" | awk '{ print $1 }')"
 
-  s3 s3 cp "$ARCHIVE" "s3://${S3_BUCKET}/${PREFIX}/rooberah-${STAMP}.tar.gz"
-  log "uploaded ${PREFIX}/rooberah-${STAMP}.tar.gz ($size)"
+  remote copyto "$ARCHIVE" "arvan:${S3_BUCKET}/${PREFIX}/rooberah-${STAMP}.tar.gz"
+  log "uploaded https://${S3_BUCKET}.${ENDPOINT}/${PREFIX}/rooberah-${STAMP}.tar.gz ($size)"
   prune
   log "backup done"
 }
