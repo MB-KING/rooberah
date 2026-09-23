@@ -5,6 +5,7 @@ import { RegistrationRepository } from "@/modules/registrations/registration.rep
 import { AppError } from "@/shared/errors";
 import { resolveRegistrationStatus } from "@/modules/registrations/registration.policy";
 import { notifyUser } from "@/modules/activity/activity.service";
+import { refreshEventAnnouncementMessages } from "@/modules/events/announce.service";
 import { assertRequiredTelegramMembership } from "@/modules/telegram/membership-gate";
 import {
   registrationCancelledCopy,
@@ -75,6 +76,7 @@ export class RegistrationService {
       ...registeredCopy,
       eventPath: `/events/${eventId}`
     });
+    await refreshEventAnnouncementMessages(eventId).catch(() => undefined);
 
     return registration.registration;
   }
@@ -133,6 +135,7 @@ export class RegistrationService {
         eventPath: `/events/${eventId}`
       });
     }
+    await refreshEventAnnouncementMessages(eventId).catch(() => undefined);
 
     return result.cancelled;
   }

@@ -1,8 +1,9 @@
-import { EventStatus, Prisma } from "@prisma/client";
+import { EventStatus, Prisma, RegistrationStatus } from "@prisma/client";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import {
   appPublicUrl,
+  editTelegramAnnouncement,
   sendTelegramMessage,
   sendTelegramPhoto
 } from "@/lib/telegram-bot";
@@ -10,7 +11,8 @@ import {
   formatEventAnnounceHtml,
   isPermanentTelegramChatError
 } from "@/lib/telegram-format";
-import { notifyButtons } from "@/shared/notify-copy";
+import { getDisplayName } from "@/shared/privacy";
+import { notifyButtons, TELEGRAM_CAPTION_LIMIT } from "@/shared/notify-copy";
 
 type AnnounceEvent = {
   id: string;
@@ -32,6 +34,120 @@ export type AnnounceSummary = {
   disabled: boolean;
   noTargets: boolean;
 };
+
+async function loadAnnounceEvent(eventId: string) {
+  return prisma.event.findFirst({
+    where: { id: eventId, deletedAt: null },
+    select: {
+      id: true,
+      communityId: true,
+      title: true,
+      eventNumber: true,
+      date: true,
+      meetingTime: true,
+      startTime: true,
+      locationName: true,
+      description: true,
+      status: true
+    }
+  });
+}
+
+async function loadParticipantNames(eventId: string) {
+  const registrations = await prisma.eventRegistration.findMany({
+    where: { eventId, status: RegistrationStatus.REGISTERED },
+    orderBy: { registeredAt: "asc" },
+    select: {
+      user: {
+        select: { firstName: true, lastName: true, username: true }
+      }
+    }
+  });
+  return registrations.map((row) => getDisplayName(row.user));
+}
+
+type AnnounceBody = Pick<
+  AnnounceEvent,
+  | "title"
+  | "eventNumber"
+  | "date"
+  | "meetingTime"
+  | "startTime"
+  | "locationName"
+  | "description"
+>;
+
+function announceText(event: AnnounceBody, participantNames: string[] = []) {
+  return formatEventAnnounceHtml(event, { participantNames });
+}
+
+async function sendAnnounceMessage(input: {
+  chatId: bigint;
+  eventId: string;
+  event: AnnounceBody;
+  text: string;
+  photoFileId: string | null;
+  threadId: number | null;
+}) {
+  const button = {
+    openApp: true as const,
+    eventPath: `/events/${input.eventId}`,
+    buttonText: notifyButtons.signup,
+    threadId: input.threadId
+  };
+
+  if (input.photoFileId && input.text.length <= TELEGRAM_CAPTION_LIMIT) {
+    return sendTelegramPhoto({
+      chatId: input.chatId,
+      photoFileId: input.photoFileId,
+      caption: input.text,
+      ...button
+    });
+  }
+
+  if (input.photoFileId) {
+    await sendTelegramPhoto({
+      chatId: input.chatId,
+      photoFileId: input.photoFileId,
+      caption: announceText(input.event),
+      ...button
+    });
+  }
+
+  return sendTelegramMessage({
+    chatId: input.chatId,
+    text: input.text,
+    parseMode: "HTML",
+    ...button
+  });
+}
+
+async function editOrResendAnnounce(input: {
+  chatId: bigint;
+  messageId: number;
+  eventId: string;
+  text: string;
+  threadId: number | null;
+}) {
+  const edited = await editTelegramAnnouncement({
+    chatId: input.chatId,
+    messageId: input.messageId,
+    text: input.text,
+    eventPath: `/events/${input.eventId}`,
+    buttonText: notifyButtons.signup
+  });
+  if (edited.ok) return edited;
+
+  return sendTelegramMessage({
+    chatId: input.chatId,
+    text: input.text,
+    parseMode: "HTML",
+    openApp: true,
+    eventPath: `/events/${input.eventId}`,
+    buttonText: notifyButtons.signup,
+    threadId: input.threadId
+  });
+}
 
 async function deactivateAnnounceTarget(resourceId: string, reason: string) {
   await prisma.telegramResource.update({
@@ -88,7 +204,8 @@ export async function announcePublishedEvent(
       }
     });
     const photoFileId = cover?.mediaAsset.telegramFileId ?? null;
-    const text = formatEventAnnounceHtml(event);
+    const participantNames = await loadParticipantNames(event.id);
+    const text = announceText(event, participantNames);
 
     for (const resource of resources) {
       if (!resource.telegramChatId) continue;
@@ -105,31 +222,49 @@ export async function announcePublishedEvent(
           error instanceof Prisma.PrismaClientKnownRequestError &&
           error.code === "P2002"
         ) {
+          const existing = await prisma.eventAnnouncement.findUnique({
+            where: {
+              eventId_resourceId: {
+                eventId: event.id,
+                resourceId: resource.id
+              }
+            },
+            select: { telegramMessageId: true }
+          });
+          if (existing?.telegramMessageId) {
+            const edited = await editOrResendAnnounce({
+              chatId: resource.telegramChatId,
+              messageId: Number(existing.telegramMessageId),
+              eventId: event.id,
+              text,
+              threadId: resource.telegramThreadId
+            });
+            if (edited.ok && edited.messageId !== Number(existing.telegramMessageId)) {
+              await prisma.eventAnnouncement.update({
+                where: {
+                  eventId_resourceId: {
+                    eventId: event.id,
+                    resourceId: resource.id
+                  }
+                },
+                data: { telegramMessageId: String(edited.messageId) }
+              });
+            }
+          }
           summary.skipped += 1;
           continue;
         }
         throw error;
       }
 
-      const result = photoFileId
-        ? await sendTelegramPhoto({
-            chatId: resource.telegramChatId,
-            photoFileId,
-            caption: text,
-            openApp: true,
-            eventPath: `/events/${event.id}`,
-            buttonText: notifyButtons.signup,
-            threadId: resource.telegramThreadId
-          })
-        : await sendTelegramMessage({
-            chatId: resource.telegramChatId,
-            text,
-            parseMode: "HTML",
-            openApp: true,
-            eventPath: `/events/${event.id}`,
-            buttonText: notifyButtons.signup,
-            threadId: resource.telegramThreadId
-          });
+      const result = await sendAnnounceMessage({
+        chatId: resource.telegramChatId,
+        eventId: event.id,
+        event,
+        text,
+        photoFileId,
+        threadId: resource.telegramThreadId
+      });
 
       if (!result.ok) {
         summary.failed += 1;
@@ -182,6 +317,55 @@ export async function announcePublishedEvent(
   }
 
   return summary;
+}
+
+export async function refreshEventAnnouncementMessages(eventId: string) {
+  const event = await loadAnnounceEvent(eventId);
+  if (!event || event.status === EventStatus.CANCELLED) return;
+
+  try {
+    const announcements = await prisma.eventAnnouncement.findMany({
+      where: {
+        eventId,
+        telegramMessageId: { not: null },
+        resource: { isActive: true, telegramChatId: { not: null } }
+      },
+      include: {
+        resource: {
+          select: { telegramChatId: true, telegramThreadId: true }
+        }
+      }
+    });
+    if (announcements.length === 0) return;
+
+    const text = announceText(event, await loadParticipantNames(eventId));
+
+    await Promise.all(
+      announcements.map(async (row) => {
+        if (!row.resource.telegramChatId || !row.telegramMessageId) {
+          return;
+        }
+        const edited = await editOrResendAnnounce({
+          chatId: row.resource.telegramChatId,
+          messageId: Number(row.telegramMessageId),
+          eventId: event.id,
+          text,
+          threadId: row.resource.telegramThreadId
+        });
+        if (edited.ok && edited.messageId !== Number(row.telegramMessageId)) {
+          await prisma.eventAnnouncement.update({
+            where: { id: row.id },
+            data: { telegramMessageId: String(edited.messageId) }
+          });
+        }
+      })
+    );
+  } catch (error) {
+    logger.warn("event_announce_refresh_failed", {
+      eventId,
+      reason: error instanceof Error ? error.message : "unknown"
+    });
+  }
 }
 
 export function announceFlashQuery(summary: AnnounceSummary): string | null {

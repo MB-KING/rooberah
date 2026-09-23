@@ -163,7 +163,7 @@ export async function sendHelpMessage(chatId: number | string | bigint) {
 }
 
 async function sendWithHtmlFallback(input: {
-  method: "sendMessage" | "sendPhoto";
+  method: "sendMessage" | "sendPhoto" | "editMessageText" | "editMessageCaption";
   body: Record<string, unknown>;
   htmlText: string;
   textField: "text" | "caption";
@@ -248,6 +248,64 @@ export async function sendTelegramMessage(input: {
   } catch (error) {
     const reason = error instanceof Error ? error.message : "unknown";
     logger.warn("telegram_send_failed", { chatId, reason });
+    return { ok: false, reason };
+  }
+}
+
+export async function editTelegramAnnouncement(input: {
+  chatId: number | string | bigint;
+  messageId: number;
+  text: string;
+  eventPath?: string;
+  buttonText?: string;
+}): Promise<TelegramSendResult> {
+  const chatId = input.chatId.toString();
+  const keyboard = buildAppKeyboard({
+    chatId,
+    eventPath: input.eventPath,
+    buttonText: input.buttonText
+  });
+  const shared = {
+    chat_id: chatId,
+    message_id: input.messageId,
+    reply_markup: keyboard
+  };
+
+  if (input.text.length <= 1024) {
+    try {
+      await sendWithHtmlFallback({
+        method: "editMessageCaption",
+        htmlText: input.text,
+        textField: "caption",
+        body: shared
+      });
+      return { ok: true, messageId: input.messageId };
+    } catch (captionError) {
+      const captionReason =
+        captionError instanceof Error ? captionError.message : "unknown";
+      if (/message is not modified/i.test(captionReason)) {
+        return { ok: true, messageId: input.messageId };
+      }
+    }
+  }
+
+  try {
+    await sendWithHtmlFallback({
+      method: "editMessageText",
+      htmlText: input.text.slice(0, 4096),
+      textField: "text",
+      body: {
+        ...shared,
+        disable_web_page_preview: true
+      }
+    });
+    return { ok: true, messageId: input.messageId };
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : "unknown";
+    if (/message is not modified/i.test(reason)) {
+      return { ok: true, messageId: input.messageId };
+    }
+    logger.warn("telegram_edit_announce_failed", { chatId, reason });
     return { ok: false, reason };
   }
 }

@@ -116,8 +116,36 @@ describe("telegram html formatters", () => {
     expect(html).toContain(MEETING_TIME_LABEL);
     expect(html).toContain("ساعت شروع مسیر");
     expect(html).toContain("<b>");
+    expect(html).not.toContain("شرکت کننده ها:");
     expect(html.length).toBeLessThanOrEqual(TELEGRAM_CAPTION_LIMIT);
     expect(html).not.toMatch(/<b>[^<]*$/);
+  });
+
+  it("appends numbered participant names at the end", () => {
+    const html = formatEventAnnounceHtml(event, {
+      participantNames: ["سارا حی", "فاطیما بستانی", "ترانه"]
+    });
+    expect(html).toContain("شرکت کننده ها:");
+    expect(html).toContain("۱. سارا حی");
+    expect(html).toContain("۲. فاطیما بستانی");
+    expect(html).toContain("۳. ترانه");
+    expect(html.indexOf("شرکت کننده ها:")).toBeGreaterThan(
+      html.indexOf("برای جزئیات و ثبت‌نام")
+    );
+  });
+
+  it("writes every participant name instead of summarizing the rest", () => {
+    const names = [
+      "علی <تست>",
+      ...Array.from({ length: 80 }, (_, index) => `همراه ${index + 2}`)
+    ];
+    const html = formatEventAnnounceHtml(event, { participantNames: names });
+    expect(html).toContain("۱. علی &lt;تست&gt;");
+    expect(html).not.toContain("<تست>");
+    expect(html).not.toContain("نفر دیگر");
+    expect(html).toContain("۸۱. همراه 81");
+    expect(html.length).toBeGreaterThan(TELEGRAM_CAPTION_LIMIT);
+    expect(html.length).toBeLessThanOrEqual(TELEGRAM_MESSAGE_LIMIT);
   });
 
   it("escapes html in notification bodies", () => {

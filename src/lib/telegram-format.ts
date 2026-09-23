@@ -1,10 +1,6 @@
 import { APP_NAME } from "@/shared/brand";
 import { MEETING_TIME_LABEL, START_TIME_LABEL } from "@/shared/copy";
-import {
-  helpMessageLines,
-  startMessageLines,
-  TELEGRAM_CAPTION_LIMIT
-} from "@/shared/notify-copy";
+import { helpMessageLines, startMessageLines } from "@/shared/notify-copy";
 
 /** Client-safe Telegram text helpers (no server secrets). */
 
@@ -83,15 +79,34 @@ function truncatePlain(text: string, max: number) {
   return `${trimmed.slice(0, Math.max(0, max - 1)).trimEnd()}…`;
 }
 
-export function formatEventAnnounceHtml(event: {
-  title: string;
-  eventNumber: number;
-  date: Date;
-  meetingTime: Date;
-  startTime: Date;
-  locationName: string;
-  description?: string | null;
-}) {
+function formatFaDigits(value: number) {
+  return String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
+}
+
+function participantLine(index: number, name: string) {
+  return `${formatFaDigits(index + 1)}. ${escapeHtml(truncatePlain(name, 40))}`;
+}
+
+function withParticipantFooter(body: string, names: string[]) {
+  if (names.length === 0) return body;
+  const lines = names.map((name, index) => participantLine(index, name));
+  return `${body}\n\nشرکت کننده ها:\n${lines.join("\n")}`;
+}
+
+export function formatEventAnnounceHtml(
+  event: {
+    title: string;
+    eventNumber: number;
+    date: Date;
+    meetingTime: Date;
+    startTime: Date;
+    locationName: string;
+    description?: string | null;
+  },
+  options?: {
+    participantNames?: string[];
+  }
+) {
   const lines = [
     `<b>برنامه جدید ${escapeHtml(APP_NAME)}</b>`,
     "────────────",
@@ -110,7 +125,7 @@ export function formatEventAnnounceHtml(event: {
   }
 
   lines.push("", "برای جزئیات و ثبت‌نام، دکمه زیر را بزن.");
-  return lines.join("\n");
+  return withParticipantFooter(lines.join("\n"), options?.participantNames ?? []);
 }
 
 export function formatStartMessageHtml() {
