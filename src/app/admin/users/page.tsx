@@ -28,6 +28,12 @@ function nameSearch(q: string): Prisma.UserWhereInput | undefined {
   };
 }
 
+function shortName(name: string, max = 18) {
+  const chars = Array.from(name.trim());
+  if (chars.length <= max) return name;
+  return `${chars.slice(0, max - 1).join("")}…`;
+}
+
 function primaryRole(roles: Array<{ role: Role }>) {
   if (roles.some((item) => item.role === Role.SUPER_ADMIN)) {
     return Role.SUPER_ADMIN;
@@ -101,7 +107,7 @@ export default async function AdminUsersPage({
           دسترسی دارد؛ از نقش کاربران تا نشان‌ها و ویرایش کامل.
         </p>
       </details>
-      <div className="grid gap-3">
+      <div className="grid min-w-0 gap-3">
         {users.length === 0 ? (
           <AdminCard>
             <p className="text-sm text-slate-300">
@@ -121,13 +127,13 @@ export default async function AdminUsersPage({
             const phone = formatPhone(user.profile?.phoneNumber);
 
             return (
-              <AdminCard key={user.id} className="p-0">
-                <details className="group">
-                  <summary className="block w-full cursor-pointer list-none overflow-hidden px-4 py-3 [&::-webkit-details-marker]:hidden">
-                    <div className="flex w-full min-w-0 items-start gap-3">
+              <AdminCard key={user.id} className="min-w-0 max-w-full overflow-hidden p-0">
+                <details className="min-w-0 max-w-full">
+                  <summary className="block w-full max-w-full cursor-pointer list-none overflow-hidden px-4 py-3 [&::-webkit-details-marker]:hidden">
+                    <div className="flex w-full min-w-0 max-w-full items-start gap-3">
                       <div className="min-w-0 flex-1 overflow-hidden">
-                        <h2 className="truncate font-black text-white" title={displayName}>
-                          {displayName}
+                        <h2 className="block max-w-full truncate font-black text-white" title={displayName}>
+                          {shortName(displayName)}
                         </h2>
                         <p className="mt-1 truncate text-sm text-slate-400">
                           {labelOf(roleLabels, role)}
