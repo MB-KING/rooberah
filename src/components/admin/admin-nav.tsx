@@ -28,7 +28,7 @@ const primaryItems = [
     Icon: CalendarDays,
     superOnly: false
   },
-  { href: "/admin/users", label: "اعضا", Icon: Users, superOnly: true }
+  { href: "/admin/users", label: "اعضا", Icon: Users, superOnly: false }
 ] as const;
 
 const moreItems = [

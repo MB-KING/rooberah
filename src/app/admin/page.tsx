@@ -9,16 +9,13 @@ import {
 } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
-import { Role } from "@prisma/client";
 import { AdminCard, PageTitle } from "@/components/admin/admin-card";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
-import { hasRole } from "@/modules/auth/authorization";
 import { requireAdminPage } from "@/modules/auth/admin-session";
 
 export default async function AdminDashboardPage() {
-  const admin = await requireAdminPage();
-  const isSuperAdmin = hasRole(admin, Role.SUPER_ADMIN);
+  await requireAdminPage();
 
   const [users, events, registrations, presentAttendance, pendingFeedback, pendingPhotos] =
     await Promise.all([
@@ -48,7 +45,7 @@ export default async function AdminDashboardPage() {
       label: "اعضا",
       value: users,
       Icon: UsersRound,
-      href: isSuperAdmin ? "/admin/users" : null
+      href: "/admin/users"
     },
     {
       label: "برنامه‌ها",

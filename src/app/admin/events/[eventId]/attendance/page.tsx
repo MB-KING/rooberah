@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { faTehranDayFormatter } from "@/lib/tehran-time";
 import { requireEventManagerPage } from "@/modules/auth/admin-session";
 import { attendanceStatusLabels, labelOf, registrationStatusLabels } from "@/shared/labels";
+import { formatPhone } from "@/shared/phone";
 
 export default async function AttendancePage({ params }: { params: Promise<{ eventId: string }> }) {
   await requireEventManagerPage();
@@ -18,7 +19,8 @@ export default async function AttendancePage({ params }: { params: Promise<{ eve
         include: {
           user: {
             include: {
-              attendance: { where: { eventId } }
+              attendance: { where: { eventId } },
+              profile: { select: { phoneNumber: true } }
             }
           }
         },
@@ -68,6 +70,7 @@ export default async function AttendancePage({ params }: { params: Promise<{ eve
               const attendance = registration.user.attendance[0];
               const displayName =
                 [registration.user.firstName, registration.user.lastName].filter(Boolean).join(" ") || registration.user.username || registration.user.telegramId.toString();
+              const phone = formatPhone(registration.user.profile?.phoneNumber);
 
               return (
                 <div key={registration.id} className="grid gap-3 rounded-xl border border-white/10 bg-[#1C1008]/70 p-3">
@@ -76,6 +79,9 @@ export default async function AttendancePage({ params }: { params: Promise<{ eve
                     <p className="mt-1 text-sm text-slate-400">
                       @{registration.user.username ?? "بدون نام کاربری"}، ثبت‌نام: {labelOf(registrationStatusLabels, registration.status)}، حضور:{" "}
                       {labelOf(attendanceStatusLabels, attendance?.status)}
+                    </p>
+                    <p className="mt-1 text-sm font-bold text-[#F39C12]" dir="ltr">
+                      {phone ? phone : <span dir="rtl">شماره ندارد</span>}
                     </p>
                   </div>
                   <div className="grid grid-cols-3 gap-2">

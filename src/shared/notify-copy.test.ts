@@ -61,7 +61,8 @@ describe("notify copy", () => {
     expect(day.body).toContain(MEETING_TIME_LABEL);
     expect(day.body).toContain("۱۹:۴۵");
     expect(twoHours.body).toContain(MEETING_TIME_LABEL);
-    expect(twoHours.title).toContain("دو ساعت");
+    expect(twoHours.title).toContain("رو به راه‌مون کنیا");
+    expect(twoHours.body).toContain("خیلی زود می‌بینمت");
   });
 
   it("mentions XP only when a photo actually earned it", () => {
@@ -111,7 +112,8 @@ describe("telegram html formatters", () => {
 
   it("builds a group announce under the photo caption limit", () => {
     const html = formatEventAnnounceHtml(event);
-    expect(html).toContain(`برنامه جدید ${APP_NAME}`);
+    expect(html).toContain("همراهمون باش برای رشد");
+    expect(html).toContain(`برنامه ${event.eventNumber} ${APP_NAME}`);
     expect(html).toContain(event.title);
     expect(html).toContain(MEETING_TIME_LABEL);
     expect(html).toContain("ساعت شروع مسیر");

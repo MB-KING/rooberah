@@ -108,7 +108,8 @@ export function formatEventAnnounceHtml(
   }
 ) {
   const lines = [
-    `<b>برنامه جدید ${escapeHtml(APP_NAME)}</b>`,
+    "<b>همراهمون باش برای رشد</b>",
+    `<b>برنامه ${escapeHtml(String(event.eventNumber))} ${escapeHtml(APP_NAME)}</b>`,
     "────────────",
     `<b>${escapeHtml(truncatePlain(event.title, 80))}</b>`,
     `شماره ${escapeHtml(String(event.eventNumber))}`,

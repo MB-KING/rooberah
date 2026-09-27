@@ -53,9 +53,10 @@ export function eventDayReminderCopy(input: {
   locationName: string;
 }) {
   return {
-    title: "🔔 یادآوری برنامه امروز",
+    title: "🔔 رو به راه‌مون کنیا",
     body: [
-      `امروز ${quoteTitle(input.title)} داری.`,
+      "امروز منتظرتیم.",
+      quoteTitle(input.title),
       `${MEETING_TIME_LABEL}: ${input.meetingTimeLabel}`,
       `مکان: ${input.locationName}`,
       "",
@@ -72,9 +73,10 @@ export function eventTwoHourReminderCopy(input: {
   locationName: string;
 }) {
   return {
-    title: "⏰ دو ساعت تا برنامه",
+    title: "⏰ رو به راه‌مون کنیا",
     body: [
-      `حدود دو ساعت دیگر قرار ${quoteTitle(input.title)} است.`,
+      "خیلی زود می‌بینمت.",
+      quoteTitle(input.title),
       input.dateLabel,
       `${MEETING_TIME_LABEL}: ${input.meetingTimeLabel}`,
       `مکان: ${input.locationName}`
@@ -88,10 +90,18 @@ export function attendancePresentCopy(input: {
   eventCompleted: boolean;
 }) {
   return {
-    title: "✅ حضورت تأیید شد",
+    title: "✅ رو به راهمون کردی",
     body: input.eventCompleted
-      ? `حضور تو در ${quoteTitle(input.eventTitle)} ثبت شد. حالا می‌توانی نظر و عکس برنامه را بفرستی.`
-      : `حضور تو در ${quoteTitle(input.eventTitle)} ثبت شد. بعد از اتمام برنامه می‌توانی نظر و عکس بفرستی.`,
+      ? `دمت گرم که اومدی. حضور تو در ${quoteTitle(input.eventTitle)} ثبت شد و حالا می‌توانی نظر و عکس برنامه را بفرستی.`
+      : `دمت گرم که اومدی. حضور تو در ${quoteTitle(input.eventTitle)} ثبت شد. بعد از اتمام برنامه می‌توانی نظر و عکس بفرستی.`,
+    buttonText: notifyButtons.viewEvent
+  };
+}
+
+export function attendanceAbsentCopy(eventTitle: string) {
+  return {
+    title: "😢 این بار ندیدمت",
+    body: `چشمون به راه خشک شد و نیومدی ${quoteTitle(eventTitle)}. امیدوارم دفعه بعدی بیای و رو به راه‌مون کنی.`,
     buttonText: notifyButtons.viewEvent
   };
 }
@@ -106,8 +116,9 @@ export function attendanceUpdatedCopy(eventTitle: string, statusLabel: string) {
 
 export function feedbackInviteCopy(eventTitle: string) {
   return {
-    title: "📝 نظرت و عکس‌هایت را بفرست",
+    title: "📝 «رو به راه» شدی؟",
     body: [
+      "نظرت برامون خیلی مهمه.",
       `برنامه ${quoteTitle(eventTitle)} تمام شد.`,
       "اگر حضورت تأیید شده، نظرت را بنویس و عکس‌های مسیر را آپلود کن.",
       "بعد از تأیید، برای بقیه همراهان هم دیده می‌شود."
@@ -212,6 +223,16 @@ export function groupStatusCopy(input: {
     `وضعیت: ${input.isActive ? "فعال" : "غیرفعال"}`,
     `اعلان خودکار: ${input.receiveAnnouncements ? "روشن" : "خاموش"}`,
     `شناسه چت: ${input.chatId}`
+  ].join("\n");
+}
+
+export function telegramAccessFooter(siteUrl: string) {
+  const url = siteUrl.replace(/\/$/, "");
+  return [
+    "اگر دکمه ربات باز نشد، از سایت اقدام کن:",
+    url,
+    "",
+    "برای باز شدن ربات باید VPN روشن باشد. پروکسی خود تلگرام، به‌خاطر رمزنگاری مخصوص تلگرام، روی سرورهای ما کار نمی‌کند."
   ].join("\n");
 }
 

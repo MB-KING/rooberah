@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { Prisma, Role } from "@prisma/client";
 import {
   assignSpecialBadgeAction,
   revokeSpecialBadgeAction
@@ -9,9 +9,24 @@ import { Button } from "@/components/ui/button";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { formatJalaliPretty } from "@/lib/jalali";
 import { prisma } from "@/lib/prisma";
-import { requireSuperAdminPage } from "@/modules/auth/admin-session";
+import { requireEventManagerPage } from "@/modules/auth/admin-session";
 import { hasRole } from "@/modules/auth/authorization";
+import { labelOf, roleLabels } from "@/shared/labels";
 import { formatPhone } from "@/shared/phone";
+
+function nameSearch(q: string): Prisma.UserWhereInput | undefined {
+  const tokens = q.trim().split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return undefined;
+  return {
+    AND: tokens.map((token) => ({
+      OR: [
+        { firstName: { contains: token, mode: "insensitive" } },
+        { lastName: { contains: token, mode: "insensitive" } },
+        { username: { contains: token, mode: "insensitive" } }
+      ]
+    }))
+  };
+}
 
 function primaryRole(roles: Array<{ role: Role }>) {
   if (roles.some((item) => item.role === Role.SUPER_ADMIN)) {
@@ -23,11 +38,17 @@ function primaryRole(roles: Array<{ role: Role }>) {
   return Role.USER;
 }
 
-export default async function AdminUsersPage() {
-  const currentAdmin = await requireSuperAdminPage();
+export default async function AdminUsersPage({
+  searchParams
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const currentAdmin = await requireEventManagerPage();
+  const isSuperAdmin = hasRole(currentAdmin, Role.SUPER_ADMIN);
+  const query = ((await searchParams).q ?? "").trim();
   const [users, specialBadges] = await Promise.all([
     prisma.user.findMany({
-      where: { deletedAt: null },
+      where: { deletedAt: null, ...nameSearch(query) },
       orderBy: { joinedAt: "desc" },
       include: {
         profile: { select: { phoneNumber: true, birthDate: true } },
@@ -57,20 +78,35 @@ export default async function AdminUsersPage() {
     <>
       <PageTitle
         title="اعضا و نقش‌ها"
-        subtitle="برای هر کاربر فقط یکی از سه نقش اصلی را انتخاب کن: عضو، ادمین یا سوپرادمین."
+        subtitle="اسم همراه را جستجو کن. تغییر نقش و نشان ویژه فقط برای سوپرادمین است."
       />
-      <AdminCard className="mb-4 border-[#F39C12]/25 bg-[#2A160C]">
-        <h2 className="font-black text-white">نقش‌ها یعنی چه؟</h2>
+      <form action="/admin/users" className="mb-4 grid grid-cols-[1fr_auto] gap-2">
+        <input
+          name="q"
+          defaultValue={query}
+          placeholder="جستجو با اسم"
+          className="h-11 rounded-xl border border-white/10 bg-[#1C1008] px-3 text-sm text-white outline-none focus:border-[#F39C12]"
+        />
+        <Button type="submit" pendingLabel="…">
+          جستجو
+        </Button>
+      </form>
+      <details className="mb-4 rounded-xl border border-[#F39C12]/25 bg-[#2A160C] p-4">
+        <summary className="cursor-pointer font-black text-white">
+          نقش‌ها یعنی چه؟
+        </summary>
         <p className="mt-2 text-sm leading-7 text-slate-300">
           عضو فقط بخش‌های معمولی را می‌بیند. ادمین می‌تواند برنامه بسازد، وضعیت
           برنامه را تغییر دهد و حضور و غیاب را ثبت کند. سوپرادمین به همه چیز
           دسترسی دارد؛ از نقش کاربران تا نشان‌ها و ویرایش کامل.
         </p>
-      </AdminCard>
+      </details>
       <div className="grid gap-3">
         {users.length === 0 ? (
           <AdminCard>
-            <p className="text-sm text-slate-300">هنوز عضوی ثبت نشده است.</p>
+            <p className="text-sm text-slate-300">
+              {query ? "همراهی با این اسم پیدا نشد." : "هنوز عضوی ثبت نشده است."}
+            </p>
           </AdminCard>
         ) : (
           users.map((user) => {
@@ -82,42 +118,54 @@ export default async function AdminUsersPage() {
             const isSelfSuperAdmin =
               currentAdmin.id === user.id && hasRole(user, Role.SUPER_ADMIN);
 
-            return (
-              <AdminCard key={user.id}>
-                <div className="grid gap-4">
-                  <div>
-                    <h2 className="font-black text-white">{displayName}</h2>
-                    <p className="mt-1 text-sm text-slate-400">
-                      @{user.username ?? "بدون نام کاربری"}
-                    </p>
-                    {user.profile?.phoneNumber ? (
-                      <p className="mt-2 text-sm font-bold text-[#F39C12]" dir="ltr">
-                        {formatPhone(user.profile.phoneNumber)}
-                      </p>
-                    ) : (
-                      <p className="mt-2 text-xs text-slate-500">شماره تلفن ندارد.</p>
-                    )}
-                    {user.profile?.birthDate ? (
-                      <p className="mt-1 text-xs font-bold text-slate-300">
-                        تولد {formatJalaliPretty(user.profile.birthDate)}
-                      </p>
-                    ) : null}
-                    <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs text-slate-300">
-                      <Metric label="امتیاز" value={user.xp} />
-                      <Metric label="حضور" value={user._count.attendance} />
-                      <Metric label="نشان" value={user._count.badges} />
-                    </div>
-                  </div>
+            const phone = formatPhone(user.profile?.phoneNumber);
 
-                  <UserRoleForm
-                    key={`${user.id}-${role}`}
-                    userId={user.id}
-                    role={role}
-                    disabled={isSelfSuperAdmin}
-                    disabledHint="برای جلوگیری از قفل شدن پنل، نقش سوپرادمین خودت از اینجا تغییر نمی‌کند."
-                  />
-                </div>
-                <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.04] p-3">
+            return (
+              <AdminCard key={user.id} className="p-0">
+                <details className="group">
+                  <summary className="cursor-pointer list-none px-4 py-3 [&::-webkit-details-marker]:hidden">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h2 className="truncate font-black text-white">{displayName}</h2>
+                        <p className="mt-1 text-sm text-slate-400">
+                          {labelOf(roleLabels, role)}
+                          {" · "}
+                          {user._count.attendance} حضور
+                          {" · "}
+                          {user.xp} امتیاز
+                        </p>
+                      </div>
+                      <p
+                        className="shrink-0 text-sm font-bold text-[#F39C12]"
+                        dir={phone ? "ltr" : "rtl"}
+                      >
+                        {phone ?? "شماره ندارد"}
+                      </p>
+                    </div>
+                  </summary>
+                  <div className="grid gap-4 border-t border-white/10 px-4 py-4">
+                    <p className="text-sm text-slate-400">
+                      @{user.username ?? "بدون نام کاربری"}
+                      {user.profile?.birthDate
+                        ? ` · تولد ${formatJalaliPretty(user.profile.birthDate)}`
+                        : ""}
+                      {` · ${user._count.badges} نشان`}
+                    </p>
+                  {isSuperAdmin ? (
+                    <UserRoleForm
+                      key={`${user.id}-${role}`}
+                      userId={user.id}
+                      role={role}
+                      disabled={isSelfSuperAdmin}
+                      disabledHint="برای جلوگیری از قفل شدن پنل، نقش سوپرادمین خودت از اینجا تغییر نمی‌کند."
+                    />
+                  ) : (
+                    <p className="text-sm text-slate-400">
+                      برای تغییر نقش باید سوپرادمین باشی.
+                    </p>
+                  )}
+                {isSuperAdmin ? (
+                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
                   <p className="text-sm font-bold text-white">نشان‌های ویژه</p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {user.badges.filter((item) => item.badge.type === "SPECIAL")
@@ -186,6 +234,9 @@ export default async function AdminUsersPage() {
                     </p>
                   )}
                 </div>
+                ) : null}
+                  </div>
+                </details>
               </AdminCard>
             );
           })
@@ -195,11 +246,3 @@ export default async function AdminUsersPage() {
   );
 }
 
-function Metric({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-xl bg-white/10 px-3 py-2">
-      <p className="font-black text-white">{value}</p>
-      <p className="mt-1">{label}</p>
-    </div>
-  );
-}

@@ -1,10 +1,11 @@
 import { config } from "@/lib/config";
 import { APP_NAME } from "@/shared/brand";
-import { notifyButtons } from "@/shared/notify-copy";
+import { notifyButtons, telegramAccessFooter } from "@/shared/notify-copy";
 import { logger } from "@/lib/logger";
 import {
   formatHelpMessageHtml,
   formatStartMessageHtml,
+  escapeHtml,
   isGroupOrChannelChat,
   stripHtml,
   telegramDeepLink
@@ -187,6 +188,20 @@ async function sendWithHtmlFallback(input: {
   }
 }
 
+function withAccessFooter(text: string, html: boolean, limit: number) {
+  const plain = telegramAccessFooter(appPublicUrl());
+  if (text.includes("پروکسی خود تلگرام")) {
+    return text.slice(0, limit);
+  }
+  const footer = html ? escapeHtml(plain) : plain;
+  const gap = "\n\n";
+  const combined = `${text}${gap}${footer}`;
+  if (combined.length <= limit) return combined;
+  const room = limit - footer.length - gap.length;
+  if (room < 24) return footer.slice(0, limit);
+  return `${text.slice(0, room - 1).trimEnd()}…${gap}${footer}`;
+}
+
 function withThread<T extends Record<string, unknown>>(
   body: T,
   threadId?: number | null
@@ -207,6 +222,8 @@ export async function sendTelegramMessage(input: {
   threadId?: number | null;
 }): Promise<TelegramSendResult> {
   const chatId = input.chatId.toString();
+  const html = input.parseMode === "HTML";
+  const text = withAccessFooter(input.text, html, 4096);
   const keyboard = input.openApp
     ? buildAppKeyboard({
         chatId,
@@ -217,10 +234,10 @@ export async function sendTelegramMessage(input: {
 
   try {
     const result =
-      input.parseMode === "HTML"
+      html
         ? await sendWithHtmlFallback({
             method: "sendMessage",
-            htmlText: input.text,
+            htmlText: text,
             textField: "text",
             body: withThread(
               {
@@ -236,7 +253,7 @@ export async function sendTelegramMessage(input: {
             withThread(
               {
                 chat_id: chatId,
-                text: input.text,
+                text,
                 disable_web_page_preview: true,
                 reply_markup: keyboard
               },
@@ -270,12 +287,14 @@ export async function editTelegramAnnouncement(input: {
     message_id: input.messageId,
     reply_markup: keyboard
   };
+  const caption = withAccessFooter(input.text, true, 1024);
+  const text = withAccessFooter(input.text, true, 4096);
 
-  if (input.text.length <= 1024) {
+  if (caption.length <= 1024) {
     try {
       await sendWithHtmlFallback({
         method: "editMessageCaption",
-        htmlText: input.text,
+        htmlText: caption,
         textField: "caption",
         body: shared
       });
@@ -292,7 +311,7 @@ export async function editTelegramAnnouncement(input: {
   try {
     await sendWithHtmlFallback({
       method: "editMessageText",
-      htmlText: input.text.slice(0, 4096),
+      htmlText: text,
       textField: "text",
       body: {
         ...shared,
@@ -353,8 +372,7 @@ export async function sendTelegramPhoto(input: {
       })
     : undefined;
 
-  // Telegram captions max out at 1024 characters.
-  const caption = input.caption.slice(0, 1024);
+  const caption = withAccessFooter(input.caption, true, 1024);
 
   try {
     const result = await sendWithHtmlFallback({
@@ -408,7 +426,7 @@ export async function sendTelegramPhotoBuffer(input: {
         buttonText: input.buttonText
       })
     : undefined;
-  const caption = input.caption.slice(0, 1024);
+  const caption = withAccessFooter(input.caption, true, 1024);
 
   const buildForm = (html: boolean, text: string) => {
     const form = new FormData();
@@ -461,7 +479,7 @@ export async function savePreparedInlinePhoto(input: {
   buttonUrl?: string;
   buttonText?: string;
 }): Promise<{ id: string; expirationDate: number }> {
-  const caption = input.caption.slice(0, 1024);
+  const caption = withAccessFooter(input.caption, true, 1024);
   const keyboard = input.buttonUrl
     ? {
         inline_keyboard: [

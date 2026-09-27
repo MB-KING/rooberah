@@ -9,6 +9,7 @@ import { XPService } from "@/modules/gamification/xp.service";
 import { BadgeService } from "@/modules/gamification/badge.service";
 import { logActivity, notifyUser } from "@/modules/activity/activity.service";
 import {
+  attendanceAbsentCopy,
   attendancePresentCopy,
   attendanceUpdatedCopy
 } from "@/shared/notify-copy";
@@ -105,10 +106,12 @@ export class AttendanceService {
             eventTitle: event?.title ?? "برنامه",
             eventCompleted: event?.status === EventStatus.COMPLETED
           })
-        : attendanceUpdatedCopy(
-            event?.title ?? "برنامه",
-            attendanceStatusText(input.status)
-          );
+        : input.status === AttendanceStatus.ABSENT
+          ? attendanceAbsentCopy(event?.title ?? "برنامه")
+          : attendanceUpdatedCopy(
+              event?.title ?? "برنامه",
+              attendanceStatusText(input.status)
+            );
     await Promise.all([
       logActivity({
         actorUserId: input.verifiedById,
