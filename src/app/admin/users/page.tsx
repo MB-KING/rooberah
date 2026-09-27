@@ -123,11 +123,13 @@ export default async function AdminUsersPage({
             return (
               <AdminCard key={user.id} className="p-0">
                 <details className="group">
-                  <summary className="cursor-pointer list-none px-4 py-3 [&::-webkit-details-marker]:hidden">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <h2 className="truncate font-black text-white">{displayName}</h2>
-                        <p className="mt-1 text-sm text-slate-400">
+                  <summary className="block w-full cursor-pointer list-none overflow-hidden px-4 py-3 [&::-webkit-details-marker]:hidden">
+                    <div className="flex w-full min-w-0 items-start gap-3">
+                      <div className="min-w-0 flex-1 overflow-hidden">
+                        <h2 className="truncate font-black text-white" title={displayName}>
+                          {displayName}
+                        </h2>
+                        <p className="mt-1 truncate text-sm text-slate-400">
                           {labelOf(roleLabels, role)}
                           {" · "}
                           {user._count.attendance} حضور
@@ -144,6 +146,7 @@ export default async function AdminUsersPage({
                     </div>
                   </summary>
                   <div className="grid gap-4 border-t border-white/10 px-4 py-4">
+                    <p className="break-words text-sm font-bold text-white">{displayName}</p>
                     <p className="text-sm text-slate-400">
                       @{user.username ?? "بدون نام کاربری"}
                       {user.profile?.birthDate
