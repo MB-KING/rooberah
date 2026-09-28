@@ -5,7 +5,11 @@ import { RegistrationRepository } from "@/modules/registrations/registration.rep
 import { AppError } from "@/shared/errors";
 import { resolveRegistrationStatus } from "@/modules/registrations/registration.policy";
 import { notifyUser } from "@/modules/activity/activity.service";
-import { refreshEventAnnouncementMessages } from "@/modules/events/announce.service";
+import {
+  notifyGroupsOfSignup,
+  refreshEventAnnouncementMessages
+} from "@/modules/events/announce.service";
+import { getDisplayName } from "@/shared/privacy";
 import { assertRequiredTelegramMembership } from "@/modules/telegram/membership-gate";
 import {
   registrationCancelledCopy,
@@ -28,7 +32,14 @@ export class RegistrationService {
   async register(userId: string, eventId: string) {
     const user = await prisma.user.findUnique({
       where: { id: userId, deletedAt: null },
-      select: { id: true, communityId: true, telegramId: true }
+      select: {
+        id: true,
+        communityId: true,
+        telegramId: true,
+        firstName: true,
+        lastName: true,
+        username: true
+      }
     });
     if (!user) {
       throw new AppError("UNAUTHORIZED", "User not found", 401);
@@ -62,7 +73,10 @@ export class RegistrationService {
       return {
         registration: await repository.upsertRegistered(userId, eventId, status),
         status,
-        eventTitle: event.title
+        previousStatus: existing?.status ?? null,
+        eventTitle: event.title,
+        eventNumber: event.eventNumber,
+        communityId: event.communityId
       };
     });
 
@@ -77,6 +91,18 @@ export class RegistrationService {
       eventPath: `/events/${eventId}`
     });
     await refreshEventAnnouncementMessages(eventId).catch(() => undefined);
+    if (
+      registration.status === RegistrationStatus.REGISTERED &&
+      registration.previousStatus !== RegistrationStatus.REGISTERED
+    ) {
+      await notifyGroupsOfSignup({
+        communityId: registration.communityId,
+        eventId,
+        eventTitle: registration.eventTitle,
+        eventNumber: registration.eventNumber,
+        participantName: getDisplayName(user)
+      }).catch(() => undefined);
+    }
 
     return registration.registration;
   }
@@ -116,6 +142,8 @@ export class RegistrationService {
       return {
         cancelled,
         eventTitle: event.title,
+        eventNumber: event.eventNumber,
+        communityId: event.communityId,
         promotedUserId
       };
     });
@@ -128,12 +156,25 @@ export class RegistrationService {
     });
 
     if (result.promotedUserId) {
+      const promoted = await prisma.user.findUnique({
+        where: { id: result.promotedUserId },
+        select: { firstName: true, lastName: true, username: true }
+      });
       await notifyUser({
         userId: result.promotedUserId,
         type: "WAITLIST_PROMOTED",
         ...waitlistPromotedCopy(result.eventTitle),
         eventPath: `/events/${eventId}`
       });
+      if (promoted) {
+        await notifyGroupsOfSignup({
+          communityId: result.communityId,
+          eventId,
+          eventTitle: result.eventTitle,
+          eventNumber: result.eventNumber,
+          participantName: getDisplayName(promoted)
+        }).catch(() => undefined);
+      }
     }
     await refreshEventAnnouncementMessages(eventId).catch(() => undefined);
 

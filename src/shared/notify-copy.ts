@@ -15,6 +15,21 @@ export function quoteTitle(title: string) {
   return `«${title.trim()}»`;
 }
 
+export function groupSignupCopy(input: {
+  name: string;
+  eventTitle: string;
+  eventNumber: number;
+}) {
+  return {
+    name: input.name.trim(),
+    body: [
+      `${input.name.trim()} رو به راه شد.`,
+      `برای ${quoteTitle(input.eventTitle)} ثبت‌نام کرد.`,
+      `برنامه ${input.eventNumber} ${APP_NAME}`
+    ].join("\n")
+  };
+}
+
 export function registrationConfirmedCopy(eventTitle: string) {
   return {
     title: "✅ ثبت‌نامت قطعی شد",

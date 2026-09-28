@@ -1,6 +1,10 @@
 import { APP_NAME } from "@/shared/brand";
 import { MEETING_TIME_LABEL, START_TIME_LABEL } from "@/shared/copy";
-import { helpMessageLines, startMessageLines } from "@/shared/notify-copy";
+import {
+  helpMessageLines,
+  quoteTitle,
+  startMessageLines
+} from "@/shared/notify-copy";
 
 /** Client-safe Telegram text helpers (no server secrets). */
 
@@ -54,6 +58,18 @@ export function isGroupOrChannelChat(chatId: number | string | bigint) {
   } catch {
     return String(chatId).startsWith("-");
   }
+}
+
+export function formatGroupSignupHtml(input: {
+  name: string;
+  eventTitle: string;
+  eventNumber: number;
+}) {
+  return [
+    `<b>${escapeHtml(input.name.trim())}</b> رو به راه شد.`,
+    `برای ${escapeHtml(quoteTitle(input.eventTitle))} ثبت‌نام کرد.`,
+    `برنامه ${escapeHtml(String(input.eventNumber))} ${escapeHtml(APP_NAME)}`
+  ].join("\n");
 }
 
 export function formatNotificationHtml(title: string, body: string) {

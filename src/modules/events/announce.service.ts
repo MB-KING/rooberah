@@ -1,4 +1,9 @@
-import { EventStatus, Prisma, RegistrationStatus } from "@prisma/client";
+import {
+  EventStatus,
+  Prisma,
+  RegistrationStatus,
+  TelegramResourceType
+} from "@prisma/client";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import {
@@ -9,6 +14,7 @@ import {
 } from "@/lib/telegram-bot";
 import {
   formatEventAnnounceHtml,
+  formatGroupSignupHtml,
   isPermanentTelegramChatError
 } from "@/lib/telegram-format";
 import { getDisplayName } from "@/shared/privacy";
@@ -317,6 +323,57 @@ export async function announcePublishedEvent(
   }
 
   return summary;
+}
+
+export async function notifyGroupsOfSignup(input: {
+  communityId: string;
+  eventId: string;
+  eventTitle: string;
+  eventNumber: number;
+  participantName: string;
+}) {
+  try {
+    const community = await prisma.community.findUnique({
+      where: { id: input.communityId },
+      select: { autoAnnounceEnabled: true }
+    });
+    if (!community?.autoAnnounceEnabled) return;
+
+    const groups = await prisma.telegramResource.findMany({
+      where: {
+        communityId: input.communityId,
+        type: TelegramResourceType.GROUP,
+        isActive: true,
+        receiveAnnouncements: true,
+        telegramChatId: { not: null }
+      }
+    });
+    const text = formatGroupSignupHtml({
+      name: input.participantName,
+      eventTitle: input.eventTitle,
+      eventNumber: input.eventNumber
+    });
+
+    await Promise.all(
+      groups.map((group) => {
+        if (!group.telegramChatId) return Promise.resolve();
+        return sendTelegramMessage({
+          chatId: group.telegramChatId,
+          text,
+          parseMode: "HTML",
+          openApp: true,
+          eventPath: `/events/${input.eventId}`,
+          buttonText: notifyButtons.signup,
+          threadId: group.telegramThreadId
+        });
+      })
+    );
+  } catch (error) {
+    logger.warn("group_signup_notify_failed", {
+      eventId: input.eventId,
+      reason: error instanceof Error ? error.message : "unknown"
+    });
+  }
 }
 
 export async function refreshEventAnnouncementMessages(eventId: string) {

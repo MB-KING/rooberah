@@ -8,6 +8,7 @@ import {
   feedbackInviteCopy,
   helpMessageLines,
   photoReviewedCopy,
+  groupSignupCopy,
   registrationConfirmedCopy,
   registrationWaitlistedCopy,
   rewardRedeemedCopy,
@@ -24,6 +25,18 @@ import {
 } from "@/lib/telegram-format";
 
 describe("notify copy", () => {
+  it("announces a new group signup by name", () => {
+    const copy = groupSignupCopy({
+      name: "محمد باقری",
+      eventTitle: "پیاده‌روی",
+      eventNumber: 129
+    });
+    expect(copy.body).toContain("محمد باقری رو به راه شد.");
+    expect(copy.body).toContain("«پیاده‌روی»");
+    expect(copy.body).toContain(`برنامه 129 ${APP_NAME}`);
+    expect(copy.body).not.toContain("شما");
+  });
+
   it("keeps brand and informal tone", () => {
     const texts = [
       ...startMessageLines(),
