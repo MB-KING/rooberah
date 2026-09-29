@@ -3,22 +3,12 @@ import { logger } from "@/lib/logger";
 import { sendHelpMessage, sendStartMessage } from "@/lib/telegram-bot";
 import { pathFromStartParam } from "@/lib/telegram-format";
 import {
-  handleCancelRegistrationCallback,
-  sendCancelRegistrationMenu
-} from "@/modules/telegram/cancel-registration";
-import {
   deactivateTelegramResourceByChatId,
   handleGroupAdminCommand,
   trackMembershipUpdate
 } from "@/modules/telegram/group-commands";
 
 type TelegramUpdate = {
-  callback_query?: {
-    id?: string;
-    data?: string;
-    from?: { id?: number };
-    message?: { chat?: { id?: number; type?: string } };
-  };
   message?: {
     chat?: { id?: number; type?: string; title?: string; username?: string };
     from?: { id?: number; username?: string; first_name?: string };
@@ -42,17 +32,6 @@ type TelegramUpdate = {
 export async function POST(request: Request) {
   try {
     const update = (await request.json()) as TelegramUpdate;
-    const callback = update.callback_query;
-    if (callback?.id && callback.data && callback.from?.id && callback.message?.chat?.id) {
-      const handled = await handleCancelRegistrationCallback({
-        callbackQueryId: callback.id,
-        data: callback.data,
-        telegramUserId: callback.from.id,
-        chatId: callback.message.chat.id
-      });
-      if (handled) return NextResponse.json({ ok: true });
-    }
-
     const message = update.message;
     const chatId = message?.chat?.id;
     const chatType = message?.chat?.type;
@@ -86,8 +65,6 @@ export async function POST(request: Request) {
     if (chatId && isPrivate) {
       if (/^\/help(?:@\w+)?/i.test(text)) {
         await sendHelpMessage(chatId);
-      } else if (/^\/cancel(?:@\w+)?/i.test(text) && message.from?.id) {
-        await sendCancelRegistrationMenu(message.from.id, chatId);
       } else if (/^\/app(?:@\w+)?/i.test(text)) {
         await sendStartMessage(chatId);
       } else if (/^\/start(?:@\w+)?/i.test(text)) {
