@@ -149,6 +149,52 @@ export async function sendStartMessage(
   });
 }
 
+export async function sendTelegramChoices(input: {
+  chatId: number | string | bigint;
+  text: string;
+  choices: Array<{ text: string; data: string }>;
+}) {
+  const rows = input.choices.map((choice) => [
+    { text: choice.text, callback_data: choice.data }
+  ]);
+  return sendTelegramMessage({
+    chatId: input.chatId,
+    text: input.text,
+    parseMode: "HTML"
+  }).then(async (sent) => {
+    if (!sent.ok || rows.length === 0) return sent;
+    try {
+      await callTelegram("editMessageReplyMarkup", {
+        chat_id: input.chatId.toString(),
+        message_id: sent.messageId,
+        reply_markup: { inline_keyboard: rows }
+      });
+    } catch (error) {
+      logger.warn("telegram_inline_keyboard_failed", {
+        reason: error instanceof Error ? error.message : "unknown"
+      });
+    }
+    return sent;
+  });
+}
+
+export async function answerCallbackQuery(input: {
+  callbackQueryId: string;
+  text?: string;
+}) {
+  try {
+    await callTelegram("answerCallbackQuery", {
+      callback_query_id: input.callbackQueryId,
+      text: input.text,
+      show_alert: false
+    });
+  } catch (error) {
+    logger.warn("telegram_answer_callback_failed", {
+      reason: error instanceof Error ? error.message : "unknown"
+    });
+  }
+}
+
 export async function sendHelpMessage(chatId: number | string | bigint) {
   const id = chatId.toString();
   return callTelegram<TelegramMessage>("sendMessage", {

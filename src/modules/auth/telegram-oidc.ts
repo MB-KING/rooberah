@@ -11,6 +11,7 @@ import {
   telegramUserSchema,
   type TelegramUser
 } from "@/modules/auth/telegram";
+import { SESSION_MAX_AGE_SECONDS } from "@/modules/auth/telegram-cookie";
 import { AppError } from "@/shared/errors";
 
 export const TELEGRAM_OIDC_ISSUER = "https://oauth.telegram.org";
@@ -24,7 +25,6 @@ export const TELEGRAM_OIDC_VERIFIER_COOKIE = "hm_tg_oidc_verifier";
 export const TELEGRAM_OIDC_NONCE_COOKIE = "hm_tg_oidc_nonce";
 export const OIDC_SESSION_PREFIX = "oidc.v1.";
 
-const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24;
 const jwks = createRemoteJWKSet(new URL(TELEGRAM_OIDC_JWKS_URL));
 
 export function telegramOidcClientId() {

@@ -2,6 +2,7 @@ import { ChevronDown, Eye, ShieldCheck } from "lucide-react";
 import type { ReactNode } from "react";
 import { PersianDateField } from "@/components/admin/persian-date-field";
 import { ProfileSettingsForm } from "@/components/user/profile-settings-form";
+import { logoutAction } from "@/app/me/logout";
 import { UserCard, UserPageHeader } from "@/components/user/user-card";
 import { UserPageShell } from "@/components/user/user-shell";
 import { cn } from "@/lib/cn";
@@ -237,6 +238,26 @@ export default async function ProfileSettingsPage() {
             />
           </div>
         </ProfileSettingsForm>
+      </UserCard>
+      <UserCard className="mt-8 border-red-400/25">
+        <h2 className="font-black text-red-200">خروج از حساب</h2>
+        <p className="mt-2 text-sm leading-7 text-slate-300">
+          نشست ورود دو هفته روی این مرورگر می‌ماند. با خروج، همین دستگاه دیگر
+          تو را واردشده نگه نمی‌دارد و برای دیدن برنامه‌ها باید دوباره وارد شوی.
+        </p>
+        <p className="mt-2 text-sm leading-7 text-slate-300">
+          اگر داخل ربات تلگرام هستی، تا وقتی خودت دکمه «ورود با تلگرام» را نزنی
+          دوباره وارد نمی‌شوی. پروکسی تلگرام صفحه سایت را باز نمی‌کند؛ اگر
+          مینی‌اپ سفید ماند، همین سایت را در مرورگر باز کن.
+        </p>
+        <form action={logoutAction} className="mt-4">
+          <button
+            type="submit"
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-red-400/30 bg-red-500/10 px-3 text-sm font-bold text-red-200"
+          >
+            خروج از حساب
+          </button>
+        </form>
       </UserCard>
     </UserPageShell>
   );

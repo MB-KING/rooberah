@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { z } from "zod";
 import { config } from "@/lib/config";
+import { SESSION_MAX_AGE_SECONDS } from "@/modules/auth/telegram-cookie";
 import { AppError } from "@/shared/errors";
 
 export const telegramUserSchema = z.object({
@@ -46,12 +47,11 @@ export function validateTelegramInitData(initData: string, botToken = config.TEL
   }
 
   const authDate = Number(params.get("auth_date"));
-  const maxAgeSeconds = 24 * 60 * 60;
   const ageSeconds = Date.now() / 1000 - authDate;
   if (
     !Number.isFinite(authDate) ||
     ageSeconds < 0 ||
-    ageSeconds > maxAgeSeconds
+    ageSeconds > SESSION_MAX_AGE_SECONDS
   ) {
     throw new AppError("UNAUTHORIZED", "Expired Telegram auth data", 401);
   }

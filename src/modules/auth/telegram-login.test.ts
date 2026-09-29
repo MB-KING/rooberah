@@ -112,7 +112,7 @@ describe("validateTelegramLoginWidget", () => {
   });
 
   it("rejects expired auth_date", () => {
-    const twoDaysAgo = Math.floor(Date.now() / 1000) - 48 * 60 * 60;
+    const twoDaysAgo = Math.floor(Date.now() / 1000) - 15 * 24 * 60 * 60;
     const fields = signedWidgetFields(FIXTURE_BOT_TOKEN, {}, twoDaysAgo);
     expect(() =>
       validateTelegramLoginWidget(fields, FIXTURE_BOT_TOKEN)

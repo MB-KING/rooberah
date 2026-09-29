@@ -11,6 +11,7 @@ import {
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { LocationMapPicker } from "@/components/admin/location-map-picker";
 import { EventActions } from "@/components/user/event-actions";
 import { EventPhotoUploadForm } from "@/components/user/event-photo-upload";
 import { FeedbackForm } from "@/components/user/feedback-form";
@@ -342,6 +343,19 @@ export default async function EventDetailsPage({
             label="آدرس"
             value={event.locationAddress ?? "هنوز ثبت نشده"}
           />
+          {event.latitude != null && event.longitude != null ? (
+            <div className="mt-1">
+              <LocationMapPicker
+                readOnly
+                latitude={Number(event.latitude)}
+                longitude={Number(event.longitude)}
+              />
+              <NavigationSheet
+                latitude={Number(event.latitude)}
+                longitude={Number(event.longitude)}
+              />
+            </div>
+          ) : null}
           <Info
             icon={<UsersRound size={18} />}
             label="ثبت‌نام‌شده‌ها"
@@ -368,12 +382,6 @@ export default async function EventDetailsPage({
           total={registrationCount}
           users={previewRegs.map((row) => row.user)}
         />
-        {event.latitude != null && event.longitude != null ? (
-          <NavigationSheet
-            latitude={Number(event.latitude)}
-            longitude={Number(event.longitude)}
-          />
-        ) : null}
         <ShareCardButton
           eventId={event.id}
           userId={user?.id}

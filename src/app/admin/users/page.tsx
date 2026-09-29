@@ -4,6 +4,7 @@ import {
   revokeSpecialBadgeAction
 } from "@/app/admin/actions";
 import { AdminCard, PageTitle } from "@/components/admin/admin-card";
+import { TelLink } from "@/components/admin/tel-link";
 import { UserRoleForm } from "@/components/admin/user-role-form";
 import { Button } from "@/components/ui/button";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
@@ -12,7 +13,7 @@ import { prisma } from "@/lib/prisma";
 import { requireEventManagerPage } from "@/modules/auth/admin-session";
 import { hasRole } from "@/modules/auth/authorization";
 import { labelOf, roleLabels } from "@/shared/labels";
-import { formatPhone } from "@/shared/phone";
+import { formatPhone, normalizePhone } from "@/shared/phone";
 
 function nameSearch(q: string): Prisma.UserWhereInput | undefined {
   const tokens = q.trim().split(/\s+/).filter(Boolean);
@@ -125,6 +126,7 @@ export default async function AdminUsersPage({
               currentAdmin.id === user.id && hasRole(user, Role.SUPER_ADMIN);
 
             const phone = formatPhone(user.profile?.phoneNumber);
+            const phoneHref = normalizePhone(user.profile?.phoneNumber);
 
             return (
               <AdminCard key={user.id} className="min-w-0 max-w-full overflow-hidden p-0">
@@ -143,12 +145,13 @@ export default async function AdminUsersPage({
                           {user.xp} امتیاز
                         </p>
                       </div>
-                      <p
-                        className="shrink-0 text-sm font-bold text-[#F39C12]"
-                        dir={phone ? "ltr" : "rtl"}
-                      >
-                        {phone ?? "شماره ندارد"}
-                      </p>
+                      {phone && phoneHref ? (
+                        <TelLink href={`tel:${phoneHref}`}>{phone}</TelLink>
+                      ) : (
+                        <p className="shrink-0 text-sm font-bold text-[#F39C12]" dir="rtl">
+                          شماره ندارد
+                        </p>
+                      )}
                     </div>
                   </summary>
                   <div className="grid gap-4 border-t border-white/10 px-4 py-4">

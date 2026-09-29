@@ -44,9 +44,13 @@ async function loginWithInitData(initData: string) {
     body: JSON.stringify({ initData })
   });
 
+  if (response.status === 403) {
+    return "logged-out" as const;
+  }
   if (!response.ok) {
     throw new Error("telegram_login_failed");
   }
+  return "ok" as const;
 }
 
 function resolveStartPath(webApp: NonNullable<Window["Telegram"]>["WebApp"]) {
@@ -103,7 +107,10 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
     webApp.setBackgroundColor?.("#1C1008");
 
     try {
-      await loginWithInitData(initData);
+      const login = await loginWithInitData(initData);
+      if (login === "logged-out") {
+        return;
+      }
       const deepPath = resolveStartPath(webApp);
       if (deepPath && deepPath !== "/") {
         router.replace(deepPath as never);

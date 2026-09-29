@@ -1,4 +1,4 @@
-import { Globe, Linkedin } from "lucide-react";
+import { Globe, Linkedin, Send } from "lucide-react";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { UserAvatar } from "@/components/user/user-avatar";
@@ -83,12 +83,26 @@ export default async function PublicMemberPage({
     <UserPageShell>
       <UserPageHeader title={view.displayName} backFallbackHref="/members" />
       <UserCard className={cn("mb-4", statusTone?.card)}>
+        {view.photoUrl ? (
+          <div className="relative mb-4 h-56 w-full overflow-hidden rounded-xl bg-white/10">
+            <Image
+              src={view.photoUrl}
+              alt={view.displayName}
+              fill
+              sizes="(max-width: 480px) 100vw, 420px"
+              className="object-cover"
+              unoptimized
+            />
+          </div>
+        ) : null}
         <div className="flex items-start gap-3">
-          <UserAvatar
-            photoUrl={view.photoUrl}
-            name={view.displayName}
-            size={56}
-          />
+          {view.photoUrl ? null : (
+            <UserAvatar
+              photoUrl={null}
+              name={view.displayName}
+              size={56}
+            />
+          )}
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-lg font-black text-white">
               {view.displayName}
@@ -169,6 +183,17 @@ export default async function PublicMemberPage({
               );
             })}
           </div>
+        ) : null}
+        {view.username ? (
+          <a
+            href={`https://t.me/${view.username}`}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-ember text-sm font-black text-ink"
+          >
+            <Send size={16} aria-hidden="true" />
+            پیام در تلگرام
+          </a>
         ) : null}
       </UserCard>
 

@@ -62,10 +62,12 @@ function loadLeaflet(): Promise<LeafletNs> {
 
 export function LocationMapPicker({
   latitude,
-  longitude
+  longitude,
+  readOnly = false
 }: {
   latitude?: number | null;
   longitude?: number | null;
+  readOnly?: boolean;
 }) {
   const mapId = useId();
   const mapRef = useRef<LeafletMap | null>(null);
@@ -91,15 +93,17 @@ export function LocationMapPicker({
       if (point) {
         markerRef.current = L.marker(point).addTo(map);
       }
-      map.on("click", (event) => {
-        const next: [number, number] = [event.latlng.lat, event.latlng.lng];
-        setPoint(next);
-        if (markerRef.current) {
-          markerRef.current.setLatLng(next);
-        } else {
-          markerRef.current = L.marker(next).addTo(map);
-        }
-      });
+      if (!readOnly) {
+        map.on("click", (event) => {
+          const next: [number, number] = [event.latlng.lat, event.latlng.lng];
+          setPoint(next);
+          if (markerRef.current) {
+            markerRef.current.setLatLng(next);
+          } else {
+            markerRef.current = L.marker(next).addTo(map);
+          }
+        });
+      }
       mapRef.current = map;
       window.setTimeout(() => {
         map.setView(start, point ? 15 : 12);
@@ -113,35 +117,43 @@ export function LocationMapPicker({
     };
     // Initialize once; later clicks update React state only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapId]);
+  }, [mapId, readOnly]);
 
   return (
     <div className="grid gap-2">
-      <p className="text-sm font-bold text-slate-200">محل قرار روی نقشه</p>
-      <p className="text-xs leading-6 text-slate-400">
-        روی نقشه بزن تا نقطه جمع شدن مشخص شود. طول و عرض جغرافیایی خودکار پر
-        می‌شود.
-      </p>
+      {readOnly ? null : (
+        <>
+          <p className="text-sm font-bold text-slate-200">محل قرار روی نقشه</p>
+          <p className="text-xs leading-6 text-slate-400">
+            روی نقشه بزن تا نقطه جمع شدن مشخص شود. طول و عرض جغرافیایی خودکار پر
+            می‌شود.
+          </p>
+        </>
+      )}
       <div
         id={mapId}
         dir="ltr"
-        className="h-56 w-full overflow-hidden rounded-xl border border-white/10"
+        className="z-0 h-56 w-full overflow-hidden rounded-xl border border-white/10"
       />
-      <input
-        type="hidden"
-        name="latitude"
-        value={point ? String(point[0]) : ""}
-      />
-      <input
-        type="hidden"
-        name="longitude"
-        value={point ? String(point[1]) : ""}
-      />
-      <p className="text-xs font-bold text-slate-400" dir="ltr">
-        {point
-          ? `${point[0].toFixed(6)}, ${point[1].toFixed(6)}`
-          : "هنوز نقطه‌ای انتخاب نشده"}
-      </p>
+      {readOnly ? null : (
+        <>
+          <input
+            type="hidden"
+            name="latitude"
+            value={point ? String(point[0]) : ""}
+          />
+          <input
+            type="hidden"
+            name="longitude"
+            value={point ? String(point[1]) : ""}
+          />
+          <p className="text-xs font-bold text-slate-400" dir="ltr">
+            {point
+              ? `${point[0].toFixed(6)}, ${point[1].toFixed(6)}`
+              : "هنوز نقطه‌ای انتخاب نشده"}
+          </p>
+        </>
+      )}
     </div>
   );
 }
