@@ -6,6 +6,7 @@ import { updateEventAction } from "@/app/admin/actions";
 import { AdminCard, PageTitle } from "@/components/admin/admin-card";
 import { EventDeleteButton } from "@/components/admin/event-delete-button";
 import { EventImageUploadForm } from "@/components/admin/event-image-upload-form";
+import { AnnounceTopicField } from "@/components/admin/announce-topic-field";
 import { CapacityField } from "@/components/admin/capacity-field";
 import { LocationMapPicker } from "@/components/admin/location-map-picker";
 import { PersianDateField } from "@/components/admin/persian-date-field";
@@ -126,6 +127,10 @@ export default async function EditEventPage({
             defaultValue={event.locationName}
           />
           <CapacityField defaultCapacity={event.capacity} />
+          <AnnounceTopicField
+            communityId={event.communityId}
+            defaultThreadId={event.announceThreadId}
+          />
           <LocationMapPicker
             latitude={event.latitude != null ? Number(event.latitude) : null}
             longitude={event.longitude != null ? Number(event.longitude) : null}

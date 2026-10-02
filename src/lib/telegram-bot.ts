@@ -1,11 +1,10 @@
 import { config } from "@/lib/config";
 import { APP_NAME } from "@/shared/brand";
-import { notifyButtons, telegramAccessFooter } from "@/shared/notify-copy";
+import { notifyButtons } from "@/shared/notify-copy";
 import { logger } from "@/lib/logger";
 import {
   formatHelpMessageHtml,
   formatStartMessageHtml,
-  escapeHtml,
   isGroupOrChannelChat,
   stripHtml,
   telegramDeepLink
@@ -149,6 +148,81 @@ export async function sendStartMessage(
   });
 }
 
+export async function pinTelegramMessage(input: {
+  chatId: number | string | bigint;
+  messageId: number;
+}) {
+  try {
+    await callTelegram("pinChatMessage", {
+      chat_id: input.chatId.toString(),
+      message_id: input.messageId,
+      disable_notification: true
+    });
+    return true;
+  } catch (error) {
+    logger.warn("telegram_pin_failed", {
+      chatId: input.chatId.toString(),
+      reason: error instanceof Error ? error.message : "unknown"
+    });
+    return false;
+  }
+}
+
+export async function deleteTelegramMessage(input: {
+  chatId: number | string | bigint;
+  messageId: number;
+}) {
+  try {
+    await callTelegram("deleteMessage", {
+      chat_id: input.chatId.toString(),
+      message_id: input.messageId
+    });
+    return true;
+  } catch (error) {
+    logger.warn("telegram_delete_failed", {
+      chatId: input.chatId.toString(),
+      reason: error instanceof Error ? error.message : "unknown"
+    });
+    return false;
+  }
+}
+
+export async function editTelegramPhoto(input: {
+  chatId: number | string | bigint;
+  messageId: number;
+  photoFileId: string;
+  caption: string;
+  eventPath?: string;
+  buttonText?: string;
+}): Promise<TelegramSendResult> {
+  const chatId = input.chatId.toString();
+  try {
+    await callTelegram("editMessageMedia", {
+      chat_id: chatId,
+      message_id: input.messageId,
+      media: {
+        type: "photo",
+        media: input.photoFileId,
+        caption: input.caption.slice(0, 1024),
+        parse_mode: "HTML"
+      },
+      reply_markup: buildAppKeyboard({
+        chatId,
+        eventPath: input.eventPath,
+        buttonText: input.buttonText
+      })
+    });
+    return { ok: true, messageId: input.messageId };
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : "unknown";
+    if (/message is not modified/i.test(reason)) {
+      return { ok: true, messageId: input.messageId };
+    }
+    logger.warn("telegram_edit_media_failed", { chatId, reason });
+    return { ok: false, reason };
+  }
+}
+
 export async function sendHelpMessage(chatId: number | string | bigint) {
   const id = chatId.toString();
   return callTelegram<TelegramMessage>("sendMessage", {
@@ -188,20 +262,6 @@ async function sendWithHtmlFallback(input: {
   }
 }
 
-function withAccessFooter(text: string, html: boolean, limit: number) {
-  const plain = telegramAccessFooter(appPublicUrl());
-  if (text.includes("پروکسی خود تلگرام")) {
-    return text.slice(0, limit);
-  }
-  const footer = html ? escapeHtml(plain) : plain;
-  const gap = "\n\n";
-  const combined = `${text}${gap}${footer}`;
-  if (combined.length <= limit) return combined;
-  const room = limit - footer.length - gap.length;
-  if (room < 24) return footer.slice(0, limit);
-  return `${text.slice(0, room - 1).trimEnd()}…${gap}${footer}`;
-}
-
 function withThread<T extends Record<string, unknown>>(
   body: T,
   threadId?: number | null
@@ -223,7 +283,7 @@ export async function sendTelegramMessage(input: {
 }): Promise<TelegramSendResult> {
   const chatId = input.chatId.toString();
   const html = input.parseMode === "HTML";
-  const text = withAccessFooter(input.text, html, 4096);
+  const text = input.text.slice(0, 4096);
   const keyboard = input.openApp
     ? buildAppKeyboard({
         chatId,
@@ -287,8 +347,8 @@ export async function editTelegramAnnouncement(input: {
     message_id: input.messageId,
     reply_markup: keyboard
   };
-  const caption = withAccessFooter(input.text, true, 1024);
-  const text = withAccessFooter(input.text, true, 4096);
+  const caption = input.text.slice(0, 1024);
+  const text = input.text.slice(0, 4096);
 
   if (caption.length <= 1024) {
     try {
@@ -372,7 +432,7 @@ export async function sendTelegramPhoto(input: {
       })
     : undefined;
 
-  const caption = withAccessFooter(input.caption, true, 1024);
+  const caption = input.caption.slice(0, 1024);
 
   try {
     const result = await sendWithHtmlFallback({
@@ -426,7 +486,7 @@ export async function sendTelegramPhotoBuffer(input: {
         buttonText: input.buttonText
       })
     : undefined;
-  const caption = withAccessFooter(input.caption, true, 1024);
+  const caption = input.caption.slice(0, 1024);
 
   const buildForm = (html: boolean, text: string) => {
     const form = new FormData();
@@ -479,7 +539,7 @@ export async function savePreparedInlinePhoto(input: {
   buttonUrl?: string;
   buttonText?: string;
 }): Promise<{ id: string; expirationDate: number }> {
-  const caption = withAccessFooter(input.caption, true, 1024);
+  const caption = input.caption.slice(0, 1024);
   const keyboard = input.buttonUrl
     ? {
         inline_keyboard: [

@@ -6,6 +6,7 @@ import { MediaService } from "@/modules/media/media.service";
 import { prisma } from "@/lib/prisma";
 import { AppError } from "@/shared/errors";
 import { logger } from "@/lib/logger";
+import { refreshAnnouncementCover } from "@/modules/events/announce.service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -59,6 +60,8 @@ export async function POST(
         sortOrder: count
       }
     });
+
+    await refreshAnnouncementCover(eventId).catch(() => undefined);
 
     return NextResponse.json({
       ok: true,

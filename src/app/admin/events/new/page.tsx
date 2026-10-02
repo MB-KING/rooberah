@@ -1,6 +1,7 @@
 import { EventStatus } from "@prisma/client";
 import { createEventAction } from "@/app/admin/actions";
 import { AdminCard, PageTitle } from "@/components/admin/admin-card";
+import { AnnounceTopicField } from "@/components/admin/announce-topic-field";
 import { CapacityField } from "@/components/admin/capacity-field";
 import { LocationMapPicker } from "@/components/admin/location-map-picker";
 import { PersianDateField } from "@/components/admin/persian-date-field";
@@ -75,6 +76,7 @@ export default async function NewEventPage({
             placeholder="بوستان آب و آتش"
           />
           <CapacityField />
+          <AnnounceTopicField communityId={admin.communityId} />
           <LocationMapPicker />
           <label className="grid gap-2 text-sm font-bold text-slate-200">
             وضعیت نمایش

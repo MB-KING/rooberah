@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.2.0";
+export const APP_VERSION = "1.3.0";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
@@ -12,6 +12,19 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.3.0",
+    dateLabel: "۱۰ مهر ۱۴۰۵",
+    title: "عکس، پین و تاپیک اطلاع‌رسانی",
+    items: [
+      "اگر بعد از اطلاع‌رسانی عکس برنامه را بگذاری، همان پیام گروه و کانال عکس را می‌گیرد.",
+      "پیام اطلاع‌رسانی برنامه در گروه و کانال پین می‌شود.",
+      "موقع ساخت و ویرایش برنامه می‌توانی تاپیک گروه را انتخاب کنی: پیاده‌روی یا برنامه‌های آزاد. کانال همان متن را بدون تاپیک می‌گیرد.",
+      "برای ذخیرهٔ تاپیک، داخل همان تاپیک /addgroup را با اسمش بزن.",
+      "آدرس سایت و توضیح VPN فقط زیر اطلاع‌رسانی اول برنامه می‌آید.",
+      "پیام «فلانی رو به راه شد» با اسم لاتین از راست درست خوانده می‌شود."
+    ]
+  },
   {
     version: "1.2.0",
     dateLabel: "۷ مهر ۱۴۰۵",

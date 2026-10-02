@@ -114,6 +114,9 @@ export async function handleGroupAdminCommand(input: {
   }
 
   if (command === "/addgroup") {
+    const topicTitle =
+      text.split(/\s+/).slice(1).join(" ").trim() ||
+      (input.threadId ? `تاپیک ${input.threadId}` : "");
     const existing = await prisma.telegramResource.findFirst({
       where: {
         communityId: admin.communityId,
@@ -130,7 +133,7 @@ export async function handleGroupAdminCommand(input: {
             isActive: true,
             type: TelegramResourceType.GROUP,
             receiveAnnouncements: true,
-            telegramThreadId: input.threadId ?? existing.telegramThreadId
+            telegramThreadId: existing.telegramThreadId ?? input.threadId ?? null
           }
         })
       : await prisma.telegramResource.create({
@@ -147,8 +150,25 @@ export async function handleGroupAdminCommand(input: {
           }
         });
 
-    const topicNote = resource.telegramThreadId
-      ? `\nاعلان‌ها فقط در تاپیک <code>${resource.telegramThreadId}</code> می‌روند.`
+    if (input.threadId && topicTitle) {
+      await prisma.telegramForumTopic.upsert({
+        where: {
+          resourceId_threadId: {
+            resourceId: resource.id,
+            threadId: input.threadId
+          }
+        },
+        create: {
+          resourceId: resource.id,
+          threadId: input.threadId,
+          title: topicTitle
+        },
+        update: { title: topicTitle }
+      });
+    }
+
+    const topicNote = input.threadId
+      ? `\nتاپیک «${escapeHtml(topicTitle)}» ذخیره شد.`
       : "";
     await sendTelegramMessage({
       chatId: input.chat.id,
@@ -185,6 +205,22 @@ export async function handleGroupAdminCommand(input: {
       telegramChatId: BigInt(input.chat.id)
     }
   });
+  const topics = resource
+    ? await prisma.telegramForumTopic.findMany({
+        where: { resourceId: resource.id },
+        orderBy: { title: "asc" }
+      })
+    : [];
+  const topicList =
+    topics.length > 0
+      ? [
+          "تاپیک‌های ذخیره‌شده:",
+          ...topics.map(
+            (topic) =>
+              `• ${escapeHtml(topic.title)} (<code>${topic.threadId}</code>)`
+          )
+        ].join("\n")
+      : `شناسه تاپیک: <code>${escapeHtml(String(resource?.telegramThreadId ?? input.threadId ?? "—"))}</code>`;
   await sendTelegramMessage({
     chatId: input.chat.id,
     text: resource
@@ -194,7 +230,7 @@ export async function handleGroupAdminCommand(input: {
           `وضعیت: ${resource.isActive ? "✅ فعال" : "❎ غیرفعال"}`,
           `اعلان خودکار برنامه‌ها: ${resource.receiveAnnouncements ? "🔔 روشن" : "🔕 خاموش"}`,
           `شناسه چت: <code>${escapeHtml(String(input.chat.id))}</code>`,
-          `شناسه تاپیک: <code>${escapeHtml(String(resource.telegramThreadId ?? input.threadId ?? "—"))}</code>`
+          topicList
         ].join("\n")
       : `ℹ️ گروه ثبت نشده.\nشناسه چت: <code>${escapeHtml(String(input.chat.id))}</code>${
           input.threadId

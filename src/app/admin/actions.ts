@@ -28,7 +28,8 @@ import {
 import { AttendanceService } from "@/modules/attendance/attendance.service";
 import {
   announceFlashQuery,
-  announcePublishedEvent
+  announcePublishedEvent,
+  refreshAnnouncementCover
 } from "@/modules/events/announce.service";
 import { EventService } from "@/modules/events/event.service";
 import { invitePresentMembersToFeedback } from "@/modules/events/feedback-invite.service";
@@ -71,6 +72,7 @@ const eventFormSchema = z.object({
   latitude: optionalNumber.pipe(z.number().min(-90).max(90).optional()),
   longitude: optionalNumber.pipe(z.number().min(-180).max(180).optional()),
   capacity: optionalPositiveInt,
+  announceThreadId: optionalPositiveInt,
   status: z.nativeEnum(EventStatus)
 });
 
@@ -196,6 +198,7 @@ export async function createEventAction(formData: FormData) {
         latitude: input.latitude,
         longitude: input.longitude,
         capacity: input.capacity ?? null,
+        announceThreadId: input.announceThreadId ?? null,
         status: input.status
       }
     );
@@ -249,6 +252,7 @@ export async function updateEventAction(formData: FormData) {
         latitude: input.latitude ?? null,
         longitude: input.longitude ?? null,
         capacity: input.capacity ?? null,
+        announceThreadId: input.announceThreadId ?? null,
         status: input.status
       }
     });
@@ -934,6 +938,7 @@ export async function uploadEventImageAction(formData: FormData) {
         sortOrder: count
       }
     });
+    await refreshAnnouncementCover(eventId).catch(() => undefined);
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "آپلود تصویر ناموفق بود.";

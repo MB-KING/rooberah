@@ -3,7 +3,8 @@ import { MEETING_TIME_LABEL, START_TIME_LABEL } from "@/shared/copy";
 import {
   helpMessageLines,
   quoteTitle,
-  startMessageLines
+  startMessageLines,
+  telegramAccessFooter
 } from "@/shared/notify-copy";
 
 /** Client-safe Telegram text helpers (no server secrets). */
@@ -65,10 +66,11 @@ export function formatGroupSignupHtml(input: {
   eventTitle: string;
   eventNumber: number;
 }) {
+  const rtl = "\u200F";
   return [
-    `<b>${escapeHtml(input.name.trim())}</b> رو به راه شد.`,
-    `برای ${escapeHtml(quoteTitle(input.eventTitle))} ثبت‌نام کرد.`,
-    `برنامه ${escapeHtml(String(input.eventNumber))} ${escapeHtml(APP_NAME)}`
+    `${rtl}<b>${escapeHtml(input.name.trim())}</b> رو به راه شد.`,
+    `${rtl}برای ${escapeHtml(quoteTitle(input.eventTitle))} ثبت‌نام کرد.`,
+    `${rtl}برنامه ${escapeHtml(String(input.eventNumber))} ${escapeHtml(APP_NAME)}`
   ].join("\n");
 }
 
@@ -142,7 +144,8 @@ export function formatEventAnnounceHtml(
   }
 
   lines.push("", "برای جزئیات و ثبت‌نام، دکمه زیر را بزن.");
-  return withParticipantFooter(lines.join("\n"), options?.participantNames ?? []);
+  const body = withParticipantFooter(lines.join("\n"), options?.participantNames ?? []);
+  return `${body}\n\n${escapeHtml(telegramAccessFooter("https://rooberah.net"))}`;
 }
 
 export function formatStartMessageHtml() {

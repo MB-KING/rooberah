@@ -294,6 +294,7 @@ model Event {
   latitude               Decimal?             @db.Decimal(9, 6)
   longitude              Decimal?             @db.Decimal(9, 6)
   capacity               Int?
+  announceThreadId       Int?
   status                 EventStatus          @default(DRAFT)
   checkInStartsAt        DateTime?
   checkInEndsAt          DateTime?
@@ -610,8 +611,21 @@ model TelegramResource {
   community            Community            @relation(fields: [communityId], references: [id])
   announcements        EventAnnouncement[]
   memberships          TelegramGroupMembership[]
+  forumTopics          TelegramForumTopic[]
 
   @@index([communityId, isActive, sortOrder])
+}
+
+model TelegramForumTopic {
+  id         String           @id @default(uuid())
+  resourceId String
+  threadId   Int
+  title      String
+  createdAt  DateTime         @default(now())
+  resource   TelegramResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([resourceId, threadId])
+  @@index([resourceId, title])
 }
 
 model TelegramGroupMembership {

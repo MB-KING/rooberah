@@ -19,6 +19,7 @@ import {
 } from "@/shared/notify-copy";
 import {
   formatEventAnnounceHtml,
+  formatGroupSignupHtml,
   formatHelpMessageHtml,
   formatNotificationHtml as formatTelegramNotificationHtml,
   formatStartMessageHtml
@@ -131,6 +132,8 @@ describe("telegram html formatters", () => {
     expect(html).toContain(MEETING_TIME_LABEL);
     expect(html).toContain("ساعت شروع مسیر");
     expect(html).toContain("<b>");
+    expect(html).toContain("rooberah.net");
+    expect(html).toContain("VPN");
     expect(html).not.toContain("شرکت کننده ها:");
     expect(html.length).toBeLessThanOrEqual(TELEGRAM_CAPTION_LIMIT);
     expect(html).not.toMatch(/<b>[^<]*$/);
@@ -174,6 +177,18 @@ describe("telegram html formatters", () => {
     expect(html.length).toBeLessThan(TELEGRAM_MESSAGE_LIMIT);
   });
 
+  it("keeps the signup line right-to-left when the name is Latin", () => {
+    const html = formatGroupSignupHtml({
+      name: "Reza Shirazi",
+      eventTitle: "پیاده‌روی عصر",
+      eventNumber: 12
+    });
+    expect(html.startsWith("\u200F")).toBe(true);
+    expect(html).toContain("<b>Reza Shirazi</b> رو به راه شد.");
+    expect(html).not.toContain("rooberah.net");
+    expect(html).not.toContain("VPN");
+  });
+
   it("keeps start and help as valid html with the current brand", () => {
     const start = formatStartMessageHtml();
     const help = formatHelpMessageHtml();
@@ -182,5 +197,7 @@ describe("telegram html formatters", () => {
     expect(help).toContain("پروفایل و نشان");
     expect(start).not.toContain("هم مسیر");
     expect(help).not.toContain("هم مسیر");
+    expect(start).not.toContain("rooberah.net");
+    expect(help).not.toContain("VPN");
   });
 });
