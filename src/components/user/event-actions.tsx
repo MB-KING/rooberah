@@ -1,22 +1,18 @@
 "use client";
 
 import { RegistrationStatus } from "@prisma/client";
-import { CalendarCheck2, Loader2, LogOut, Send } from "lucide-react";
+import { CalendarCheck2, Loader2, LogOut } from "lucide-react";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   cancelEventRegistrationAction,
   registerForEventAction
 } from "@/app/actions";
-import { APP_NAME } from "@/shared/brand";
 import { TelegramLoginWidget } from "@/components/telegram/telegram-login-widget";
 import { Button } from "@/components/ui/button";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
-import {
-  primaryActionClass,
-  secondaryActionClass
-} from "@/components/user/user-action-styles";
+import { secondaryActionClass } from "@/components/user/user-action-styles";
 
 function readTelegramInitData() {
   if (typeof window === "undefined") return null;
@@ -138,11 +134,7 @@ function AutoRegisterAfterLogin({ eventId }: { eventId: string }) {
 
 function LoginThenRegisterButton({ eventId }: { eventId: string }) {
   const router = useRouter();
-  const [pending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState<"checking" | "miniapp" | "widget">(
-    "checking"
-  );
+  const [mode, setMode] = useState<"checking" | "widget">("checking");
 
   useEffect(() => {
     let cancelled = false;
@@ -150,13 +142,22 @@ function LoginThenRegisterButton({ eventId }: { eventId: string }) {
     async function detect() {
       let initData = readTelegramInitData();
       if (!initData) {
-        for (let i = 0; i < 10 && !initData; i += 1) {
-          await new Promise((resolve) => window.setTimeout(resolve, 150));
+        for (let i = 0; i < 20 && !initData; i += 1) {
+          await new Promise((resolve) => window.setTimeout(resolve, 100));
           initData = readTelegramInitData();
         }
       }
-      if (!cancelled) {
-        setMode(initData ? "miniapp" : "widget");
+      if (cancelled) return;
+      if (!initData) {
+        setMode("widget");
+        return;
+      }
+      try {
+        await loginWithTelegramInitData(initData);
+        if (!cancelled) router.refresh();
+      } catch (err) {
+        if (isRedirectError(err)) throw err;
+        if (!cancelled) setMode("widget");
       }
     }
 
@@ -164,93 +165,18 @@ function LoginThenRegisterButton({ eventId }: { eventId: string }) {
     return () => {
       cancelled = true;
     };
-  }, []);
-
-  async function registerAfterLogin() {
-    const formData = new FormData();
-    formData.set("eventId", eventId);
-    await registerForEventAction(formData);
-  }
-
-  function handleMiniAppClick() {
-    setError(null);
-    startTransition(async () => {
-      try {
-        const initData = readTelegramInitData();
-        if (!initData) {
-          setMode("widget");
-          return;
-        }
-        await loginWithTelegramInitData(initData);
-        await registerAfterLogin();
-      } catch (err) {
-        if (isRedirectError(err)) {
-          throw err;
-        }
-        setError(
-          `ورود از تلگرام انجام نشد. یک‌بار دیگر از داخل ربات ${APP_NAME} باز کن.`
-        );
-        router.refresh();
-      }
-    });
-  }
+  }, [router]);
 
   if (mode === "checking") {
     return (
       <p className="inline-flex min-h-11 w-full items-center justify-center gap-2 text-sm font-bold text-slate-300">
         <Loader2 size={17} className="animate-spin" aria-hidden="true" />
-        در حال بررسی ورود…
+        در حال ورود…
       </p>
     );
   }
 
-  if (mode === "widget") {
-    return (
-      <div className="grid gap-2">
-        <p className="text-center text-xs font-bold text-slate-300">
-          با تلگرام وارد شو
-        </p>
-        <TelegramLoginWidget nextPath={`/events/${eventId}?register=1`} />
-        {error ? (
-          <p
-          role="alert"
-          className="rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-xs font-bold leading-5 text-red-200"
-        >
-            {error}
-          </p>
-        ) : null}
-      </div>
-    );
-  }
-
   return (
-    <div className="grid gap-2">
-      <button
-        type="button"
-        disabled={pending}
-        onClick={handleMiniAppClick}
-        className={primaryActionClass}
-      >
-        {pending ? (
-          <>
-            <Loader2 size={17} className="animate-spin" aria-hidden="true" />
-            در حال ورود و ثبت‌نام…
-          </>
-        ) : (
-          <>
-            <Send size={17} aria-hidden="true" />
-            ورود از تلگرام و ثبت‌نام
-          </>
-        )}
-      </button>
-      {error ? (
-        <p
-          role="alert"
-          className="rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-xs font-bold leading-5 text-red-200"
-        >
-          {error}
-        </p>
-      ) : null}
-    </div>
+    <TelegramLoginWidget nextPath={`/events/${eventId}?register=1`} />
   );
 }

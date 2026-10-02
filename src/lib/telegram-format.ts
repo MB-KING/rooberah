@@ -190,10 +190,9 @@ export function startParamFromPath(path?: string) {
 }
 
 /**
- * Group/channel URL buttons cannot use web_app.
- * `?startapp=` on the bot username needs a Main Mini App in BotFather
- * and otherwise returns BOT_INVALID. Prefer the named Mini App link,
- * otherwise open the bot with /start so a private web_app button can follow.
+ * Group and channel buttons cannot use web_app, so they open the Mini App
+ * directly. Telegram then sends init data and the same session as the bot menu.
+ * A named Mini App is used when configured; otherwise the Main Mini App link.
  */
 export function telegramDeepLink(path?: string) {
   const username = botUsername();
@@ -202,7 +201,7 @@ export function telegramDeepLink(path?: string) {
   if (shortName) {
     return `https://t.me/${username}/${shortName}?startapp=${startapp}`;
   }
-  return `https://t.me/${username}?start=${startapp}`;
+  return `https://t.me/${username}?startapp=${startapp}`;
 }
 
 export function isPermanentTelegramChatError(reason: string) {

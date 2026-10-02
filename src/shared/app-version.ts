@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.3.0";
+export const APP_VERSION = "1.3.1";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
@@ -12,6 +12,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.3.1",
+    dateLabel: "۱۰ مهر ۱۴۰۵",
+    title: "ورود از دکمه گروه",
+    items: [
+      "دکمه «مشاهده و ثبت‌نام» در گروه و کانال همان مینی‌اپ ربات را باز می‌کند و دوباره ورود نمی‌خواهد."
+    ]
+  },
   {
     version: "1.3.0",
     dateLabel: "۱۰ مهر ۱۴۰۵",

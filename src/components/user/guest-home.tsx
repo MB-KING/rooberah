@@ -1,7 +1,7 @@
 import { CalendarDays, Send } from "lucide-react";
 import type { EventStatus } from "@prisma/client";
 import Link from "next/link";
-import { TelegramLoginWidget } from "@/components/telegram/telegram-login-widget";
+import { TelegramSignIn } from "@/components/telegram/telegram-sign-in";
 import { EventCard } from "@/components/user/event-card";
 import { UserCard } from "@/components/user/user-card";
 import { secondaryActionClass } from "@/components/user/user-action-styles";
@@ -36,7 +36,7 @@ export function GuestHome({ upcoming }: { upcoming: GuestEvent[] }) {
           آشنا شو.
         </p>
         <div className="mt-5 grid gap-2">
-          <TelegramLoginWidget />
+          <TelegramSignIn />
           <Link href="/events" className={secondaryActionClass}>
             <CalendarDays size={17} aria-hidden="true" />
             مشاهده برنامه‌ها
