@@ -1,3 +1,14 @@
+export async function postTelegramInitData(initData: string) {
+  const response = await fetch("/api/auth/telegram", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ initData })
+  });
+  if (!response.ok) {
+    throw new Error("telegram_login_failed");
+  }
+}
+
 /** One full navigation so the session cookie is sent. Stops if this URL already reloaded. */
 export function reloadAfterTelegramLogin(nextPath?: string) {
   const url = new URL(nextPath || window.location.href, window.location.origin);

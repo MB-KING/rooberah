@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.3.6";
+export const APP_VERSION = "1.3.7";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
@@ -12,6 +12,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.3.7",
+    dateLabel: "۱۵ مهر ۱۴۰۵",
+    title: "سبک‌تر شدن برنامه",
+    items: [
+      "چند کتابخانه و قطعهٔ کد که دیگر استفاده نمی‌شدند برداشته شد. رفتار برنامه همان است."
+    ]
+  },
   {
     version: "1.3.6",
     dateLabel: "۱۵ مهر ۱۴۰۵",

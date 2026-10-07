@@ -2,7 +2,10 @@
 
 import Script from "next/script";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { reloadAfterTelegramLogin } from "@/components/telegram/reload-after-login";
+import {
+  postTelegramInitData,
+  reloadAfterTelegramLogin
+} from "@/components/telegram/reload-after-login";
 import { pathFromStartParam } from "@/lib/telegram-format";
 
 const START_PARAM_KEY = "rooberah_start_param";
@@ -35,22 +38,6 @@ declare global {
       };
     };
   }
-}
-
-async function loginWithInitData(initData: string) {
-  const response = await fetch("/api/auth/telegram", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ initData })
-  });
-
-  if (response.status === 403) {
-    return "logged-out" as const;
-  }
-  if (!response.ok) {
-    throw new Error("telegram_login_failed");
-  }
-  return "ok" as const;
 }
 
 function resolveStartPath(webApp: NonNullable<Window["Telegram"]>["WebApp"]) {
@@ -109,10 +96,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
     webApp.setBackgroundColor?.("#1C1008");
 
     try {
-      const login = await loginWithInitData(initData);
-      if (login === "logged-out") {
-        return;
-      }
+      await postTelegramInitData(initData);
       const deepPath = resolveStartPath(webApp);
       reloadAfterTelegramLogin(
         deepPath && deepPath !== window.location.pathname ? deepPath : undefined

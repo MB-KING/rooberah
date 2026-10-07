@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/vazirmatn";
-import { QueryProvider } from "@/components/query-provider";
 import { TelegramProvider } from "@/components/telegram/telegram-provider";
 import { ReferralCapture } from "@/components/user/referral-capture";
 import { APP_SLOGAN, APP_TITLE, BRAND_ICON_SRC, brandColors } from "@/shared/brand";
@@ -26,12 +25,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="fa" dir="rtl" suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <QueryProvider>
-          <TelegramProvider>
-            <ReferralCapture />
-            {children}
-          </TelegramProvider>
-        </QueryProvider>
+        <TelegramProvider>
+          <ReferralCapture />
+          {children}
+        </TelegramProvider>
       </body>
     </html>
   );

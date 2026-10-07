@@ -8,7 +8,10 @@ import {
   cancelEventRegistrationAction,
   registerForEventAction
 } from "@/app/actions";
-import { reloadAfterTelegramLogin } from "@/components/telegram/reload-after-login";
+import {
+  postTelegramInitData,
+  reloadAfterTelegramLogin
+} from "@/components/telegram/reload-after-login";
 import { TelegramLoginWidget } from "@/components/telegram/telegram-login-widget";
 import { Button } from "@/components/ui/button";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
@@ -17,17 +20,6 @@ import { secondaryActionClass } from "@/components/user/user-action-styles";
 function readTelegramInitData() {
   if (typeof window === "undefined") return null;
   return window.Telegram?.WebApp?.initData?.trim() || null;
-}
-
-async function loginWithTelegramInitData(initData: string) {
-  const response = await fetch("/api/auth/telegram", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ initData })
-  });
-  if (!response.ok) {
-    throw new Error("telegram_login_failed");
-  }
 }
 
 export function EventActions({
@@ -152,7 +144,7 @@ function LoginThenRegisterButton({ eventId }: { eventId: string }) {
         return;
       }
       try {
-        await loginWithTelegramInitData(initData);
+        await postTelegramInitData(initData);
         if (!reloadAfterTelegramLogin()) setMode("widget");
       } catch (err) {
         if (isRedirectError(err)) throw err;
