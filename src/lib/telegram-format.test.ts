@@ -22,11 +22,11 @@ afterEach(() => {
 });
 
 describe("telegramDeepLink", () => {
-  it("opens the Main Mini App so group buttons stay logged in", () => {
+  it("opens the bot with /start so the private reply can launch the Mini App", () => {
     process.env.TELEGRAM_BOT_USERNAME = "rooberahirbot";
     delete process.env.TELEGRAM_MINI_APP_SHORT_NAME;
     expect(telegramDeepLink("/events/11111111-1111-4111-8111-111111111111")).toBe(
-      "https://t.me/rooberahirbot?startapp=e_11111111-1111-4111-8111-111111111111"
+      "https://t.me/rooberahirbot?start=e_11111111-1111-4111-8111-111111111111"
     );
   });
 

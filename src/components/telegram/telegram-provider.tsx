@@ -54,14 +54,16 @@ async function loginWithInitData(initData: string) {
 }
 
 function resolveStartPath(webApp: NonNullable<Window["Telegram"]>["WebApp"]) {
+  const fromHash = window.location.hash.replace(/^#/, "").trim();
   const fromUnsafe = webApp?.initDataUnsafe?.start_param?.trim();
-  if (fromUnsafe) {
+  const param = fromUnsafe || fromHash;
+  if (param) {
     try {
-      sessionStorage.setItem(START_PARAM_KEY, fromUnsafe);
+      sessionStorage.setItem(START_PARAM_KEY, param);
     } catch {
       // ignore storage failures in restricted WebViews
     }
-    return pathFromStartParam(fromUnsafe);
+    return pathFromStartParam(param);
   }
 
   try {

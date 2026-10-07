@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.3.1";
+export const APP_VERSION = "1.3.2";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
@@ -12,6 +12,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.3.2",
+    dateLabel: "۱۵ مهر ۱۴۰۵",
+    title: "باز شدن عادی مینی‌اپ",
+    items: [
+      "دکمهٔ گروه دوباره مینی‌اپ تلگرام را مثل بقیه باز می‌کند و همان‌جا وارد می‌شوی."
+    ]
+  },
   {
     version: "1.3.1",
     dateLabel: "۱۰ مهر ۱۴۰۵",
