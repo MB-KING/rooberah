@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.3.4";
+export const APP_VERSION = "1.3.5";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
@@ -12,6 +12,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.3.5",
+    dateLabel: "۱۵ مهر ۱۴۰۵",
+    title: "ورود دیگر نصفه نمی‌ماند",
+    items: [
+      "اگر مینی‌اپ دو بار هم‌زمان وارد می‌شد، حساب ساخته نمی‌شد و روی «در حال ورود» می‌ماند. حالا ورود تمام می‌شود و اطلاعات خودت می‌آید."
+    ]
+  },
   {
     version: "1.3.4",
     dateLabel: "۱۵ مهر ۱۴۰۵",

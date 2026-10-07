@@ -9,9 +9,11 @@ export const SESSION_MAX_AGE_SECONDS = 14 * 24 * 60 * 60;
 export function telegramSessionCookieOptions() {
   return {
     httpOnly: true as const,
-    // Local http://localhost cannot set Secure cookies in browsers.
+    // Telegram's WebView only keeps the session when the cookie is Secure + None.
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax" as const,
+    sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as
+      | "none"
+      | "lax",
     path: "/",
     maxAge: SESSION_MAX_AGE_SECONDS
   };
@@ -50,7 +52,7 @@ export function markLoggedOutCookie(cookies: CookieJar) {
     value: "1",
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     path: "/",
     maxAge: SESSION_MAX_AGE_SECONDS
   });
