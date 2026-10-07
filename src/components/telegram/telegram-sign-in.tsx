@@ -1,8 +1,11 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import {
+  reloadAfterTelegramLogin,
+  telegramLoginAlreadyRetried
+} from "@/components/telegram/reload-after-login";
 import { TelegramLoginWidget } from "@/components/telegram/telegram-login-widget";
 
 function readInitData() {
@@ -11,7 +14,6 @@ function readInitData() {
 }
 
 export function TelegramSignIn({ nextPath = "/" }: { nextPath?: string }) {
-  const router = useRouter();
   const [browserLogin, setBrowserLogin] = useState(false);
 
   useEffect(() => {
@@ -24,29 +26,33 @@ export function TelegramSignIn({ nextPath = "/" }: { nextPath?: string }) {
         initData = readInitData();
       }
       if (cancelled) return;
-      if (!initData) {
+      if (!initData || telegramLoginAlreadyRetried()) {
         setBrowserLogin(true);
         return;
       }
 
-      const response = await fetch("/api/auth/telegram", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ initData })
-      });
-      if (cancelled) return;
-      if (response.ok) {
-        router.refresh();
-        return;
+      try {
+        const response = await fetch("/api/auth/telegram", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ initData })
+        });
+        if (cancelled) return;
+        if (!response.ok) {
+          setBrowserLogin(true);
+          return;
+        }
+        reloadAfterTelegramLogin();
+      } catch {
+        if (!cancelled) setBrowserLogin(true);
       }
-      setBrowserLogin(true);
     }
 
     void signIn();
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, []);
 
   if (browserLogin) {
     return <TelegramLoginWidget nextPath={nextPath} />;

@@ -1,10 +1,12 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { AuthService } from "@/modules/auth/auth.service";
+import { validateTelegramInitData } from "@/modules/auth/telegram";
 import {
   applyTelegramSessionCookie,
   TELEGRAM_LOGOUT_COOKIE
 } from "@/modules/auth/telegram-cookie";
+import { serializeTelegramOidcSession } from "@/modules/auth/telegram-oidc";
 import { ok, fail, parseJson } from "@/shared/api";
 import { z } from "zod";
 
@@ -20,7 +22,8 @@ export async function POST(request: Request) {
 
   try {
     const input = await parseJson(request, schema);
-    const user = await new AuthService().loginWithTelegram(input.initData);
+    const telegramUser = validateTelegramInitData(input.initData);
+    const user = await new AuthService().loginWithTelegramUser(telegramUser);
 
     const response = ok({
       id: user.id,
@@ -31,7 +34,12 @@ export async function POST(request: Request) {
       roles: user.roles.map((role) => role.role)
     });
 
-    applyTelegramSessionCookie(response.cookies, input.initData);
+    // Raw init data is often larger than a cookie, so the WebView drops it
+    // and the next page still looks logged out.
+    applyTelegramSessionCookie(
+      response.cookies,
+      serializeTelegramOidcSession(telegramUser)
+    );
     return response;
   } catch (error) {
     return fail(error);

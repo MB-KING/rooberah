@@ -1,8 +1,8 @@
 "use client";
 
 import Script from "next/script";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { reloadAfterTelegramLogin } from "@/components/telegram/reload-after-login";
 import { pathFromStartParam } from "@/lib/telegram-format";
 
 const START_PARAM_KEY = "rooberah_start_param";
@@ -81,7 +81,6 @@ function resolveStartPath(webApp: NonNullable<Window["Telegram"]>["WebApp"]) {
 }
 
 export function TelegramProvider({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
   const [scriptReady, setScriptReady] = useState(false);
   const bootstrapped = useRef(false);
 
@@ -115,15 +114,13 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       const deepPath = resolveStartPath(webApp);
-      if (deepPath && deepPath !== "/") {
-        router.replace(deepPath as never);
-      } else {
-        router.refresh();
-      }
+      reloadAfterTelegramLogin(
+        deepPath && deepPath !== window.location.pathname ? deepPath : undefined
+      );
     } catch {
       bootstrapped.current = false;
     }
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     if (scriptReady) {

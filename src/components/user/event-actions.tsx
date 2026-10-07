@@ -3,12 +3,12 @@
 import { RegistrationStatus } from "@prisma/client";
 import { CalendarCheck2, Loader2, LogOut } from "lucide-react";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   cancelEventRegistrationAction,
   registerForEventAction
 } from "@/app/actions";
+import { reloadAfterTelegramLogin } from "@/components/telegram/reload-after-login";
 import { TelegramLoginWidget } from "@/components/telegram/telegram-login-widget";
 import { Button } from "@/components/ui/button";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
@@ -133,7 +133,6 @@ function AutoRegisterAfterLogin({ eventId }: { eventId: string }) {
 }
 
 function LoginThenRegisterButton({ eventId }: { eventId: string }) {
-  const router = useRouter();
   const [mode, setMode] = useState<"checking" | "widget">("checking");
 
   useEffect(() => {
@@ -154,7 +153,7 @@ function LoginThenRegisterButton({ eventId }: { eventId: string }) {
       }
       try {
         await loginWithTelegramInitData(initData);
-        if (!cancelled) router.refresh();
+        if (!reloadAfterTelegramLogin()) setMode("widget");
       } catch (err) {
         if (isRedirectError(err)) throw err;
         if (!cancelled) setMode("widget");
@@ -165,7 +164,7 @@ function LoginThenRegisterButton({ eventId }: { eventId: string }) {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, []);
 
   if (mode === "checking") {
     return (

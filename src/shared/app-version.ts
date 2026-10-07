@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.3.3";
+export const APP_VERSION = "1.3.4";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
@@ -12,6 +12,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.3.4",
+    dateLabel: "۱۵ مهر ۱۴۰۵",
+    title: "ورود مینی‌اپ کامل می‌شود",
+    items: [
+      "مینی‌اپ دیگر روی «در حال ورود» نمی‌ماند و اطلاعات خودت را نشان می‌دهد."
+    ]
+  },
   {
     version: "1.3.3",
     dateLabel: "۱۵ مهر ۱۴۰۵",
