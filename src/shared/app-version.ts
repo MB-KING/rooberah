@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.3.5";
+export const APP_VERSION = "1.3.6";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
@@ -12,6 +12,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.3.6",
+    dateLabel: "۱۵ مهر ۱۴۰۵",
+    title: "ورود خودکار داخل ربات",
+    items: [
+      "داخل مینی‌اپ دیگر دکمهٔ «ورود با تلگرام» نمی‌آید. همان ورود خودکار قبلی برمی‌گردد."
+    ]
+  },
   {
     version: "1.3.5",
     dateLabel: "۱۵ مهر ۱۴۰۵",

@@ -1,11 +1,6 @@
-import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
 import { AuthService } from "@/modules/auth/auth.service";
 import { validateTelegramInitData } from "@/modules/auth/telegram";
-import {
-  applyTelegramSessionCookie,
-  TELEGRAM_LOGOUT_COOKIE
-} from "@/modules/auth/telegram-cookie";
+import { applyTelegramSessionCookie } from "@/modules/auth/telegram-cookie";
 import { serializeTelegramOidcSession } from "@/modules/auth/telegram-oidc";
 import { ok, fail, parseJson } from "@/shared/api";
 import { z } from "zod";
@@ -15,11 +10,6 @@ const schema = z.object({
 });
 
 export async function POST(request: Request) {
-  const loggedOut = (await cookies()).get(TELEGRAM_LOGOUT_COOKIE)?.value === "1";
-  if (loggedOut) {
-    return NextResponse.json({ code: "LOGGED_OUT" }, { status: 403 });
-  }
-
   try {
     const input = await parseJson(request, schema);
     const telegramUser = validateTelegramInitData(input.initData);

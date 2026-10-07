@@ -1,26 +1,10 @@
-const RELOAD_KEY = "rooberah_session_reload";
-
-export function telegramLoginAlreadyRetried() {
-  try {
-    return sessionStorage.getItem(RELOAD_KEY) === "1";
-  } catch {
+/** One full navigation so the session cookie is sent. Stops if this URL already reloaded. */
+export function reloadAfterTelegramLogin(nextPath?: string) {
+  const url = new URL(nextPath || window.location.href, window.location.origin);
+  if (new URLSearchParams(window.location.search).get("auth") === "1") {
     return false;
   }
-}
-
-/** Full navigation so the new session cookie is actually sent. Only once. */
-export function reloadAfterTelegramLogin(nextPath?: string) {
-  try {
-    if (sessionStorage.getItem(RELOAD_KEY) === "1") return false;
-    sessionStorage.setItem(RELOAD_KEY, "1");
-  } catch {
-    // continue; a reload is still better than staying on the spinner
-  }
-
-  if (nextPath && nextPath !== window.location.pathname) {
-    window.location.replace(nextPath);
-  } else {
-    window.location.reload();
-  }
+  url.searchParams.set("auth", "1");
+  window.location.replace(`${url.pathname}${url.search}`);
   return true;
 }
