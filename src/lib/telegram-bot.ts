@@ -83,9 +83,9 @@ function buildAppKeyboard(input: {
 }) {
   const label = input.buttonText ?? `باز کردن ${APP_NAME}`;
   const httpsApp = appPublicUrl().startsWith("https://");
-  // Same address as the bot menu, so Telegram opens it as a Mini App and sends init data.
+  // Query, not a hash: Telegram will not launch a Mini App whose button URL contains #.
   const webAppUrl = input.eventPath
-    ? `${appPublicUrl()}#${startParamFromPath(input.eventPath)}`
+    ? `${appPublicUrl()}/?e=${encodeURIComponent(startParamFromPath(input.eventPath))}`
     : appPublicUrl();
 
   // web_app buttons only work in private chats, and only with HTTPS URLs.

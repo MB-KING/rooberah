@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.3.2";
+export const APP_VERSION = "1.3.3";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
@@ -12,6 +12,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.3.3",
+    dateLabel: "۱۵ مهر ۱۴۰۵",
+    title: "دکمه Open مینی‌اپ",
+    items: [
+      "دکمهٔ Open ربات خودِ مینی‌اپ را باز می‌کند، نه فقط چت."
+    ]
+  },
   {
     version: "1.3.2",
     dateLabel: "۱۵ مهر ۱۴۰۵",

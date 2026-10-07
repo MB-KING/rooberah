@@ -190,10 +190,9 @@ export function startParamFromPath(path?: string) {
 }
 
 /**
- * Group and channel buttons cannot launch a Mini App themselves.
- * A named Mini App direct link is used when one is configured.
- * Otherwise the button opens the bot with /start, and the private reply
- * uses a real web_app button so Telegram injects init data like other Mini Apps.
+ * Group buttons cannot be web_app buttons.
+ * The menu button is the Main Mini App, so ?startapp opens that same app
+ * and Telegram shows Open as a Mini App launch, not a plain chat.
  */
 export function telegramDeepLink(path?: string) {
   const username = botUsername();
@@ -202,7 +201,7 @@ export function telegramDeepLink(path?: string) {
   if (shortName) {
     return `https://t.me/${username}/${shortName}?startapp=${startapp}`;
   }
-  return `https://t.me/${username}?start=${startapp}`;
+  return `https://t.me/${username}?startapp=${startapp}`;
 }
 
 export function isPermanentTelegramChatError(reason: string) {

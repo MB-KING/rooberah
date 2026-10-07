@@ -55,8 +55,9 @@ async function loginWithInitData(initData: string) {
 
 function resolveStartPath(webApp: NonNullable<Window["Telegram"]>["WebApp"]) {
   const fromHash = window.location.hash.replace(/^#/, "").trim();
+  const fromQuery = new URLSearchParams(window.location.search).get("e")?.trim() ?? "";
   const fromUnsafe = webApp?.initDataUnsafe?.start_param?.trim();
-  const param = fromUnsafe || fromHash;
+  const param = fromUnsafe || fromQuery || fromHash;
   if (param) {
     try {
       sessionStorage.setItem(START_PARAM_KEY, param);
