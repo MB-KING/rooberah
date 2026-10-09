@@ -47,7 +47,7 @@ src/
   shared/               API response, errors, pagination
 prisma/
   schema.prisma
-  seed.ts
+  seed.mjs
 ```
 
 ## Database ERD

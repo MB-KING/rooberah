@@ -24,9 +24,12 @@ Thumbs.db
 # tooling / local IDE
 .vercel
 .cursor
+.agents
 .idea
 .vscode/*
 !.vscode/extensions.json
+graphify-out
+skills-lock.json
 
 # databases / dumps
 prisma/dev.db
