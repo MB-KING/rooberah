@@ -1,6 +1,16 @@
+"use client";
+
 import { UserRound } from "lucide-react";
 import Image from "next/image";
+import { useState } from "react";
 import { cn } from "@/lib/cn";
+
+function usablePhoto(url?: string | null) {
+  return (
+    !!url &&
+    (url.startsWith("/") || url.startsWith("https://") || url.startsWith("http://"))
+  );
+}
 
 export function UserAvatar({
   photoUrl,
@@ -13,6 +23,9 @@ export function UserAvatar({
   size?: number;
   className?: string;
 }) {
+  const [failed, setFailed] = useState(false);
+  const show = usablePhoto(photoUrl) && !failed;
+
   return (
     <div
       className={cn(
@@ -21,14 +34,15 @@ export function UserAvatar({
       )}
       style={{ width: size, height: size }}
     >
-      {photoUrl ? (
+      {show ? (
         <Image
-          src={photoUrl}
+          src={photoUrl!}
           alt={name}
           fill
           sizes={`${size}px`}
           className="object-cover"
           unoptimized
+          onError={() => setFailed(true)}
         />
       ) : (
         <div className="flex h-full w-full items-center justify-center text-ember">

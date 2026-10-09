@@ -83,7 +83,7 @@ export default async function PublicMemberPage({
     <UserPageShell>
       <UserPageHeader title={view.displayName} backFallbackHref="/members" />
       <UserCard className={cn("mb-4", statusTone?.card)}>
-        {view.photoUrl ? (
+        {view.photoUrl?.startsWith("/") ? (
           <div className="relative mb-4 h-56 w-full overflow-hidden rounded-xl bg-white/10">
             <Image
               src={view.photoUrl}

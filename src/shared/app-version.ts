@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.3.9";
+export const APP_VERSION = "1.4.0";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
@@ -12,6 +12,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.4.0",
+    dateLabel: "۱۷ مهر ۱۴۰۵",
+    title: "عکس پروفایل تلگرام",
+    items: [
+      "عکس تلگرام دیگر از آدرسی که حذف شده لود نمی‌شود. یک کپی روی خود سایت می‌ماند."
+    ]
+  },
   {
     version: "1.3.9",
     dateLabel: "۱۷ مهر ۱۴۰۵",

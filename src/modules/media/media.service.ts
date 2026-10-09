@@ -139,3 +139,21 @@ export class MediaService {
 export function mediaPublicPath(mediaId: string) {
   return `/api/media/${mediaId}`;
 }
+
+export function isStoredPhoto(url: string | null | undefined) {
+  return !!url && (url.startsWith("/") || url.includes("/api/media/"));
+}
+
+/** Telegram profile photo links expire and 404. Keep a copy on our storage. */
+export async function storeRemoteProfilePhoto(userId: string, url: string) {
+  if (!url.startsWith("https://")) return null;
+  const response = await fetch(url, { cache: "no-store" });
+  if (!response.ok) return null;
+  const asset = await new MediaService().createFromUpload({
+    uploaderId: userId,
+    buffer: Buffer.from(await response.arrayBuffer()),
+    filename: "telegram-profile.jpg",
+    mimeType: response.headers.get("content-type") || "image/jpeg"
+  });
+  return mediaPublicPath(asset.id);
+}

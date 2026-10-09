@@ -6,6 +6,10 @@ import {
   TELEGRAM_INIT_COOKIE,
   TELEGRAM_INIT_HEADER
 } from "@/modules/auth/telegram-cookie";
+import {
+  isStoredPhoto,
+  storeRemoteProfilePhoto
+} from "@/modules/media/media.service";
 import { validateTelegramInitData } from "@/modules/auth/telegram";
 import {
   isTelegramLoginWidgetPayload,
@@ -75,15 +79,23 @@ export async function requireCurrentUser() {
     throw new AppError("UNAUTHORIZED", "User not found", 401);
   }
 
-  const nextPhotoUrl = telegramUser.photo_url ?? null;
-  const customPhoto = user.photoUrl?.startsWith("/") === true;
-  const photoChanged = !customPhoto && nextPhotoUrl !== user.photoUrl;
   const usernameChanged = (telegramUser.username ?? null) !== user.username;
-  if (photoChanged || usernameChanged) {
+  const junkPhoto =
+    !!user.photoUrl &&
+    !isStoredPhoto(user.photoUrl) &&
+    !user.photoUrl.startsWith("http");
+  const remotePhoto = !isStoredPhoto(user.photoUrl)
+    ? telegramUser.photo_url ?? (user.photoUrl?.startsWith("http") ? user.photoUrl : null)
+    : null;
+  let photoUrl = junkPhoto ? null : user.photoUrl;
+  if (remotePhoto) {
+    photoUrl = await storeRemoteProfilePhoto(user.id, remotePhoto).catch(() => null);
+  }
+  if (remotePhoto || junkPhoto || usernameChanged) {
     return prisma.user.update({
       where: { id: user.id },
       data: {
-        ...(photoChanged ? { photoUrl: nextPhotoUrl } : {}),
+        ...(remotePhoto || junkPhoto ? { photoUrl } : {}),
         username: telegramUser.username ?? null
       },
       include: { roles: true }
