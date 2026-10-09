@@ -23,6 +23,7 @@ import { Prisma } from "@prisma/client";
 import { buildSocialLinks } from "@/shared/social-links";
 import { normalizePhone } from "@/shared/phone";
 import { tehranWallTimeToUtc } from "@/lib/tehran-time";
+import { MediaService, mediaPublicPath } from "@/modules/media/media.service";
 
 const createBusinessSchema = z.object({
   name: z.string().min(2),
@@ -168,6 +169,7 @@ export async function redeemRewardAction(formData: FormData) {
 export async function updateProfileAction(formData: FormData) {
   try {
     const user = await requireCurrentUserPage();
+    const photo = formData.get("photo");
     const input = profileSchema.parse(Object.fromEntries(formData));
     const socialLinks = buildSocialLinks({
       website: input.website,
@@ -221,6 +223,19 @@ export async function updateProfileAction(formData: FormData) {
         }
       })
     ]);
+
+    if (photo instanceof File && photo.size > 0) {
+      const asset = await new MediaService().createFromUpload({
+        uploaderId: user.id,
+        buffer: Buffer.from(await photo.arrayBuffer()),
+        filename: photo.name || "profile.jpg",
+        mimeType: photo.type || "image/jpeg"
+      });
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { photoUrl: mediaPublicPath(asset.id) }
+      });
+    }
 
     await new XPService().award(
       user.id,

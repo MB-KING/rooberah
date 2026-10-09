@@ -1,4 +1,5 @@
 import { ChevronDown, Eye, ShieldCheck } from "lucide-react";
+import { UserAvatar } from "@/components/user/user-avatar";
 import type { ReactNode } from "react";
 import { PersianDateField } from "@/components/admin/persian-date-field";
 import { ProfileSettingsForm } from "@/components/user/profile-settings-form";
@@ -56,6 +57,21 @@ export default async function ProfileSettingsPage() {
       </UserCard>
       <UserCard>
         <ProfileSettingsForm>
+          <Field label="عکس پروفایل" hint="مثل اسم، با انتخاب عکس ذخیره می‌شود.">
+            <div className="flex items-center gap-3">
+              <UserAvatar
+                photoUrl={user.photoUrl}
+                name={user.firstName ?? "پروفایل"}
+                size={64}
+              />
+              <input
+                name="photo"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="block w-full text-sm text-slate-300 file:me-3 file:rounded-xl file:border-0 file:bg-ember file:px-3 file:py-2 file:text-sm file:font-black file:text-ink"
+              />
+            </div>
+          </Field>
           <Field label="نام">
             <input
               name="firstName"

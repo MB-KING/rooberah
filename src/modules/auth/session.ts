@@ -76,15 +76,14 @@ export async function requireCurrentUser() {
   }
 
   const nextPhotoUrl = telegramUser.photo_url ?? null;
-  // Keep custom display names; only refresh Telegram username/photo.
-  if (
-    nextPhotoUrl !== user.photoUrl ||
-    (telegramUser.username ?? null) !== user.username
-  ) {
+  const customPhoto = user.photoUrl?.startsWith("/") === true;
+  const photoChanged = !customPhoto && nextPhotoUrl !== user.photoUrl;
+  const usernameChanged = (telegramUser.username ?? null) !== user.username;
+  if (photoChanged || usernameChanged) {
     return prisma.user.update({
       where: { id: user.id },
       data: {
-        photoUrl: nextPhotoUrl,
+        ...(photoChanged ? { photoUrl: nextPhotoUrl } : {}),
         username: telegramUser.username ?? null
       },
       include: { roles: true }

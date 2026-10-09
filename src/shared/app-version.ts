@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.3.7";
+export const APP_VERSION = "1.3.8";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
@@ -12,6 +12,16 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.3.8",
+    dateLabel: "۱۷ مهر ۱۴۰۵",
+    title: "یادآور، تولد و عکس",
+    items: [
+      "یادآور «رو به راه‌مون کنیا» فقط یک‌بار می‌آید، نه هر ده دقیقه.",
+      "تاریخ تولد و تاریخ برنامه با تقویم شمسی انتخاب می‌شود و یک روز عقب نمی‌افتد.",
+      "عکس پروفایل را مثل اسم می‌توانی عوض کنی."
+    ]
+  },
   {
     version: "1.3.7",
     dateLabel: "۱۵ مهر ۱۴۰۵",

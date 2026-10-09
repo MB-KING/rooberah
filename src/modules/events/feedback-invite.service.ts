@@ -44,26 +44,6 @@ async function sendFeedbackInvite(input: {
   userId: string;
   title: string;
 }) {
-  const already = await prisma.eventReminder.findUnique({
-    where: {
-      eventId_userId_kind: {
-        eventId: input.eventId,
-        userId: input.userId,
-        kind: EventReminderKind.FEEDBACK_REQUEST
-      }
-    },
-    select: { id: true }
-  });
-  if (already) return 0;
-
-  const { telegramDelivered } = await notifyUser({
-    userId: input.userId,
-    type: "EVENT_FEEDBACK_REQUEST",
-    ...feedbackInviteCopy(input.title),
-    eventPath: `/events/${input.eventId}`
-  });
-  if (!telegramDelivered) return 0;
-
   try {
     await prisma.eventReminder.create({
       data: {
@@ -72,8 +52,15 @@ async function sendFeedbackInvite(input: {
         kind: EventReminderKind.FEEDBACK_REQUEST
       }
     });
-    return 1;
   } catch {
     return 0;
   }
+
+  await notifyUser({
+    userId: input.userId,
+    type: "EVENT_FEEDBACK_REQUEST",
+    ...feedbackInviteCopy(input.title),
+    eventPath: `/events/${input.eventId}`
+  });
+  return 1;
 }

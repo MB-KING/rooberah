@@ -27,6 +27,11 @@ export function ProfileSettingsForm({ children }: { children: ReactNode }) {
       timerRef.current = null;
     }
     const data = new FormData(form);
+    for (const input of form.querySelectorAll<HTMLInputElement>(
+      'input[type="file"]'
+    )) {
+      input.value = "";
+    }
     const requestId = ++saveIdRef.current;
     startTransition(async () => {
       const result = await updateProfileAction(data);
@@ -52,7 +57,9 @@ export function ProfileSettingsForm({ children }: { children: ReactNode }) {
     if (
       target instanceof HTMLSelectElement ||
       (target instanceof HTMLInputElement &&
-        (target.type === "checkbox" || target.type === "hidden"))
+        (target.type === "checkbox" ||
+          target.type === "hidden" ||
+          target.type === "file"))
     ) {
       queueSave(true);
       return;
