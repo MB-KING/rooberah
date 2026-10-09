@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.4.1";
+export const APP_VERSION = "1.4.2";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
@@ -12,6 +12,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.4.2",
+    dateLabel: "۱۷ مهر ۱۴۰۵",
+    title: "متن پروفایل یکپارچه",
+    items: [
+      "بیو و مهارت‌ها دیگر روی ویرگول تکه‌تکه نمی‌شوند و همان متنی که نوشتی یکجا دیده می‌شود."
+    ]
+  },
   {
     version: "1.4.1",
     dateLabel: "۱۷ مهر ۱۴۰۵",

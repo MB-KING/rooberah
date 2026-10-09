@@ -69,10 +69,6 @@ export default async function PublicMemberPage({
   });
 
   const social = readSocialLinks(view.socialLinks);
-  const skills = (view.skills ?? "")
-    .split(/[,،]+/)
-    .map((item) => item.trim())
-    .filter(Boolean);
   const statusTone = workStatusTone(view.workStatus);
   const chips = [
     view.workCategory?.name,
@@ -138,19 +134,14 @@ export default async function PublicMemberPage({
           </p>
         ) : null}
         {view.bio ? (
-          <p className="mt-3 text-sm leading-6 text-slate-300">{view.bio}</p>
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-300">
+            {view.bio}
+          </p>
         ) : null}
-        {skills.length > 0 ? (
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {skills.map((skill) => (
-              <span
-                key={skill}
-                className="rounded-full bg-white/[0.07] px-2 py-1 text-[11px] font-bold text-slate-300"
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
+        {view.skills ? (
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-300">
+            {view.skills}
+          </p>
         ) : null}
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-slate-400">
           <span>
