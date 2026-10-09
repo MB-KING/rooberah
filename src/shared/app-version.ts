@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.3.8";
+export const APP_VERSION = "1.3.9";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
@@ -12,6 +12,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.3.9",
+    dateLabel: "۱۷ مهر ۱۴۰۵",
+    title: "ساعت شمسی برنامه",
+    items: [
+      "ساعت شروع مسیر با همان تقویم شمسی انتخاب می‌شود؛ فقط ساعت و دقیقه، بدون ثانیه."
+    ]
+  },
   {
     version: "1.3.8",
     dateLabel: "۱۷ مهر ۱۴۰۵",

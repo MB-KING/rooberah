@@ -5,6 +5,7 @@ import { AnnounceTopicField } from "@/components/admin/announce-topic-field";
 import { CapacityField } from "@/components/admin/capacity-field";
 import { LocationMapPicker } from "@/components/admin/location-map-picker";
 import { PersianDateField } from "@/components/admin/persian-date-field";
+import { PersianTimeField } from "@/components/admin/persian-time-field";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 import { requireEventManagerPage } from "@/modules/auth/admin-session";
@@ -58,12 +59,7 @@ export default async function NewEventPage({
             defaultValue={String(nextEventNumber)}
           />
           <PersianDateField name="date" required />
-          <Field
-            label="زمان شروع مسیر"
-            name="startTime"
-            type="time"
-            required
-          />
+          <PersianTimeField name="startTime" required />
           <p className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs leading-6 text-slate-300">
             ساعت جمع شدن خودکار {MEETING_OFFSET_MINUTES} دقیقه قبل از شروع مسیر
             ثبت می‌شود. ثبت‌نام تا وقتی وضعیت «بستن ثبت‌نام» نشود باز است و حضور

@@ -10,6 +10,7 @@ import { AnnounceTopicField } from "@/components/admin/announce-topic-field";
 import { CapacityField } from "@/components/admin/capacity-field";
 import { LocationMapPicker } from "@/components/admin/location-map-picker";
 import { PersianDateField } from "@/components/admin/persian-date-field";
+import { PersianTimeField } from "@/components/admin/persian-time-field";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 import { requireEventManagerPage } from "@/modules/auth/admin-session";
@@ -109,10 +110,8 @@ export default async function EditEventPage({
             required
             defaultValue={dateInputValue(event.date)}
           />
-          <Field
-            label="زمان شروع مسیر"
+          <PersianTimeField
             name="startTime"
-            type="time"
             required
             defaultValue={timeInputValue(event.startTime)}
           />
