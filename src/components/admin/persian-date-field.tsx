@@ -50,7 +50,10 @@ export function PersianDateField({
       setIso("");
       return;
     }
-    setIso(new DateObject(date).convert(gregorian).format("YYYY-MM-DD"));
+    const gregorianDate = new DateObject(date).convert(gregorian);
+    const month = String(gregorianDate.month.number).padStart(2, "0");
+    const day = String(gregorianDate.day).padStart(2, "0");
+    setIso(`${gregorianDate.year}-${month}-${day}`);
   }
 
   return (

@@ -9,6 +9,7 @@ import {
   XPTransactionType
 } from "@prisma/client";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import {
   getOptionalCurrentUser,
@@ -179,13 +180,21 @@ export async function updateProfileAction(formData: FormData) {
     const phoneRaw = input.phone?.trim() ?? "";
     const phoneNumber = phoneRaw ? normalizePhone(phoneRaw) : null;
     if (phoneRaw && !phoneNumber) {
-      return { ok: false as const };
+      return { ok: false as const, message: "شماره را مثل ۰۹۱۲۳۴۵۶۷۸۹ بنویس." };
     }
-    const birthDate = input.birthDate
-      ? tehranWallTimeToUtc(input.birthDate, "00:00")
-      : null;
+    let birthDate: Date | null = null;
+    if (input.birthDate) {
+      try {
+        birthDate = tehranWallTimeToUtc(input.birthDate, "00:00");
+      } catch {
+        return { ok: false as const, message: "تاریخ تولد خوانده نشد. دوباره انتخاب کن." };
+      }
+    }
     if (birthDate && birthDate > new Date()) {
-      return { ok: false as const };
+      return {
+        ok: false as const,
+        message: "تاریخ تولد نمی‌تواند بعد از امروز باشد."
+      };
     }
 
     const profileData = {
@@ -243,15 +252,27 @@ export async function updateProfileAction(formData: FormData) {
       "UserProfile",
       profile.id,
       "تکمیل تنظیمات پروفایل"
-    );
+    ).catch(() => undefined);
     revalidatePath("/me");
     revalidatePath("/me/settings");
     revalidatePath("/");
     revalidatePath("/members");
-    return { ok: true as const };
+    return { ok: true as const, message: "ذخیره شد" };
   } catch (error) {
     unstable_rethrow(error);
-    return { ok: false as const };
+    if (error instanceof z.ZodError) {
+      return {
+        ok: false as const,
+        message: error.issues[0]?.message || "یک فیلد درست پر نشده."
+      };
+    }
+    logger.warn("profile_save_failed", {
+      reason: error instanceof Error ? error.message : "unknown"
+    });
+    return {
+      ok: false as const,
+      message: "ذخیره نشد. اتصال را چک کن و یک‌بار دیگر بزن."
+    };
   }
 }
 

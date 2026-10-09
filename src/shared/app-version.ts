@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.4.0";
+export const APP_VERSION = "1.4.1";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
@@ -12,6 +12,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.4.1",
+    dateLabel: "۱۷ مهر ۱۴۰۵",
+    title: "خطای ذخیره پروفایل",
+    items: [
+      "اگر ذخیره پروفایل رد شود، دلیلش را می‌نویسد. تاریخ تولد با رقم فارسی هم ذخیره می‌شود."
+    ]
+  },
   {
     version: "1.4.0",
     dateLabel: "۱۷ مهر ۱۴۰۵",

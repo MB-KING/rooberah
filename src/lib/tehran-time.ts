@@ -7,14 +7,24 @@ function pad(n: number) {
   return String(n).padStart(2, "0");
 }
 
+function latinDigits(value: string) {
+  const persian = "۰۱۲۳۴۵۶۷۸۹";
+  const arabic = "٠١٢٣٤٥٦٧٨٩";
+  return value.replace(/[۰-۹٠-٩]/g, (digit) => {
+    const persianIndex = persian.indexOf(digit);
+    if (persianIndex >= 0) return String(persianIndex);
+    return String(arabic.indexOf(digit));
+  });
+}
+
 /** Interpret YYYY-MM-DD + HH:mm[:ss] as Tehran local time → UTC Date. */
 export function tehranWallTimeToUtc(date: string, time = "00:00") {
-  const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date.trim());
+  const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(latinDigits(date.trim()));
   if (!dateMatch) {
     throw new Error("تاریخ معتبر نیست.");
   }
 
-  const rawTime = time.trim();
+  const rawTime = latinDigits(time.trim());
   const timeMatch = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(rawTime);
   if (!timeMatch) {
     throw new Error("ساعت معتبر نیست.");

@@ -14,6 +14,7 @@ export function ProfileSettingsForm({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<"idle" | "saved" | "error" | "invalid">(
     "idle"
   );
+  const [message, setMessage] = useState("");
 
   function save() {
     const form = formRef.current;
@@ -36,6 +37,7 @@ export function ProfileSettingsForm({ children }: { children: ReactNode }) {
     startTransition(async () => {
       const result = await updateProfileAction(data);
       if (requestId !== saveIdRef.current) return;
+      setMessage(result.message);
       setStatus(result.ok ? "saved" : "error");
     });
   }
@@ -94,7 +96,11 @@ export function ProfileSettingsForm({ children }: { children: ReactNode }) {
       <p
         role={status === "error" || status === "invalid" ? "alert" : undefined}
         aria-live={status === "error" || status === "invalid" ? "assertive" : "polite"}
-        className="text-center text-xs font-bold text-slate-400"
+        className={
+          status === "error" || status === "invalid"
+            ? "rounded-xl border border-red-400/40 bg-red-500/15 px-3 py-2 text-center text-sm font-bold text-red-100"
+            : "text-center text-xs font-bold text-slate-400"
+        }
       >
         {pending
           ? "در حال ذخیره…"
@@ -103,7 +109,7 @@ export function ProfileSettingsForm({ children }: { children: ReactNode }) {
             : status === "invalid"
               ? "نام و نام خانوادگی را پر کن."
               : status === "error"
-                ? "ذخیره نشد؛ دوباره امتحان کن."
+                ? message || "ذخیره نشد. یک‌بار دیگر بزن."
                 : "تغییرها خودکار ذخیره می‌شوند."}
       </p>
     </form>
