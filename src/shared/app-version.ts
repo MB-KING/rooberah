@@ -1,7 +1,9 @@
-export const APP_VERSION = "1.4.3";
+import { formatFaNumber } from "@/lib/jalali";
+
+export const APP_VERSION = "1.4.4";
 
 export function formatAppVersion(version = APP_VERSION) {
-  return version.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
+  return version.replace(/\d/g, (digit) => formatFaNumber(Number(digit)));
 }
 
 export type ChangelogRelease = {
@@ -12,6 +14,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.4.4",
+    dateLabel: "۱۷ مهر ۱۴۰۵",
+    title: "تقویم از پلاگین",
+    items: [
+      "تبدیل تاریخ و رقم فارسی دیگر دست‌نویس نیست و از همان تقویم شمسی برنامه می‌آید."
+    ]
+  },
   {
     version: "1.4.3",
     dateLabel: "۱۷ مهر ۱۴۰۵",

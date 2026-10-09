@@ -1,3 +1,4 @@
+import { formatFaNumber } from "@/lib/jalali";
 import { APP_NAME } from "@/shared/brand";
 import { MEETING_TIME_LABEL, START_TIME_LABEL } from "@/shared/copy";
 import {
@@ -97,12 +98,8 @@ function truncatePlain(text: string, max: number) {
   return `${trimmed.slice(0, Math.max(0, max - 1)).trimEnd()}…`;
 }
 
-function formatFaDigits(value: number) {
-  return String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
-}
-
 function participantLine(index: number, name: string) {
-  return `${formatFaDigits(index + 1)}. ${escapeHtml(truncatePlain(name, 40))}`;
+  return `${formatFaNumber(index + 1)}. ${escapeHtml(truncatePlain(name, 40))}`;
 }
 
 function withParticipantFooter(body: string, names: string[]) {

@@ -1,3 +1,6 @@
+import persian_ar from "react-date-object/locales/persian_ar";
+import persian_fa from "react-date-object/locales/persian_fa";
+
 /** Asia/Tehran wall-clock helpers. Iran has no DST (fixed UTC+03:30). */
 
 export const TEHRAN_TIME_ZONE = "Asia/Tehran";
@@ -8,12 +11,10 @@ function pad(n: number) {
 }
 
 function latinDigits(value: string) {
-  const persian = "۰۱۲۳۴۵۶۷۸۹";
-  const arabic = "٠١٢٣٤٥٦٧٨٩";
+  const digits = [...persian_fa.digits, ...persian_ar.digits];
   return value.replace(/[۰-۹٠-٩]/g, (digit) => {
-    const persianIndex = persian.indexOf(digit);
-    if (persianIndex >= 0) return String(persianIndex);
-    return String(arabic.indexOf(digit));
+    const index = digits.indexOf(digit) % 10;
+    return index >= 0 ? String(index) : digit;
   });
 }
 
