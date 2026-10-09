@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.4.2";
+export const APP_VERSION = "1.4.3";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
@@ -12,6 +12,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.4.3",
+    dateLabel: "۱۷ مهر ۱۴۰۵",
+    title: "تاریخ تولد همان روز",
+    items: [
+      "۲۹ تیر دیگر ۲۸ تیر نشان داده نمی‌شود. روز انتخاب‌شده همان روز می‌ماند."
+    ]
+  },
   {
     version: "1.4.2",
     dateLabel: "۱۷ مهر ۱۴۰۵",

@@ -1,3 +1,8 @@
+import DateObject from "react-date-object";
+import gregorian from "react-date-object/calendars/gregorian";
+import persian from "react-date-object/calendars/persian";
+import persian_fa from "react-date-object/locales/persian_fa";
+
 /** Gregorian ↔ Jalali helpers (jalaali-js algorithm). */
 
 export type JalaliDate = { jy: number; jm: number; jd: number };
@@ -39,15 +44,15 @@ export function formatJalaliPretty(isoOrDate: string | Date) {
   const iso =
     typeof isoOrDate === "string"
       ? isoOrDate.slice(0, 10)
-      : new Intl.DateTimeFormat("en-CA", {
-          timeZone: "Asia/Tehran",
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit"
-        }).format(isoOrDate);
-  const jalali = jalaliFromGregorianIso(iso);
-  if (!jalali) return null;
-  return `${formatFaNumber(jalali.jd)} ${jalaliMonthNames[jalali.jm - 1]} ${formatFaNumber(jalali.jy)}`;
+      : isoOrDate.toISOString().slice(0, 10);
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!match) return null;
+  const value = new DateObject({
+    calendar: gregorian,
+    format: "YYYY-MM-DD",
+    date: iso
+  }).convert(persian, persian_fa);
+  return value.format("D MMMM YYYY");
 }
 
 export function todayJalali(): JalaliDate {

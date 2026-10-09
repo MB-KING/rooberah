@@ -58,6 +58,21 @@ export function tehranWallTimeToUtc(date: string, time = "00:00") {
   return value;
 }
 
+/** A calendar day with no clock. Noon UTC stays on this date in Tehran and UTC. */
+export function calendarDateUtc(iso: string) {
+  const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(latinDigits(iso.trim()));
+  if (!dateMatch) {
+    throw new Error("تاریخ معتبر نیست.");
+  }
+  const year = Number(dateMatch[1]);
+  const month = Number(dateMatch[2]);
+  const day = Number(dateMatch[3]);
+  if (month < 1 || month > 12 || day < 1 || day > 31) {
+    throw new Error("تاریخ خارج از بازه مجاز است.");
+  }
+  return new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+}
+
 export function tehranDateInputValue(date: Date) {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: TEHRAN_TIME_ZONE,

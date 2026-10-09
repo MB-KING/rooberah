@@ -23,7 +23,7 @@ import { AppError } from "@/shared/errors";
 import { Prisma } from "@prisma/client";
 import { buildSocialLinks } from "@/shared/social-links";
 import { normalizePhone } from "@/shared/phone";
-import { tehranWallTimeToUtc } from "@/lib/tehran-time";
+import { calendarDateUtc, tehranWallTimeToUtc } from "@/lib/tehran-time";
 import { MediaService, mediaPublicPath } from "@/modules/media/media.service";
 
 const createBusinessSchema = z.object({
@@ -185,7 +185,7 @@ export async function updateProfileAction(formData: FormData) {
     let birthDate: Date | null = null;
     if (input.birthDate) {
       try {
-        birthDate = tehranWallTimeToUtc(input.birthDate, "00:00");
+        birthDate = calendarDateUtc(input.birthDate);
       } catch {
         return { ok: false as const, message: "تاریخ تولد خوانده نشد. دوباره انتخاب کن." };
       }
