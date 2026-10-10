@@ -100,7 +100,7 @@ export default async function PublicMemberPage({
             />
           )}
           <div className="min-w-0 flex-1">
-            <h2 className="truncate text-lg font-black text-white">
+            <h2 className="min-w-0 truncate text-lg font-black text-white">
               {view.displayName}
             </h2>
             {view.username ? (

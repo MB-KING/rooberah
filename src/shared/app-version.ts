@@ -1,6 +1,6 @@
 import { formatFaNumber } from "@/lib/jalali";
 
-export const APP_VERSION = "1.4.5";
+export const APP_VERSION = "1.4.6";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => formatFaNumber(Number(digit)));
@@ -14,6 +14,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.4.6",
+    dateLabel: "۱۸ مهر ۱۴۰۵",
+    title: "اسم بلند همراه",
+    items: [
+      "اسم خیلی بلند در فهرست همراهان دیگر کارت را از قاب بیرون نمی‌زند و با … کوتاه می‌شود."
+    ]
+  },
   {
     version: "1.4.5",
     dateLabel: "۱۸ مهر ۱۴۰۵",

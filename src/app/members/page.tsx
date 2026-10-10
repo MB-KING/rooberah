@@ -166,7 +166,7 @@ export default async function MembersPage({
         </UserCard>
       ) : null}
 
-      <div className="grid gap-3">
+      <div className="grid min-w-0 gap-3">
         {members.length === 0 ? (
           <EmptyState
             icon={UsersRound}
@@ -225,16 +225,16 @@ export default async function MembersPage({
               <Link
                 key={member.id}
                 href={`/members/${member.id}` as Route}
-                className="block cursor-pointer"
+                className="block min-w-0 cursor-pointer"
               >
                 <UserCard
                   className={
                     statusTone
-                      ? `transition duration-200 ${statusTone.card}`
-                      : "transition duration-200 hover:border-ember/30"
+                      ? `overflow-hidden transition duration-200 ${statusTone.card}`
+                      : "overflow-hidden transition duration-200 hover:border-ember/30"
                   }
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
                     <span className="w-6 shrink-0 text-center text-sm font-black text-ember">
                       {rank.toLocaleString("fa-IR")}
                     </span>
@@ -247,7 +247,7 @@ export default async function MembersPage({
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <div className="flex min-w-0 items-center gap-2">
-                            <h2 className="truncate font-black text-white">
+                            <h2 className="min-w-0 truncate font-black text-white">
                               {name}
                             </h2>
                             {member.id === currentUser.id ? (
@@ -258,8 +258,11 @@ export default async function MembersPage({
                           </div>
                           {member.profile?.showTelegramUsername &&
                           member.username ? (
-                            <p className="mt-0.5 truncate text-xs text-slate-400">
-                              <span dir="ltr">@{member.username}</span>
+                            <p
+                              className="mt-0.5 min-w-0 truncate text-xs text-slate-400"
+                              dir="ltr"
+                            >
+                              @{member.username}
                             </p>
                           ) : null}
                         </div>
@@ -277,7 +280,7 @@ export default async function MembersPage({
                           {chips.map((chip) => (
                             <span
                               key={chip}
-                              className="rounded-full bg-white/[0.07] px-2 py-1 text-[11px] font-bold text-slate-300"
+                              className="max-w-full min-w-0 truncate rounded-full bg-white/[0.07] px-2 py-1 text-[11px] font-bold text-slate-300"
                             >
                               {chip}
                             </span>
@@ -287,7 +290,7 @@ export default async function MembersPage({
                     </div>
                   </div>
                   {member.profile?.bio ? (
-                    <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-300">
+                    <p className="mt-3 line-clamp-2 break-words text-sm leading-6 text-slate-300">
                       {member.profile.bio}
                     </p>
                   ) : null}

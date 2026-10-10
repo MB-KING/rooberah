@@ -31,7 +31,7 @@ export async function UserPageShell({
     <main className={cn("min-h-screen overflow-x-clip text-slate-100", className)}>
       <div
         className={cn(
-          "mx-auto px-4 pb-[calc(5.25rem+env(safe-area-inset-bottom))] pt-5",
+          "mx-auto min-w-0 overflow-x-clip px-4 pb-[calc(5.25rem+env(safe-area-inset-bottom))] pt-5",
           miniAppWidthClass,
           contentClassName
         )}
