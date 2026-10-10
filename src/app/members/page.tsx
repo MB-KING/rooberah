@@ -16,6 +16,7 @@ import { memberSearchOr } from "@/lib/member-search";
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUserPage } from "@/modules/auth/session";
 import { BadgeService } from "@/modules/gamification/badge.service";
+import { shownProfilePhoto } from "@/shared/profile-photo";
 import { formatSteps } from "@/shared/steps";
 import {
   parseWorkStatus,
@@ -239,7 +240,7 @@ export default async function MembersPage({
                       {rank.toLocaleString("fa-IR")}
                     </span>
                     <UserAvatar
-                      photoUrl={member.photoUrl}
+                      photoUrl={shownProfilePhoto(member)}
                       name={name}
                       size={48}
                     />

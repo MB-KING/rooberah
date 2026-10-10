@@ -164,6 +164,7 @@ model User {
   firstName           String?
   lastName            String?
   photoUrl            String?
+  telegramPhotoUrl    String?
   languageCode        String?
   xp                  Int                        @default(0)
   level               Int                        @default(1)

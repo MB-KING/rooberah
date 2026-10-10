@@ -46,6 +46,7 @@ export async function GET(
           lastName: true,
           username: true,
           photoUrl: true,
+          telegramPhotoUrl: true,
           profile: {
             select: {
               showInMembersDirectory: true,

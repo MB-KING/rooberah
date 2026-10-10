@@ -33,6 +33,7 @@ import { BadgeService } from "@/modules/gamification/badge.service";
 import { getOptionalCurrentUser } from "@/modules/auth/session";
 import { formatAppVersion } from "@/shared/app-version";
 import { APP_NAME, APP_SLOGAN } from "@/shared/brand";
+import { shownProfilePhoto } from "@/shared/profile-photo";
 import { MembershipGateAlert } from "@/components/user/membership-gate-alert";
 import { ProfileSavedNotice } from "@/components/user/profile-saved-notice";
 import { getMissingRequiredMemberships } from "@/modules/telegram/membership-gate";
@@ -193,7 +194,7 @@ export default async function Home({
             className={workStatusTone(user.profile?.workStatus)?.card}
           >
             <div className="flex items-start gap-3">
-              <UserAvatar photoUrl={user.photoUrl} name={displayName} size={56} />
+              <UserAvatar photoUrl={shownProfilePhoto(user)} name={displayName} size={56} />
               <div className="min-w-0 flex-1">
                 <h2 className="truncate text-lg font-black text-white">
                   {displayName}

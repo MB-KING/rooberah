@@ -16,8 +16,8 @@ export class AuthRepository {
     const telegramId = BigInt(user.id);
     const refresh = {
       username: user.username,
-      photoUrl: user.photo_url,
-      languageCode: user.language_code
+      languageCode: user.language_code,
+      ...(user.photo_url ? { telegramPhotoUrl: user.photo_url } : {})
     };
     try {
       return await this.db.user.upsert({
@@ -29,7 +29,7 @@ export class AuthRepository {
           username: user.username,
           firstName: user.first_name,
           lastName: user.last_name,
-          photoUrl: user.photo_url,
+          telegramPhotoUrl: user.photo_url,
           languageCode: user.language_code,
           profile: { create: {} },
           roles: { create: [{ role: Role.USER }] }

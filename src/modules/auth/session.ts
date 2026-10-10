@@ -80,25 +80,26 @@ export async function requireCurrentUser() {
   }
 
   const usernameChanged = (telegramUser.username ?? null) !== user.username;
-  const junkPhoto =
-    !!user.photoUrl &&
-    !isStoredPhoto(user.photoUrl) &&
-    !user.photoUrl.startsWith("http");
-  const remotePhoto = !isStoredPhoto(user.photoUrl)
-    ? telegramUser.photo_url ?? (user.photoUrl?.startsWith("http") ? user.photoUrl : null)
-    : null;
-  let photoUrl = junkPhoto ? null : user.photoUrl;
-  if (remotePhoto) {
+  const customPhoto = user.photoUrl?.startsWith("/") ? user.photoUrl : null;
+  const remotePhoto =
+    telegramUser.photo_url ??
+    (user.telegramPhotoUrl?.startsWith("http") ? user.telegramPhotoUrl : null) ??
+    (user.photoUrl?.startsWith("http") ? user.photoUrl : null);
+  let telegramPhotoUrl = user.telegramPhotoUrl ?? null;
+  if (remotePhoto && !isStoredPhoto(telegramPhotoUrl)) {
     const stored = await storeRemoteProfilePhoto(user.id, remotePhoto).catch(
       () => null
     );
-    photoUrl = stored || remotePhoto;
+    telegramPhotoUrl = stored || remotePhoto;
   }
-  if (photoUrl !== user.photoUrl || usernameChanged) {
+  const photoChanged = customPhoto !== user.photoUrl;
+  const telegramChanged = telegramPhotoUrl !== (user.telegramPhotoUrl ?? null);
+  if (photoChanged || telegramChanged || usernameChanged) {
     return prisma.user.update({
       where: { id: user.id },
       data: {
-        ...(photoUrl !== user.photoUrl ? { photoUrl } : {}),
+        ...(photoChanged ? { photoUrl: customPhoto } : {}),
+        ...(telegramChanged ? { telegramPhotoUrl } : {}),
         username: telegramUser.username ?? null
       },
       include: { roles: true }

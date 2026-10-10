@@ -12,6 +12,7 @@ import { APP_NAME, brandColors } from "@/shared/brand";
 import { MEETING_TIME_LABEL, START_TIME_LABEL } from "@/shared/copy";
 import { publicEventStatuses } from "@/modules/events/event.repository";
 import { MediaService } from "@/modules/media/media.service";
+import { shownProfilePhoto } from "@/shared/profile-photo";
 import { getDisplayName } from "@/shared/privacy";
 import {
   shareCardFormats,
@@ -143,15 +144,26 @@ async function toJpegDataUrl(
 }
 
 async function toAvatarDataUrl(photoUrl: string) {
-  if (!/^https:\/\//i.test(photoUrl)) return null;
   try {
-    const response = await fetch(photoUrl, {
-      cache: "force-cache",
-      signal: AbortSignal.timeout(4000)
-    });
-    if (!response.ok) return null;
-    const contentType = response.headers.get("content-type") || "image/jpeg";
-    const buffer = Buffer.from(await response.arrayBuffer());
+    let buffer: Buffer;
+    let contentType = "image/jpeg";
+    if (photoUrl.startsWith("/api/media/")) {
+      const file = await new MediaService().getStreamable(
+        photoUrl.slice("/api/media/".length)
+      );
+      buffer = file.buffer;
+      contentType = file.contentType;
+    } else if (/^https:\/\//i.test(photoUrl)) {
+      const response = await fetch(photoUrl, {
+        cache: "force-cache",
+        signal: AbortSignal.timeout(4000)
+      });
+      if (!response.ok) return null;
+      contentType = response.headers.get("content-type") || "image/jpeg";
+      buffer = Buffer.from(await response.arrayBuffer());
+    } else {
+      return null;
+    }
     if (buffer.byteLength < 32 || buffer.byteLength > 2_000_000) return null;
     return toJpegDataUrl(buffer, contentType, { width: 192, height: 192 });
   } catch (error) {
@@ -176,15 +188,15 @@ async function loadSharer(userId: string | null): Promise<Sharer | null> {
       firstName: true,
       lastName: true,
       username: true,
-      photoUrl: true
+      photoUrl: true,
+      telegramPhotoUrl: true
     }
   });
   if (!user) return null;
   const displayName = getDisplayName(user);
   const initial = displayName.trim().charAt(0) || "ه";
-  const avatarDataUrl = user.photoUrl
-    ? await toAvatarDataUrl(user.photoUrl)
-    : null;
+  const photo = shownProfilePhoto(user);
+  const avatarDataUrl = photo ? await toAvatarDataUrl(photo) : null;
   return { displayName, avatarDataUrl, initial };
 }
 

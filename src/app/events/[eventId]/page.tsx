@@ -35,6 +35,7 @@ import { publicEventStatuses } from "@/modules/events/event.repository";
 import { FeedbackService } from "@/modules/feedback/feedback.service";
 import { mediaPublicPath } from "@/modules/media/media.service";
 import { APP_NAME } from "@/shared/brand";
+import { shownProfilePhoto } from "@/shared/profile-photo";
 import { MEETING_TIME_LABEL, START_TIME_LABEL } from "@/shared/copy";
 import { errorMessagesFa, type ErrorCode } from "@/shared/errors";
 import { MembershipGateAlert } from "@/components/user/membership-gate-alert";
@@ -172,7 +173,8 @@ export default async function EventDetailsPage({
           firstName: true,
           lastName: true,
           username: true,
-          photoUrl: true
+          photoUrl: true,
+          telegramPhotoUrl: true
         }
       }
     }
@@ -380,7 +382,10 @@ export default async function EventDetailsPage({
         <ParticipantsPreview
           eventId={event.id}
           total={registrationCount}
-          users={previewRegs.map((row) => row.user)}
+          users={previewRegs.map((row) => ({
+            ...row.user,
+            photoUrl: shownProfilePhoto(row.user)
+          }))}
         />
         <ShareCardButton
           eventId={event.id}
@@ -466,7 +471,7 @@ export default async function EventDetailsPage({
                 >
                   <div className="flex items-center gap-2">
                     <UserAvatar
-                      photoUrl={item.user.photoUrl}
+                      photoUrl={shownProfilePhoto(item.user)}
                       name={getDisplayName(item.user)}
                       size={36}
                     />

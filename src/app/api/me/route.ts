@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/modules/auth/session";
 import { ok, fail } from "@/shared/api";
+import { shownProfilePhoto } from "@/shared/profile-photo";
 
 export async function GET() {
   try {
@@ -48,7 +49,7 @@ export async function GET() {
       username: user.username,
       firstName: user.firstName,
       lastName: user.lastName,
-      photoUrl: user.photoUrl,
+      photoUrl: shownProfilePhoto(user),
       joinedAt: user.joinedAt,
       xp: user.xp,
       level: user.level,

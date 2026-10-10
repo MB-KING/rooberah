@@ -1,4 +1,5 @@
 import { APP_NAME } from "@/shared/brand";
+import { shownProfilePhoto } from "@/shared/profile-photo";
 
 type PrivacyUser = {
   id: string;
@@ -6,6 +7,7 @@ type PrivacyUser = {
   lastName: string | null;
   username: string | null;
   photoUrl: string | null;
+  telegramPhotoUrl?: string | null;
   xp?: number;
   profile?: {
     bio?: string | null;
@@ -51,7 +53,7 @@ export function getPublicMemberView(
   return {
     id: user.id,
     displayName: getDisplayName(user),
-    photoUrl: user.photoUrl,
+    photoUrl: shownProfilePhoto(user),
     username: showUsername ? user.username : null,
     bio: profile?.bio ?? null,
     skills: showSkills ? (profile?.skills ?? null) : null,

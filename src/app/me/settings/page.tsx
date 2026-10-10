@@ -14,6 +14,7 @@ import {
   readSocialLinks,
   SOCIAL_LINK_FIELDS
 } from "@/shared/social-links";
+import { shownProfilePhoto } from "@/shared/profile-photo";
 import { WORK_STATUS_OPTIONS } from "@/shared/work-status";
 
 const fieldControlClass =
@@ -60,7 +61,7 @@ export default async function ProfileSettingsPage() {
           <Field label="عکس پروفایل" hint="اختیاری است. فقط وقتی می‌خواهی عوضش کنی یک عکس انتخاب کن.">
             <div className="flex items-center gap-3">
               <UserAvatar
-                photoUrl={user.photoUrl}
+                photoUrl={shownProfilePhoto(user)}
                 name={user.firstName ?? "پروفایل"}
                 size={64}
               />

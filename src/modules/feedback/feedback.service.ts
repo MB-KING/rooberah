@@ -10,7 +10,8 @@ const authorSelect = {
   firstName: true,
   lastName: true,
   username: true,
-  photoUrl: true
+  photoUrl: true,
+  telegramPhotoUrl: true
 } as const;
 
 export class FeedbackService {

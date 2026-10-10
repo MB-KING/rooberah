@@ -51,6 +51,7 @@ export default async function EventParticipantsPage({
           lastName: true,
           username: true,
           photoUrl: true,
+          telegramPhotoUrl: true,
           profile: true,
           workCategory: { select: { id: true, name: true } }
         }
