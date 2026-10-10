@@ -2,7 +2,7 @@
 
 import { UserRound } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 function usablePhoto(url?: string | null) {
@@ -50,5 +50,49 @@ export function UserAvatar({
         </div>
       )}
     </div>
+  );
+}
+
+export function MemberPhoto({
+  photoUrl,
+  name,
+  children
+}: {
+  photoUrl?: string | null;
+  name: string;
+  children: ReactNode;
+}) {
+  const [failed, setFailed] = useState(false);
+  const show = usablePhoto(photoUrl) && !failed;
+
+  return (
+    <>
+      {show ? (
+        <div className="relative mb-4 h-56 w-full overflow-hidden rounded-xl bg-white/10">
+          {photoUrl!.startsWith("/") ? (
+            <Image
+              src={photoUrl!}
+              alt={name}
+              fill
+              sizes="(max-width: 480px) 100vw, 420px"
+              className="object-cover"
+              unoptimized
+              onError={() => setFailed(true)}
+            />
+          ) : (
+            <img
+              src={photoUrl!}
+              alt={name}
+              className="absolute inset-0 h-full w-full object-cover"
+              onError={() => setFailed(true)}
+            />
+          )}
+        </div>
+      ) : null}
+      <div className="flex items-start gap-3">
+        {show ? null : <UserAvatar photoUrl={null} name={name} size={56} />}
+        <div className="min-w-0 flex-1">{children}</div>
+      </div>
+    </>
   );
 }

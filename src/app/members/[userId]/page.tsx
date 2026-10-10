@@ -1,7 +1,7 @@
 import { Globe, Linkedin, Send } from "lucide-react";
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { UserAvatar } from "@/components/user/user-avatar";
+import { MemberPhoto } from "@/components/user/user-avatar";
 import { UserCard, UserPageHeader } from "@/components/user/user-card";
 import { UserPageShell } from "@/components/user/user-shell";
 import { prisma } from "@/lib/prisma";
@@ -79,27 +79,7 @@ export default async function PublicMemberPage({
     <UserPageShell>
       <UserPageHeader title={view.displayName} backFallbackHref="/members" />
       <UserCard className={cn("mb-4", statusTone?.card)}>
-        {view.photoUrl?.startsWith("/") ? (
-          <div className="relative mb-4 h-56 w-full overflow-hidden rounded-xl bg-white/10">
-            <Image
-              src={view.photoUrl}
-              alt={view.displayName}
-              fill
-              sizes="(max-width: 480px) 100vw, 420px"
-              className="object-cover"
-              unoptimized
-            />
-          </div>
-        ) : null}
-        <div className="flex items-start gap-3">
-          {view.photoUrl ? null : (
-            <UserAvatar
-              photoUrl={null}
-              name={view.displayName}
-              size={56}
-            />
-          )}
-          <div className="min-w-0 flex-1">
+        <MemberPhoto photoUrl={view.photoUrl} name={view.displayName}>
             <h2 className="min-w-0 truncate text-lg font-black text-white">
               {view.displayName}
             </h2>
@@ -126,8 +106,7 @@ export default async function PublicMemberPage({
                 ))}
               </div>
             ) : null}
-          </div>
-        </div>
+        </MemberPhoto>
         {view.birthDate ? (
           <p className="mt-3 text-xs font-bold text-slate-400">
             تولد {formatJalaliPretty(view.birthDate)}

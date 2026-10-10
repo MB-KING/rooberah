@@ -89,13 +89,16 @@ export async function requireCurrentUser() {
     : null;
   let photoUrl = junkPhoto ? null : user.photoUrl;
   if (remotePhoto) {
-    photoUrl = await storeRemoteProfilePhoto(user.id, remotePhoto).catch(() => null);
+    const stored = await storeRemoteProfilePhoto(user.id, remotePhoto).catch(
+      () => null
+    );
+    photoUrl = stored || remotePhoto;
   }
-  if (remotePhoto || junkPhoto || usernameChanged) {
+  if (photoUrl !== user.photoUrl || usernameChanged) {
     return prisma.user.update({
       where: { id: user.id },
       data: {
-        ...(remotePhoto || junkPhoto ? { photoUrl } : {}),
+        ...(photoUrl !== user.photoUrl ? { photoUrl } : {}),
         username: telegramUser.username ?? null
       },
       include: { roles: true }

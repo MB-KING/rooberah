@@ -1,6 +1,6 @@
 import { formatFaNumber } from "@/lib/jalali";
 
-export const APP_VERSION = "1.4.6";
+export const APP_VERSION = "1.4.7";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => formatFaNumber(Number(digit)));
@@ -14,6 +14,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.4.7",
+    dateLabel: "۱۸ مهر ۱۴۰۵",
+    title: "عکس تلگرام همراه",
+    items: [
+      "عکس پروفایلی که از تلگرام آمده دوباره روی صفحهٔ همراه دیده می‌شود."
+    ]
+  },
   {
     version: "1.4.6",
     dateLabel: "۱۸ مهر ۱۴۰۵",
