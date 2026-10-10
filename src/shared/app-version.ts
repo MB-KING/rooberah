@@ -1,6 +1,6 @@
 import { formatFaNumber } from "@/lib/jalali";
 
-export const APP_VERSION = "1.4.4";
+export const APP_VERSION = "1.4.5";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => formatFaNumber(Number(digit)));
@@ -14,6 +14,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.4.5",
+    dateLabel: "۱۸ مهر ۱۴۰۵",
+    title: "هشدار ذخیره",
+    items: [
+      "ذخیره شدن پروفایل دیگر وسط صفحه نمی‌ماند. یک هشدار کوتاه بالای صفحه می‌آید و خودش جمع می‌شود."
+    ]
+  },
   {
     version: "1.4.4",
     dateLabel: "۱۷ مهر ۱۴۰۵",

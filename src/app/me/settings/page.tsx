@@ -57,7 +57,7 @@ export default async function ProfileSettingsPage() {
       </UserCard>
       <UserCard>
         <ProfileSettingsForm>
-          <Field label="عکس پروفایل" hint="مثل اسم، با انتخاب عکس ذخیره می‌شود.">
+          <Field label="عکس پروفایل" hint="اختیاری است. فقط وقتی می‌خواهی عوضش کنی یک عکس انتخاب کن.">
             <div className="flex items-center gap-3">
               <UserAvatar
                 photoUrl={user.photoUrl}

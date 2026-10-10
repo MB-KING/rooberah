@@ -57,6 +57,10 @@ textarea {
   }
 }
 
+[data-sonner-toaster] {
+  --width: min(100vw - 2rem, 24.5rem);
+}
+
 ::selection {
   background: rgba(243, 156, 18, 0.35);
   color: #ffffff;

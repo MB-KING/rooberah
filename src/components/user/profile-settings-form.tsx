@@ -1,26 +1,24 @@
 "use client";
 
 import type { FormEvent, ReactNode } from "react";
-import { useRef, useState, useTransition } from "react";
+import { useRef, useTransition } from "react";
+import { toast } from "sonner";
 import { updateProfileAction } from "@/app/actions";
 
 const TEXT_SAVE_DELAY = 500;
+const TOAST_ID = "profile-save";
 
 export function ProfileSettingsForm({ children }: { children: ReactNode }) {
   const formRef = useRef<HTMLFormElement>(null);
   const timerRef = useRef<number | null>(null);
   const saveIdRef = useRef(0);
-  const [pending, startTransition] = useTransition();
-  const [status, setStatus] = useState<"idle" | "saved" | "error" | "invalid">(
-    "idle"
-  );
-  const [message, setMessage] = useState("");
+  const [, startTransition] = useTransition();
 
   function save() {
     const form = formRef.current;
     if (!form) return;
     if (!form.checkValidity()) {
-      setStatus("invalid");
+      toast.error("نام و نام خانوادگی را پر کن.", { id: TOAST_ID });
       return;
     }
     if (timerRef.current) {
@@ -37,8 +35,14 @@ export function ProfileSettingsForm({ children }: { children: ReactNode }) {
     startTransition(async () => {
       const result = await updateProfileAction(data);
       if (requestId !== saveIdRef.current) return;
-      setMessage(result.message);
-      setStatus(result.ok ? "saved" : "error");
+      if (result.ok) {
+        toast.success("ذخیره شد", { id: TOAST_ID });
+        return;
+      }
+      toast.error(result.message || "ذخیره نشد. یک‌بار دیگر بزن.", {
+        id: TOAST_ID,
+        duration: 5000
+      });
     });
   }
 
@@ -93,25 +97,6 @@ export function ProfileSettingsForm({ children }: { children: ReactNode }) {
       }}
     >
       {children}
-      <p
-        role={status === "error" || status === "invalid" ? "alert" : undefined}
-        aria-live={status === "error" || status === "invalid" ? "assertive" : "polite"}
-        className={
-          status === "error" || status === "invalid"
-            ? "rounded-xl border border-red-400/40 bg-red-500/15 px-3 py-2 text-center text-sm font-bold text-red-100"
-            : "text-center text-xs font-bold text-slate-400"
-        }
-      >
-        {pending
-          ? "در حال ذخیره…"
-          : status === "saved"
-            ? "ذخیره شد"
-            : status === "invalid"
-              ? "نام و نام خانوادگی را پر کن."
-              : status === "error"
-                ? message || "ذخیره نشد. یک‌بار دیگر بزن."
-                : "تغییرها خودکار ذخیره می‌شوند."}
-      </p>
     </form>
   );
 }

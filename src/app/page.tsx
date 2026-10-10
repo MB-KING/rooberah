@@ -34,6 +34,7 @@ import { getOptionalCurrentUser } from "@/modules/auth/session";
 import { formatAppVersion } from "@/shared/app-version";
 import { APP_NAME, APP_SLOGAN } from "@/shared/brand";
 import { MembershipGateAlert } from "@/components/user/membership-gate-alert";
+import { ProfileSavedNotice } from "@/components/user/profile-saved-notice";
 import { getMissingRequiredMemberships } from "@/modules/telegram/membership-gate";
 
 export const dynamic = "force-dynamic";
@@ -182,11 +183,7 @@ export default async function Home({
         <div className="h-1.5 w-full bg-gradient-to-l from-brand-red via-ember to-gold" />
       </header>
 
-      {profileSaved === "saved" ? (
-        <UserCard className="mb-4 border-ember/25 bg-ember/10">
-          <p className="text-sm font-bold text-ember">پروفایل ذخیره شد.</p>
-        </UserCard>
-      ) : null}
+      <ProfileSavedNotice show={profileSaved === "saved"} />
 
       {user ? <MembershipGateAlert missing={missingMemberships} /> : null}
 

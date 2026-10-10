@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/vazirmatn";
 import { TelegramProvider } from "@/components/telegram/telegram-provider";
+import { AppToaster } from "@/components/ui/app-toaster";
 import { ReferralCapture } from "@/components/user/referral-capture";
 import { APP_SLOGAN, APP_TITLE, BRAND_ICON_SRC, brandColors } from "@/shared/brand";
 import "./globals.css";
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <TelegramProvider>
           <ReferralCapture />
           {children}
+          <AppToaster />
         </TelegramProvider>
       </body>
     </html>
