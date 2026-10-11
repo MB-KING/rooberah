@@ -1,6 +1,6 @@
 import { formatFaNumber } from "@/lib/jalali";
 
-export const APP_VERSION = "1.4.9";
+export const APP_VERSION = "1.5.0";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => formatFaNumber(Number(digit)));
@@ -14,6 +14,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.5.0",
+    dateLabel: "۱۹ مهر ۱۴۰۵",
+    title: "۲۹ تیر همان ۲۹ تیر",
+    items: [
+      "اگر ۲۹ تیر را انتخاب کنی، دیگر تاریخ قبلی ذخیره نمی‌شود."
+    ]
+  },
   {
     version: "1.4.9",
     dateLabel: "۱۹ مهر ۱۴۰۵",

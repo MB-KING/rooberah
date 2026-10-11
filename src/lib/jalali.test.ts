@@ -2,7 +2,11 @@ import DateObject from "react-date-object";
 import gregorian from "react-date-object/calendars/gregorian";
 import persian from "react-date-object/calendars/persian";
 import { describe, expect, it } from "vitest";
-import { formatFaNumber, formatJalaliPretty } from "@/lib/jalali";
+import {
+  formatFaNumber,
+  formatJalaliPretty,
+  gregorianIsoFromPersian
+} from "@/lib/jalali";
 import { calendarDateUtc } from "@/lib/tehran-time";
 import { meetingTimeFromStart } from "@/shared/event-timing";
 
@@ -13,6 +17,10 @@ describe("jalali display", () => {
 
   it("uses Persian digits", () => {
     expect(formatFaNumber(1405)).toBe("۱۴۰۵");
+  });
+
+  it("stores 29 Tir 1380 as 20 July 2001", () => {
+    expect(gregorianIsoFromPersian(1380, 4, 29)).toBe("2001-07-20");
   });
 });
 

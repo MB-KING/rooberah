@@ -6,6 +6,7 @@ import DatePicker from "react-multi-date-picker";
 import gregorian from "react-date-object/calendars/gregorian";
 import persian from "react-date-object/calendars/persian";
 import persian_fa from "react-date-object/locales/persian_fa";
+import { gregorianIsoFromPersian } from "@/lib/jalali";
 import "react-multi-date-picker/styles/backgrounds/bg-dark.css";
 import "react-multi-date-picker/styles/colors/yellow.css";
 
@@ -46,19 +47,29 @@ export function PersianDateField({
   }, [iso]);
 
   function onChange(date: DateObject | null) {
-    if (!date) {
-      setIso("");
-      return;
-    }
-    const gregorianDate = new DateObject(date).convert(gregorian);
-    const month = String(gregorianDate.month.number).padStart(2, "0");
-    const day = String(gregorianDate.day).padStart(2, "0");
-    setIso(`${gregorianDate.year}-${month}-${day}`);
+    const day = Number(
+      String(date?.day ?? "").replace(/[۰-۹]/g, (digit) =>
+        String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit))
+      )
+    );
+    const next = date
+      ? gregorianIsoFromPersian(date.year, date.month.number, day)
+      : "";
+    if (inputRef.current) inputRef.current.value = next;
+    setIso(next);
   }
 
   return (
     <label className="grid gap-2 text-sm font-bold text-slate-200">
       {label}
+      <div
+        onChange={(event) => {
+          const target = event.target;
+          if (target instanceof HTMLInputElement && target !== inputRef.current) {
+            event.stopPropagation();
+          }
+        }}
+      >
       <DatePicker
         value={persianValue(iso)}
         onChange={onChange}
@@ -71,6 +82,7 @@ export function PersianDateField({
         containerClassName="w-full"
         inputClass="h-11 w-full rounded-xl border border-white/10 bg-[#1C1008] px-3 text-white outline-none focus:border-[#F39C12]"
       />
+      </div>
       <input ref={inputRef} type="hidden" name={name} value={iso} required={required} />
       {optional ? (
         <button

@@ -12,6 +12,8 @@ export function ProfileSettingsForm({ children }: { children: ReactNode }) {
   const formRef = useRef<HTMLFormElement>(null);
   const timerRef = useRef<number | null>(null);
   const saveIdRef = useRef(0);
+  const sendingRef = useRef(false);
+  const queuedRef = useRef(false);
   const [, startTransition] = useTransition();
 
   function save() {
@@ -25,6 +27,10 @@ export function ProfileSettingsForm({ children }: { children: ReactNode }) {
       window.clearTimeout(timerRef.current);
       timerRef.current = null;
     }
+    if (sendingRef.current) {
+      queuedRef.current = true;
+      return;
+    }
     const data = new FormData(form);
     for (const input of form.querySelectorAll<HTMLInputElement>(
       'input[type="file"]'
@@ -32,8 +38,15 @@ export function ProfileSettingsForm({ children }: { children: ReactNode }) {
       input.value = "";
     }
     const requestId = ++saveIdRef.current;
+    sendingRef.current = true;
     startTransition(async () => {
       const result = await updateProfileAction(data);
+      sendingRef.current = false;
+      if (queuedRef.current) {
+        queuedRef.current = false;
+        save();
+        return;
+      }
       if (requestId !== saveIdRef.current) return;
       if (result.ok) {
         toast.success("ذخیره شد", { id: TOAST_ID });
@@ -79,8 +92,8 @@ export function ProfileSettingsForm({ children }: { children: ReactNode }) {
       target instanceof HTMLInputElement ||
       target instanceof HTMLTextAreaElement
     ) {
-      if (target.type === "checkbox") return;
-      queueSave(true);
+      if (target.type === "checkbox" || target.type === "hidden") return;
+      queueSave(false);
     }
   }
 

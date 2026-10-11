@@ -9,6 +9,14 @@ export function formatFaNumber(value: number) {
   return faNumber.format(value);
 }
 
+export function gregorianIsoFromPersian(year: number, month: number, day: number) {
+  const value = new DateObject({ calendar: persian, year, month, day }).convert(
+    gregorian
+  );
+  const pad = (part: number) => String(part).padStart(2, "0");
+  return `${value.year}-${pad(value.month.number)}-${pad(value.day)}`;
+}
+
 export function formatJalaliPretty(isoOrDate: string | Date) {
   const iso =
     typeof isoOrDate === "string"
