@@ -1,5 +1,6 @@
 import { Prisma, PrismaClient, Role } from "@prisma/client";
 import { defaultCommunitySlug } from "@/lib/config";
+import { isStoredPhoto } from "@/modules/media/media.service";
 import type { TelegramUser } from "@/modules/auth/telegram";
 import { APP_NAME, APP_SLOGAN } from "@/shared/brand";
 
@@ -14,10 +15,16 @@ export class AuthRepository {
     });
 
     const telegramId = BigInt(user.id);
+    const existing = await this.db.user.findUnique({
+      where: { telegramId },
+      select: { telegramPhotoUrl: true }
+    });
     const refresh = {
       username: user.username,
       languageCode: user.language_code,
-      ...(user.photo_url ? { telegramPhotoUrl: user.photo_url } : {})
+      ...(user.photo_url && !isStoredPhoto(existing?.telegramPhotoUrl)
+        ? { telegramPhotoUrl: user.photo_url }
+        : {})
     };
     try {
       return await this.db.user.upsert({

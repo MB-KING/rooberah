@@ -87,10 +87,11 @@ export async function requireCurrentUser() {
     (user.photoUrl?.startsWith("http") ? user.photoUrl : null);
   let telegramPhotoUrl = user.telegramPhotoUrl ?? null;
   if (remotePhoto && !isStoredPhoto(telegramPhotoUrl)) {
-    const stored = await storeRemoteProfilePhoto(user.id, remotePhoto).catch(
-      () => null
+    telegramPhotoUrl = await copyTelegramPhotoOnce(
+      user.id,
+      remotePhoto,
+      telegramPhotoUrl
     );
-    telegramPhotoUrl = stored || remotePhoto;
   }
   const photoChanged = customPhoto !== user.photoUrl;
   const telegramChanged = telegramPhotoUrl !== (user.telegramPhotoUrl ?? null);
@@ -107,6 +108,40 @@ export async function requireCurrentUser() {
   }
 
   return user;
+}
+
+async function copyTelegramPhotoOnce(
+  userId: string,
+  remotePhoto: string,
+  current: string | null
+) {
+  const key = `tg-photo:${userId}`;
+  const lock = await prisma.$queryRaw<{ locked: boolean }[]>`
+    SELECT pg_try_advisory_lock(hashtext(${key})::bigint) AS "locked"
+  `;
+  if (!lock[0]?.locked) return current;
+  try {
+    const fresh = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { telegramPhotoUrl: true }
+    });
+    if (isStoredPhoto(fresh?.telegramPhotoUrl)) return fresh?.telegramPhotoUrl ?? current;
+    const saved = await storeRemoteProfilePhoto(userId, remotePhoto).catch(
+      () => null
+    );
+    const next = saved || remotePhoto;
+    if (next !== fresh?.telegramPhotoUrl) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { telegramPhotoUrl: next }
+      });
+    }
+    return next;
+  } finally {
+    await prisma.$queryRaw`
+      SELECT pg_advisory_unlock(hashtext(${key})::bigint)
+    `;
+  }
 }
 
 export async function getOptionalCurrentUser() {

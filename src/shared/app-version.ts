@@ -1,6 +1,6 @@
 import { formatFaNumber } from "@/lib/jalali";
 
-export const APP_VERSION = "1.4.8";
+export const APP_VERSION = "1.4.9";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => formatFaNumber(Number(digit)));
@@ -14,6 +14,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.4.9",
+    dateLabel: "۱۹ مهر ۱۴۰۵",
+    title: "عکس تکراری کانال",
+    items: [
+      "باز کردن اپ دیگر هر بار عکس پروفایل را به کانال نمی‌فرستد."
+    ]
+  },
   {
     version: "1.4.8",
     dateLabel: "۱۸ مهر ۱۴۰۵",
