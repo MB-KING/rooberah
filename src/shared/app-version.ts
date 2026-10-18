@@ -1,6 +1,6 @@
 import { formatFaNumber } from "@/lib/jalali";
 
-export const APP_VERSION = "1.5.0";
+export const APP_VERSION = "1.5.1";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => formatFaNumber(Number(digit)));
@@ -14,6 +14,15 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.5.1",
+    dateLabel: "۲۶ مهر ۱۴۰۵",
+    title: "مینی‌اپ یا وی‌پی‌ان",
+    items: [
+      "اگر سایت داخل مرورگر تلگرام باز شود، به مینی‌اپ برمی‌گردد.",
+      "اگر آی‌پی از ایران باشد، می‌گوید وی‌پی‌ان را روشن کن."
+    ]
+  },
   {
     version: "1.5.0",
     dateLabel: "۱۹ مهر ۱۴۰۵",

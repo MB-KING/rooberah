@@ -5,7 +5,7 @@ import { TelegramSignIn } from "@/components/telegram/telegram-sign-in";
 import { EventCard } from "@/components/user/event-card";
 import { UserCard } from "@/components/user/user-card";
 import { secondaryActionClass } from "@/components/user/user-action-styles";
-import { botUsername } from "@/lib/telegram-format";
+import { botUsername, telegramDeepLink } from "@/lib/telegram-format";
 import { APP_NAME, APP_SLOGAN } from "@/shared/brand";
 
 type GuestEvent = {
@@ -42,7 +42,7 @@ export function GuestHome({ upcoming }: { upcoming: GuestEvent[] }) {
             مشاهده برنامه‌ها
           </Link>
           <a
-            href={`https://t.me/${username}`}
+            href={telegramDeepLink("/")}
             target="_blank"
             rel="noreferrer"
             className={secondaryActionClass}

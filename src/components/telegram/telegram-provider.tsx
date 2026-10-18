@@ -6,7 +6,7 @@ import {
   postTelegramInitData,
   reloadAfterTelegramLogin
 } from "@/components/telegram/reload-after-login";
-import { pathFromStartParam } from "@/lib/telegram-format";
+import { pathFromStartParam, telegramDeepLink } from "@/lib/telegram-format";
 
 const START_PARAM_KEY = "rooberah_start_param";
 
@@ -40,6 +40,22 @@ declare global {
   }
 }
 
+function VpnNeededNotice() {
+  return (
+    <div className="fixed inset-x-0 top-0 z-[60] mx-auto w-full max-w-[430px] p-3">
+      <div className="rounded-xl border border-ember/40 bg-[#2A160C] px-3 py-3 text-sm font-bold leading-7 text-white shadow-lg">
+        وی‌پی‌ان خاموش است. روشن کن و دوباره از ربات وارد شو.
+        <a
+          href={telegramDeepLink("/")}
+          className="mt-2 flex h-11 items-center justify-center rounded-xl bg-ember font-black text-[#1C1008]"
+        >
+          باز کردن مینی‌اپ
+        </a>
+      </div>
+    </div>
+  );
+}
+
 function resolveStartPath(webApp: NonNullable<Window["Telegram"]>["WebApp"]) {
   const fromHash = window.location.hash.replace(/^#/, "").trim();
   const fromQuery = new URLSearchParams(window.location.search).get("e")?.trim() ?? "";
@@ -67,8 +83,15 @@ function resolveStartPath(webApp: NonNullable<Window["Telegram"]>["WebApp"]) {
   return null;
 }
 
+export const NEED_VPN_EVENT = "rooberah-need-vpn";
+
+function rememberNeedVpn() {
+  window.dispatchEvent(new Event(NEED_VPN_EVENT));
+}
+
 export function TelegramProvider({ children }: { children: React.ReactNode }) {
   const [scriptReady, setScriptReady] = useState(false);
+  const [needVpn, setNeedVpn] = useState(false);
   const bootstrapped = useRef(false);
 
   const bootstrap = useCallback(async () => {
@@ -86,6 +109,13 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (!webApp || !initData) {
+      if (/Telegram/i.test(window.navigator.userAgent)) {
+        window.location.replace(telegramDeepLink(window.location.pathname));
+        window.setTimeout(() => {
+          setNeedVpn(true);
+          rememberNeedVpn();
+        }, 2000);
+      }
       return;
     }
 
@@ -112,13 +142,29 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
     }
   }, [bootstrap, scriptReady]);
 
+  useEffect(() => {
+    void fetch("/api/network")
+      .then((response) => response.json())
+      .then((data: { iran?: boolean }) => {
+        if (!data.iran) return;
+        setNeedVpn(true);
+        rememberNeedVpn();
+      })
+      .catch(() => undefined);
+  }, []);
+
   return (
     <>
       <Script
         src="https://telegram.org/js/telegram-web-app.js"
         strategy="afterInteractive"
         onLoad={() => setScriptReady(true)}
+        onError={() => {
+          setNeedVpn(true);
+          rememberNeedVpn();
+        }}
       />
+      {needVpn ? <VpnNeededNotice /> : null}
       {children}
     </>
   );
