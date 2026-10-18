@@ -40,11 +40,12 @@ declare global {
   }
 }
 
-function VpnNeededNotice() {
+function VpnNeededNotice({ ip }: { ip: string }) {
   return (
     <div className="fixed inset-x-0 top-0 z-[60] mx-auto w-full max-w-[430px] p-3">
       <div className="rounded-xl border border-ember/40 bg-[#2A160C] px-3 py-3 text-sm font-bold leading-7 text-white shadow-lg">
-        وی‌پی‌ان خاموش است. روشن کن و دوباره از ربات وارد شو.
+        وی‌پی‌ان خاموش است. آی‌پی این اتصال:{" "}
+        <span dir="ltr">{ip}</span>. روشن کن و دوباره از ربات وارد شو.
         <a
           href={telegramDeepLink("/")}
           className="mt-2 flex h-11 items-center justify-center rounded-xl bg-ember font-black text-[#1C1008]"
@@ -85,13 +86,13 @@ function resolveStartPath(webApp: NonNullable<Window["Telegram"]>["WebApp"]) {
 
 export const NEED_VPN_EVENT = "rooberah-need-vpn";
 
-function rememberNeedVpn() {
-  window.dispatchEvent(new Event(NEED_VPN_EVENT));
+function rememberNeedVpn(ip: string) {
+  window.dispatchEvent(new CustomEvent(NEED_VPN_EVENT, { detail: ip }));
 }
 
 export function TelegramProvider({ children }: { children: React.ReactNode }) {
   const [scriptReady, setScriptReady] = useState(false);
-  const [needVpn, setNeedVpn] = useState(false);
+  const [seenIp, setSeenIp] = useState("");
   const bootstrapped = useRef(false);
 
   const bootstrap = useCallback(async () => {
@@ -141,10 +142,10 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     void fetch("/api/network")
       .then((response) => response.json())
-      .then((data: { iran?: boolean }) => {
-        if (!data.iran) return;
-        setNeedVpn(true);
-        rememberNeedVpn();
+      .then((data: { iran?: boolean; ip?: string }) => {
+        if (!data.iran || !data.ip) return;
+        setSeenIp(data.ip);
+        rememberNeedVpn(data.ip);
       })
       .catch(() => undefined);
   }, []);
@@ -156,7 +157,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
         strategy="afterInteractive"
         onLoad={() => setScriptReady(true)}
       />
-      {needVpn ? <VpnNeededNotice /> : null}
+      {seenIp ? <VpnNeededNotice ip={seenIp} /> : null}
       {children}
     </>
   );

@@ -15,10 +15,13 @@ function insideTelegram() {
 
 export function TelegramSignIn({ nextPath = "/" }: { nextPath?: string }) {
   const [outside, setOutside] = useState(false);
-  const [needVpn, setNeedVpn] = useState(false);
+  const [seenIp, setSeenIp] = useState("");
 
   useEffect(() => {
-    const onNeedVpn = () => setNeedVpn(true);
+    const onNeedVpn = (event: Event) => {
+      const ip = (event as CustomEvent<string>).detail;
+      if (ip) setSeenIp(ip);
+    };
     window.addEventListener(NEED_VPN_EVENT, onNeedVpn);
     const timer = window.setTimeout(() => {
       if (!insideTelegram()) setOutside(true);
@@ -29,10 +32,11 @@ export function TelegramSignIn({ nextPath = "/" }: { nextPath?: string }) {
     };
   }, []);
 
-  if (needVpn) {
+  if (seenIp) {
     return (
       <p className="text-center text-sm font-bold leading-7 text-slate-200">
-        وی‌پی‌ان خاموش است. روشن کن و دوباره از ربات وارد شو.
+        وی‌پی‌ان خاموش است. آی‌پی این اتصال:{" "}
+        <span dir="ltr">{seenIp}</span>
       </p>
     );
   }
