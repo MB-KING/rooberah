@@ -78,9 +78,36 @@ export function isIranIp(ip: string) {
   return v6Blocks.some((block) => (v6 & block.mask) === block.base);
 }
 
+function isPublicIp(ip: string) {
+  const value = ip.toLowerCase();
+  if (
+    value === "::1" ||
+    value.startsWith("127.") ||
+    value.startsWith("10.") ||
+    value.startsWith("192.168.") ||
+    value.startsWith("169.254.") ||
+    /^172\.(1[6-9]|2\d|3[0-1])\./.test(value) ||
+    value.startsWith("fc") ||
+    value.startsWith("fd") ||
+    value.startsWith("fe80:")
+  ) {
+    return false;
+  }
+  return true;
+}
+
+/** Caddy appends the real client to X-Forwarded-For. The last public address is the visitor. */
 export function clientIpFromHeaders(headerStore: Headers) {
-  const forwarded = headerStore.get("x-forwarded-for");
-  const candidate =
-    forwarded?.split(",")[0]?.trim() || headerStore.get("x-real-ip")?.trim() || "";
-  return candidate || null;
+  const forwarded =
+    headerStore
+      .get("x-forwarded-for")
+      ?.split(",")
+      .map((part) => part.trim())
+      .filter(Boolean) ?? [];
+  const real = headerStore.get("x-real-ip")?.trim();
+  const candidates = real ? [...forwarded, real] : forwarded;
+  for (let index = candidates.length - 1; index >= 0; index -= 1) {
+    if (isPublicIp(candidates[index])) return candidates[index];
+  }
+  return null;
 }

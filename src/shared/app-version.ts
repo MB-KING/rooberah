@@ -1,6 +1,6 @@
 import { formatFaNumber } from "@/lib/jalali";
 
-export const APP_VERSION = "1.5.2";
+export const APP_VERSION = "1.5.3";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => formatFaNumber(Number(digit)));
@@ -14,6 +14,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.5.3",
+    dateLabel: "۲۶ مهر ۱۴۰۵",
+    title: "آی‌پی واقعی بازدیدکننده",
+    items: [
+      "پیام وی‌پی‌ان با آی‌پی واقعی اتصال سنجیده می‌شود، نه با یک آدرس اضافه در مسیر."
+    ]
+  },
   {
     version: "1.5.2",
     dateLabel: "۲۶ مهر ۱۴۰۵",
