@@ -42,12 +42,18 @@ declare global {
 
 export function VpnNotice({ ip, location }: { ip: string; location: string }) {
   return (
-    <div className="grid gap-1 text-sm font-bold leading-7 text-white">
-      <p>برای ارتباط با تلگرام لازم است وی‌پی‌ان را روشن کنی.</p>
+    <div className="rounded-xl border border-ember/40 bg-ember/10 px-3 py-3 text-sm leading-7 text-slate-200">
       <p>
+        حساب رو به راه با تلگرام ساخته می‌شود. اگر وی‌پی‌ان روشن نباشد، این کار
+        درست انجام نمی‌شود و حساب ساخته نمی‌شود. وی‌پی‌ان را روشن کن و دوباره
+        وارد شو.
+      </p>
+      <p className="mt-2 text-xs font-bold leading-6 text-slate-300">
         آی‌پی فعلی: <span dir="ltr">{ip}</span>
       </p>
-      <p>لوکیشن فعلی: {location}</p>
+      <p className="text-xs font-bold leading-6 text-slate-300">
+        لوکیشن فعلی: {location}
+      </p>
     </div>
   );
 }
@@ -81,15 +87,35 @@ function resolveStartPath(webApp: NonNullable<Window["Telegram"]>["WebApp"]) {
 
 export const NEED_VPN_EVENT = "rooberah-need-vpn";
 
-function rememberNeedVpn(detail: { ip: string; location: string }) {
+type VpnNoticeDetail = { ip: string; location: string };
+
+let cachedVpnNotice: VpnNoticeDetail | null = null;
+
+function rememberNeedVpn(detail: VpnNoticeDetail) {
+  cachedVpnNotice = detail;
   window.dispatchEvent(new CustomEvent(NEED_VPN_EVENT, { detail }));
+}
+
+export function useVpnNotice() {
+  const [notice, setNotice] = useState<VpnNoticeDetail | null>(cachedVpnNotice);
+
+  useEffect(() => {
+    if (cachedVpnNotice) setNotice(cachedVpnNotice);
+    const onNeedVpn = (event: Event) => {
+      const detail = (event as CustomEvent<VpnNoticeDetail>).detail;
+      if (detail?.ip) {
+        setNotice({ ip: detail.ip, location: detail.location || "ایران" });
+      }
+    };
+    window.addEventListener(NEED_VPN_EVENT, onNeedVpn);
+    return () => window.removeEventListener(NEED_VPN_EVENT, onNeedVpn);
+  }, []);
+
+  return notice;
 }
 
 export function TelegramProvider({ children }: { children: React.ReactNode }) {
   const [scriptReady, setScriptReady] = useState(false);
-  const [vpnNotice, setVpnNotice] = useState<{ ip: string; location: string } | null>(
-    null
-  );
   const bootstrapped = useRef(false);
 
   const bootstrap = useCallback(async () => {
@@ -141,9 +167,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
       .then((response) => response.json())
       .then((data: { iran?: boolean; ip?: string; location?: string }) => {
         if (!data.iran || !data.ip) return;
-        const notice = { ip: data.ip, location: data.location || "ایران" };
-        setVpnNotice(notice);
-        rememberNeedVpn(notice);
+        rememberNeedVpn({ ip: data.ip, location: data.location || "ایران" });
       })
       .catch(() => undefined);
   }, []);
@@ -155,13 +179,6 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
         strategy="afterInteractive"
         onLoad={() => setScriptReady(true)}
       />
-      {vpnNotice ? (
-        <div className="fixed inset-x-0 top-0 z-[60] mx-auto w-full max-w-[430px] p-3">
-          <div className="rounded-xl border border-ember/40 bg-[#2A160C] px-3 py-3 shadow-lg">
-            <VpnNotice ip={vpnNotice.ip} location={vpnNotice.location} />
-          </div>
-        </div>
-      ) : null}
       {children}
     </>
   );

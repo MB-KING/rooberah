@@ -1,6 +1,6 @@
 import { formatFaNumber } from "@/lib/jalali";
 
-export const APP_VERSION = "1.5.6";
+export const APP_VERSION = "1.5.7";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => formatFaNumber(Number(digit)));
@@ -14,6 +14,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.5.7",
+    dateLabel: "۲۶ مهر ۱۴۰۵",
+    title: "توضیح وی‌پی‌ان کنار ورود",
+    items: [
+      "اگر آی‌پی از ایران باشد، توضیح وی‌پی‌ان فقط کنار ساخت حساب و ورود می‌آید، نه بالای همه صفحه‌ها."
+    ]
+  },
   {
     version: "1.5.6",
     dateLabel: "۲۶ مهر ۱۴۰۵",
