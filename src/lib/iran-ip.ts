@@ -97,6 +97,41 @@ function isPublicIp(ip: string) {
 }
 
 /** Caddy appends the real client to X-Forwarded-For. The last public address is the visitor. */
+const geoCache = new Map<string, { at: number; iran: boolean; location: string }>();
+
+/** Free, no key: https://ipwho.is — city and country for the IP that reached us. */
+export async function describeIp(ip: string) {
+  const cached = geoCache.get(ip);
+  if (cached && Date.now() - cached.at < 10 * 60 * 1000) {
+    return { iran: cached.iran, location: cached.location };
+  }
+
+  const fallback = {
+    iran: isIranIp(ip),
+    location: isIranIp(ip) ? "ایران" : ""
+  };
+
+  try {
+    const response = await fetch(`https://ipwho.is/${encodeURIComponent(ip)}`, {
+      signal: AbortSignal.timeout(2500),
+      headers: { accept: "application/json" }
+    });
+    const data = (await response.json()) as {
+      success?: boolean;
+      country?: string;
+      country_code?: string;
+      city?: string;
+    };
+    if (!data.success) return fallback;
+    const location = [data.city, data.country].filter(Boolean).join(", ");
+    const geo = { iran: data.country_code === "IR", location };
+    geoCache.set(ip, { at: Date.now(), ...geo });
+    return geo;
+  } catch {
+    return fallback;
+  }
+}
+
 export function clientIpFromHeaders(headerStore: Headers) {
   const forwarded =
     headerStore

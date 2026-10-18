@@ -1,13 +1,12 @@
-import { clientIpFromHeaders, isIranIp } from "@/lib/iran-ip";
+import { clientIpFromHeaders, describeIp } from "@/lib/iran-ip";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const ip = clientIpFromHeaders(request.headers);
-  const iran = Boolean(ip && isIranIp(ip));
-  return Response.json({
-    iran,
-    ip: ip ?? "",
-    location: iran ? "ایران" : ""
-  });
+  if (!ip) {
+    return Response.json({ iran: false, ip: "", location: "" });
+  }
+  const geo = await describeIp(ip);
+  return Response.json({ iran: geo.iran, ip, location: geo.location });
 }
