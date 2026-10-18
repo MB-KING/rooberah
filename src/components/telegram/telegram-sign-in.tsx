@@ -2,7 +2,7 @@
 
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { NEED_VPN_EVENT } from "@/components/telegram/telegram-provider";
+import { NEED_VPN_EVENT, VpnNotice } from "@/components/telegram/telegram-provider";
 import { TelegramLoginWidget } from "@/components/telegram/telegram-login-widget";
 
 function insideTelegram() {
@@ -15,12 +15,16 @@ function insideTelegram() {
 
 export function TelegramSignIn({ nextPath = "/" }: { nextPath?: string }) {
   const [outside, setOutside] = useState(false);
-  const [seenIp, setSeenIp] = useState("");
+  const [vpnNotice, setVpnNotice] = useState<{ ip: string; location: string } | null>(
+    null
+  );
 
   useEffect(() => {
     const onNeedVpn = (event: Event) => {
-      const ip = (event as CustomEvent<string>).detail;
-      if (ip) setSeenIp(ip);
+      const detail = (event as CustomEvent<{ ip?: string; location?: string }>).detail;
+      if (detail?.ip) {
+        setVpnNotice({ ip: detail.ip, location: detail.location || "ایران" });
+      }
     };
     window.addEventListener(NEED_VPN_EVENT, onNeedVpn);
     const timer = window.setTimeout(() => {
@@ -32,13 +36,8 @@ export function TelegramSignIn({ nextPath = "/" }: { nextPath?: string }) {
     };
   }, []);
 
-  if (seenIp) {
-    return (
-      <p className="text-center text-sm font-bold leading-7 text-slate-200">
-        وی‌پی‌ان خاموش است. آی‌پی این اتصال:{" "}
-        <span dir="ltr">{seenIp}</span>
-      </p>
-    );
+  if (vpnNotice) {
+    return <VpnNotice ip={vpnNotice.ip} location={vpnNotice.location} />;
   }
 
   if (outside) {

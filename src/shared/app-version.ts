@@ -1,6 +1,6 @@
 import { formatFaNumber } from "@/lib/jalali";
 
-export const APP_VERSION = "1.5.4";
+export const APP_VERSION = "1.5.5";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => formatFaNumber(Number(digit)));
@@ -14,6 +14,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.5.5",
+    dateLabel: "۲۶ مهر ۱۴۰۵",
+    title: "پیام وی‌پی‌ان با آی‌پی",
+    items: [
+      "اگر آی‌پی از ایران باشد، برای ارتباط با تلگرام می‌گوید وی‌پی‌ان را روشن کنی و آی‌پی و لوکیشن همان اتصال را نشان می‌دهد."
+    ]
+  },
   {
     version: "1.5.4",
     dateLabel: "۲۶ مهر ۱۴۰۵",
