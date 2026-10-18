@@ -4,14 +4,26 @@ import { sendHelpMessage, sendStartMessage } from "@/lib/telegram-bot";
 import { pathFromStartParam } from "@/lib/telegram-format";
 import {
   deactivateTelegramResourceByChatId,
+  handleAddChoice,
   handleGroupAdminCommand,
+  handleReplyAddCommand,
   trackMembershipUpdate
 } from "@/modules/telegram/group-commands";
 
+type TelegramPerson = {
+  id?: number;
+  username?: string;
+  first_name?: string;
+  last_name?: string;
+  is_bot?: boolean;
+};
+
 type TelegramUpdate = {
   message?: {
+    message_id?: number;
     chat?: { id?: number; type?: string; title?: string; username?: string };
-    from?: { id?: number; username?: string; first_name?: string };
+    from?: TelegramPerson;
+    reply_to_message?: { from?: TelegramPerson };
     text?: string;
     message_thread_id?: number;
     is_topic_message?: boolean;
@@ -27,11 +39,48 @@ type TelegramUpdate = {
     chat?: { id?: number };
     new_chat_member?: { user?: { id?: number }; status?: string };
   };
+  callback_query?: {
+    id?: string;
+    data?: string;
+    from?: TelegramPerson;
+    message?: {
+      message_id?: number;
+      chat?: { id?: number; type?: string; title?: string; username?: string };
+    };
+  };
 };
 
 export async function POST(request: Request) {
   try {
     const update = (await request.json()) as TelegramUpdate;
+    const choice = update.callback_query;
+    if (choice?.id && choice.data) {
+      const person = choice.from?.id
+        ? {
+            id: choice.from.id,
+            username: choice.from.username,
+            first_name: choice.from.first_name,
+            last_name: choice.from.last_name,
+            is_bot: choice.from.is_bot
+          }
+        : undefined;
+      await handleAddChoice({
+        callbackId: choice.id,
+        data: choice.data,
+        from: person,
+        chat: choice.message?.chat?.id
+          ? {
+              id: choice.message.chat.id,
+              type: choice.message.chat.type,
+              title: choice.message.chat.title,
+              username: choice.message.chat.username
+            }
+          : undefined,
+        messageId: choice.message?.message_id
+      });
+      return NextResponse.json({ ok: true });
+    }
+
     const message = update.message;
     const chatId = message?.chat?.id;
     const chatType = message?.chat?.type;
@@ -39,6 +88,32 @@ export async function POST(request: Request) {
     const isPrivate = chatType === "private";
 
     if (message?.chat && text) {
+      const person = (user: TelegramPerson | undefined) =>
+        user?.id
+          ? {
+              id: user.id,
+              username: user.username,
+              first_name: user.first_name,
+              last_name: user.last_name,
+              is_bot: user.is_bot
+            }
+          : undefined;
+      const added = await handleReplyAddCommand({
+        text,
+        chat: {
+          id: message.chat.id!,
+          type: message.chat.type,
+          title: message.chat.title,
+          username: message.chat.username
+        },
+        threadId: message.is_topic_message ? message.message_thread_id : undefined,
+        messageId: message.message_id,
+        from: person(message.from),
+        replyTo: person(message.reply_to_message?.from)
+      });
+      if (added) {
+        return NextResponse.json({ ok: true });
+      }
       const handled = await handleGroupAdminCommand({
         text,
         chat: {

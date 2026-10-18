@@ -13,18 +13,32 @@ function insideTelegram() {
   );
 }
 
+function miniAppLoginReady() {
+  if (typeof window === "undefined") return false;
+  return Boolean(window.Telegram?.WebApp?.initData?.trim());
+}
+
 export function TelegramSignIn({ nextPath = "/" }: { nextPath?: string }) {
   const [settled, setSettled] = useState(false);
   const [outside, setOutside] = useState(false);
   const vpnNotice = useVpnNotice();
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setOutside(!insideTelegram());
+    if (!insideTelegram()) {
+      setOutside(true);
       setSettled(true);
-    }, 2500);
+      return;
+    }
+    const timer = window.setTimeout(() => setSettled(true), 2500);
     return () => window.clearTimeout(timer);
   }, []);
+
+  if (vpnNotice && !miniAppLoginReady()) {
+    if (outside || !insideTelegram()) {
+      return <TelegramLoginWidget nextPath={nextPath} />;
+    }
+    return <VpnNotice ip={vpnNotice.ip} location={vpnNotice.location} />;
+  }
 
   if (outside) {
     return <TelegramLoginWidget nextPath={nextPath} />;

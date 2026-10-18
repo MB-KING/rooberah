@@ -30,6 +30,18 @@ export function groupSignupCopy(input: {
   };
 }
 
+export function manualAddInviteCopy(eventTitle: string) {
+  return {
+    title: "به برنامه اضافه شدی",
+    body: [
+      `ادمین تو را برای ${quoteTitle(eventTitle)} گذاشت.`,
+      "حسابت با همین تلگرام ساخته شده، ولی هنوز کامل نیست.",
+      "اپ را باز کن، وارد شو و اطلاعاتت را کامل کن تا بتوانی ثبت‌نام کنی و از همه امکانات استفاده کنی."
+    ].join("\n"),
+    buttonText: "تکمیل اطلاعات"
+  };
+}
+
 export function registrationConfirmedCopy(eventTitle: string) {
   return {
     title: "✅ ثبت‌نامت قطعی شد",
@@ -269,6 +281,7 @@ export function helpMessageLines() {
     "• برنامه‌ها را ببین و ثبت‌نام کن",
     "• پروفایل و نشان‌هایت را کامل کن",
     "• یادآوری قرار از همین ربات می‌آید",
+    "• ادمین، در گروه روی پیام یک نفر ریپلی کن و /add بزن تا به برنامه اضافه شود",
     "",
     "اگر دکمه کار نکرد، منوی پایین همین چت را بزن."
   ];

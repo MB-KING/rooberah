@@ -110,6 +110,17 @@ export async function setupTelegramBot() {
       { command: "start", description: `شروع ${APP_NAME}` },
       { command: "app", description: "باز کردن مینی‌اپ" },
       { command: "help", description: "راهنما" },
+      { command: "add", description: "افزودن همین شخص به برنامه (ادمین، ریپلی)" },
+      { command: "addgroup", description: "ثبت گروه فعلی (سوپرادمین)" },
+      { command: "removegroup", description: "غیرفعال‌سازی گروه (سوپرادمین)" },
+      { command: "groupstatus", description: "وضعیت گروه (سوپرادمین)" }
+    ]
+  });
+
+  await callTelegram("setMyCommands", {
+    scope: { type: "all_group_chats" },
+    commands: [
+      { command: "add", description: "افزودن همین شخص به برنامه (ریپلی)" },
       { command: "addgroup", description: "ثبت گروه فعلی (سوپرادمین)" },
       { command: "removegroup", description: "غیرفعال‌سازی گروه (سوپرادمین)" },
       { command: "groupstatus", description: "وضعیت گروه (سوپرادمین)" }
@@ -126,7 +137,7 @@ export async function setupTelegramBot() {
 
   await callTelegram("setWebhook", {
     url: `${url}/api/telegram/webhook`,
-    allowed_updates: ["message", "my_chat_member", "chat_member"]
+    allowed_updates: ["message", "callback_query", "my_chat_member", "chat_member"]
   });
 
   return { appUrl: url, webhook: `${url}/api/telegram/webhook` };
@@ -264,6 +275,16 @@ async function sendWithHtmlFallback(input: {
   }
 }
 
+function withReply<T extends Record<string, unknown>>(
+  body: T,
+  replyToMessageId?: number
+): T {
+  if (replyToMessageId && replyToMessageId > 0) {
+    return { ...body, reply_to_message_id: replyToMessageId };
+  }
+  return body;
+}
+
 function withThread<T extends Record<string, unknown>>(
   body: T,
   threadId?: number | null
@@ -274,6 +295,42 @@ function withThread<T extends Record<string, unknown>>(
   return body;
 }
 
+export async function answerTelegramCallback(callbackId: string, text?: string) {
+  try {
+    await callTelegram("answerCallbackQuery", {
+      callback_query_id: callbackId,
+      text
+    });
+  } catch (error) {
+    logger.warn("telegram_answer_callback_failed", {
+      reason: error instanceof Error ? error.message : "unknown"
+    });
+  }
+}
+
+export async function editTelegramMessage(input: {
+  chatId: number | string | bigint;
+  messageId: number;
+  text: string;
+}) {
+  try {
+    await callTelegram("editMessageText", {
+      chat_id: input.chatId.toString(),
+      message_id: input.messageId,
+      text: input.text.slice(0, 4096),
+      parse_mode: "HTML",
+      disable_web_page_preview: true,
+      reply_markup: { inline_keyboard: [] }
+    });
+    return true;
+  } catch (error) {
+    logger.warn("telegram_edit_message_failed", {
+      reason: error instanceof Error ? error.message : "unknown"
+    });
+    return false;
+  }
+}
+
 export async function sendTelegramMessage(input: {
   chatId: number | string | bigint;
   text: string;
@@ -282,17 +339,23 @@ export async function sendTelegramMessage(input: {
   buttonText?: string;
   parseMode?: "HTML";
   threadId?: number | null;
+  replyToMessageId?: number;
+  inlineKeyboard?: {
+    inline_keyboard: Array<Array<{ text: string; callback_data: string }>>;
+  };
 }): Promise<TelegramSendResult> {
   const chatId = input.chatId.toString();
   const html = input.parseMode === "HTML";
   const text = input.text.slice(0, 4096);
-  const keyboard = input.openApp
-    ? buildAppKeyboard({
-        chatId,
-        eventPath: input.eventPath,
-        buttonText: input.buttonText
-      })
-    : undefined;
+  const keyboard =
+    input.inlineKeyboard ??
+    (input.openApp
+      ? buildAppKeyboard({
+          chatId,
+          eventPath: input.eventPath,
+          buttonText: input.buttonText
+        })
+      : undefined);
 
   try {
     const result =
@@ -302,23 +365,29 @@ export async function sendTelegramMessage(input: {
             htmlText: text,
             textField: "text",
             body: withThread(
-              {
-                chat_id: chatId,
-                disable_web_page_preview: true,
-                reply_markup: keyboard
-              },
+              withReply(
+                {
+                  chat_id: chatId,
+                  disable_web_page_preview: true,
+                  reply_markup: keyboard
+                },
+                input.replyToMessageId
+              ),
               input.threadId
             )
           })
         : await callTelegram<TelegramMessage>(
             "sendMessage",
             withThread(
-              {
-                chat_id: chatId,
-                text,
-                disable_web_page_preview: true,
-                reply_markup: keyboard
-              },
+              withReply(
+                {
+                  chat_id: chatId,
+                  text,
+                  disable_web_page_preview: true,
+                  reply_markup: keyboard
+                },
+                input.replyToMessageId
+              ),
               input.threadId
             )
           );

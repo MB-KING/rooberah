@@ -13,6 +13,7 @@ import {
   reloadAfterTelegramLogin
 } from "@/components/telegram/reload-after-login";
 import { TelegramLoginWidget } from "@/components/telegram/telegram-login-widget";
+import { useVpnNotice, VpnNotice } from "@/components/telegram/telegram-provider";
 import { Button } from "@/components/ui/button";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { secondaryActionClass } from "@/components/user/user-action-styles";
@@ -126,6 +127,7 @@ function AutoRegisterAfterLogin({ eventId }: { eventId: string }) {
 
 function LoginThenRegisterButton({ eventId }: { eventId: string }) {
   const [mode, setMode] = useState<"checking" | "widget">("checking");
+  const vpnNotice = useVpnNotice();
 
   useEffect(() => {
     let cancelled = false;
@@ -157,6 +159,10 @@ function LoginThenRegisterButton({ eventId }: { eventId: string }) {
       cancelled = true;
     };
   }, []);
+
+  if (mode === "checking" && vpnNotice && !readTelegramInitData()) {
+    return <VpnNotice ip={vpnNotice.ip} location={vpnNotice.location} />;
+  }
 
   if (mode === "checking") {
     return (

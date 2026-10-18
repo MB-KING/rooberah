@@ -9,6 +9,7 @@ import {
   helpMessageLines,
   photoReviewedCopy,
   groupSignupCopy,
+  manualAddInviteCopy,
   registrationConfirmedCopy,
   registrationWaitlistedCopy,
   rewardRedeemedCopy,
@@ -26,6 +27,13 @@ import {
 } from "@/lib/telegram-format";
 
 describe("notify copy", () => {
+  it("asks a newly added person to finish their account", () => {
+    const copy = manualAddInviteCopy("پیاده‌روی جمعه");
+    expect(copy.body).toContain("«پیاده‌روی جمعه»");
+    expect(copy.body).toContain("اطلاعاتت را کامل کن");
+    expect(copy.body).not.toContain("شما");
+  });
+
   it("announces a new group signup by name", () => {
     const copy = groupSignupCopy({
       name: "محمد باقری",

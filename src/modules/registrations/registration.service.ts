@@ -29,7 +29,11 @@ async function lockEvent(
 }
 
 export class RegistrationService {
-  async register(userId: string, eventId: string) {
+  async register(
+    userId: string,
+    eventId: string,
+    options?: { skipMembershipGate?: boolean }
+  ) {
     const user = await prisma.user.findUnique({
       where: { id: userId, deletedAt: null },
       select: {
@@ -44,11 +48,13 @@ export class RegistrationService {
     if (!user) {
       throw new AppError("UNAUTHORIZED", "User not found", 401);
     }
-    await assertRequiredTelegramMembership({
-      communityId: user.communityId,
-      userId: user.id,
-      telegramId: user.telegramId
-    });
+    if (!options?.skipMembershipGate) {
+      await assertRequiredTelegramMembership({
+        communityId: user.communityId,
+        userId: user.id,
+        telegramId: user.telegramId
+      });
+    }
 
     const registration = await prisma.$transaction(async (tx) => {
       await lockEvent(tx, eventId);

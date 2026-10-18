@@ -1,6 +1,6 @@
 import { formatFaNumber } from "@/lib/jalali";
 
-export const APP_VERSION = "1.5.7";
+export const APP_VERSION = "1.5.8";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => formatFaNumber(Number(digit)));
@@ -14,6 +14,16 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.5.8",
+    dateLabel: "۲۶ مهر ۱۴۰۵",
+    title: "افزودن با ریپلی",
+    items: [
+      "ادمین در گروه روی پیام یک نفر ریپلی می‌کند و /add می‌زند. اگر حساب داشته باشد همان لحظه به برنامه اضافه می‌شود. اگر نداشته باشد با شناسه تلگرامش ساخته می‌شود و به او گفته می‌شود اطلاعاتش را کامل کند.",
+      "اگر بیش از دو برنامه باز باشد، ربات اسم برنامه‌ها را می‌پرسد و ادمین همان را انتخاب می‌کند.",
+      "اگر آی‌پی از ایران باشد، دیگر روی «در حال ورود» نمی‌ماند و همان لحظه توضیح وی‌پی‌ان را نشان می‌دهد."
+    ]
+  },
   {
     version: "1.5.7",
     dateLabel: "۲۶ مهر ۱۴۰۵",
