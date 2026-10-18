@@ -111,10 +111,6 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
     if (!webApp || !initData) {
       if (/Telegram/i.test(window.navigator.userAgent)) {
         window.location.replace(telegramDeepLink(window.location.pathname));
-        window.setTimeout(() => {
-          setNeedVpn(true);
-          rememberNeedVpn();
-        }, 2000);
       }
       return;
     }
@@ -159,10 +155,6 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
         src="https://telegram.org/js/telegram-web-app.js"
         strategy="afterInteractive"
         onLoad={() => setScriptReady(true)}
-        onError={() => {
-          setNeedVpn(true);
-          rememberNeedVpn();
-        }}
       />
       {needVpn ? <VpnNeededNotice /> : null}
       {children}

@@ -1,6 +1,6 @@
 import { formatFaNumber } from "@/lib/jalali";
 
-export const APP_VERSION = "1.5.1";
+export const APP_VERSION = "1.5.2";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => formatFaNumber(Number(digit)));
@@ -14,6 +14,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.5.2",
+    dateLabel: "۲۶ مهر ۱۴۰۵",
+    title: "پیام وی‌پی‌ان فقط برای ایران",
+    items: [
+      "پیام روشن کردن وی‌پی‌ان فقط وقتی می‌آید که آی‌پی از ایران باشد."
+    ]
+  },
   {
     version: "1.5.1",
     dateLabel: "۲۶ مهر ۱۴۰۵",
