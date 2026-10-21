@@ -1,6 +1,6 @@
 import { formatFaNumber } from "@/lib/jalali";
 
-export const APP_VERSION = "1.5.8";
+export const APP_VERSION = "1.5.9";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => formatFaNumber(Number(digit)));
@@ -14,6 +14,17 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.5.9",
+    dateLabel: "۲۹ مهر ۱۴۰۵",
+    title: "خبر برنامه در چت ربات",
+    items: [
+      "وقتی برنامه منتشر می‌شود، به چت خصوصی کسانی که ربات را دارند پیام می‌رود.",
+      "در تنظیمات می‌توانی خبر برنامه و پیام عمومی را خاموش کنی.",
+      "سوپرادمین از پنل می‌تواند یک پیام عمومی بفرستد.",
+      "برنامهٔ پیش رو که قبل از این نسخه منتشر شده هم یک بار به چت ربات می‌رود. برنامه‌های برگزارشده نمی‌روند."
+    ]
+  },
   {
     version: "1.5.8",
     dateLabel: "۲۶ مهر ۱۴۰۵",

@@ -36,6 +36,9 @@ import { invitePresentMembersToFeedback } from "@/modules/events/feedback-invite
 import { BadgeService } from "@/modules/gamification/badge.service";
 import { MediaService } from "@/modules/media/media.service";
 import { logActivity, notifyUser } from "@/modules/activity/activity.service";
+import { sendBotNews } from "@/modules/telegram/bot-news";
+import { formatFaNumber } from "@/lib/jalali";
+import { APP_NAME } from "@/shared/brand";
 import { meetingTimeFromStart } from "@/shared/event-timing";
 import {
   businessStatusLabels,
@@ -985,4 +988,44 @@ export async function reviewEventPhotoAction(formData: FormData) {
   revalidatePath("/admin/moderation");
   revalidatePath(`/events/${eventId}`);
   revalidatePath("/me");
+}
+
+export async function sendBroadcastAction(formData: FormData) {
+  const admin = await requireSuperAdminPage();
+  try {
+    const message = z
+      .string()
+      .trim()
+      .min(2, "پیام را بنویس.")
+      .max(1000, "پیام خیلی بلند است.")
+      .parse(formData.get("message"));
+    const result = await sendBotNews({
+      communityId: admin.communityId,
+      type: "BROADCAST",
+      title: `پیام ${APP_NAME}`,
+      body: message
+    });
+    await logActivity({
+      actorUserId: admin.id,
+      action: "BROADCAST_SENT",
+      entityType: "Community",
+      entityId: admin.communityId,
+      metadata: result
+    });
+    const notice =
+      result.total === 0
+        ? "کسی خبر ربات را روشن نکرده است."
+        : `به ${formatFaNumber(result.sent)} نفر رسید.${
+            result.failed ? ` ${formatFaNumber(result.failed)} نفر نرسید.` : ""
+          }`;
+    redirect(`/admin/broadcast?notice=${encodeURIComponent(notice)}` as never);
+  } catch (error) {
+    if (isRedirectError(error)) throw error;
+    logger.warn("broadcast_failed", {
+      reason: error instanceof Error ? error.message : "unknown"
+    });
+    redirect(
+      `/admin/broadcast?error=${encodeURIComponent(formErrorMessage(error))}` as never
+    );
+  }
 }

@@ -5,6 +5,7 @@ import {
   CalendarDays,
   Images,
   LayoutDashboard,
+  Megaphone,
   MoreHorizontal,
   ScrollText,
   Settings,
@@ -36,6 +37,7 @@ const moreItems = [
   { href: "/admin/badges", label: "نشان‌ها", Icon: Award },
   { href: "/admin/categories", label: "حوزه کاری", Icon: Tags },
   { href: "/admin/telegram", label: "تلگرام", Icon: Send },
+  { href: "/admin/broadcast", label: "پیام عمومی", Icon: Megaphone },
   { href: "/admin/activity", label: "فعالیت", Icon: ScrollText },
   { href: "/admin/settings", label: "تنظیمات", Icon: Settings }
 ] as const;

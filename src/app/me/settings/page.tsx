@@ -206,6 +206,12 @@ export default async function ProfileSettingsPage() {
 
           <div className="grid gap-3">
             <Toggle
+              name="notifyBotNews"
+              label="خبر برنامه در چت ربات"
+              description="وقتی برنامه جدید می‌آید یا پیام عمومی فرستاده می‌شود، در چت خصوصی ربات ببین."
+              defaultChecked={profile?.notifyBotNews ?? true}
+            />
+            <Toggle
               name="showInMembersDirectory"
               label="نمایش من در فهرست همراهان"
               description="اگر خاموش باشد، پروفایل تو برای اعضای عادی نمایش داده نمی‌شود."

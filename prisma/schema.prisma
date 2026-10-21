@@ -213,6 +213,7 @@ model UserProfile {
   showAttendanceCount     Boolean  @default(true)
   showSkills              Boolean  @default(true)
   showSocialLinks         Boolean  @default(true)
+  notifyBotNews           Boolean  @default(true)
   showWorkCategory        Boolean  @default(true)
   workStatus              WorkStatus?
   showWorkStatus          Boolean  @default(true)
@@ -296,6 +297,7 @@ model Event {
   longitude              Decimal?             @db.Decimal(9, 6)
   capacity               Int?
   announceThreadId       Int?
+  privateAnnounceAt      DateTime?
   status                 EventStatus          @default(DRAFT)
   checkInStartsAt        DateTime?
   checkInEndsAt          DateTime?

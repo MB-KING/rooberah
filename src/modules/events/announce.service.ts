@@ -22,6 +22,7 @@ import {
 } from "@/lib/telegram-format";
 import { getDisplayName } from "@/shared/privacy";
 import { notifyButtons, TELEGRAM_CAPTION_LIMIT } from "@/shared/notify-copy";
+import { notifyMembersAboutEvent } from "@/modules/telegram/bot-news";
 
 type AnnounceEvent = {
   id: string;
@@ -198,6 +199,13 @@ export async function announcePublishedEvent(
   };
 
   if (event.status !== EventStatus.PUBLISHED) return summary;
+
+  await notifyMembersAboutEvent(event).catch((error) => {
+    logger.warn("event_private_announce_failed", {
+      eventId: event.id,
+      reason: error instanceof Error ? error.message : "unknown"
+    });
+  });
 
   try {
     const community = await prisma.community.findUnique({
