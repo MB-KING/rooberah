@@ -1,5 +1,6 @@
 import { processEventReminders } from "@/modules/events/reminder.service";
 import { notifyUnsentUpcomingEvents } from "@/modules/telegram/bot-news";
+import { postTodayBirthdays } from "@/modules/telegram/birthday";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -21,5 +22,6 @@ export async function GET(request: Request) {
 
   const result = await processEventReminders();
   const announced = await notifyUnsentUpcomingEvents();
-  return NextResponse.json({ ok: true, announced, ...result });
+  const birthdays = await postTodayBirthdays();
+  return NextResponse.json({ ok: true, announced, birthdays, ...result });
 }

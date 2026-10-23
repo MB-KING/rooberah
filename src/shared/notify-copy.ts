@@ -1,3 +1,4 @@
+import { formatFaNumber } from "@/lib/jalali";
 import { APP_NAME } from "@/shared/brand";
 import { MEETING_TIME_LABEL, START_TIME_LABEL } from "@/shared/copy";
 
@@ -28,6 +29,22 @@ export function groupSignupCopy(input: {
       `برنامه ${input.eventNumber} ${APP_NAME}`
     ].join("\n")
   };
+}
+
+export function birthdayGroupCopy(name: string, presentCount: number) {
+  const lines = [
+    "همراه عزیز رو به راه،",
+    `${name.trim()} عزیز`,
+    "سالروز تولدت مبارک."
+  ];
+  if (presentCount > 0) {
+    lines.push(
+      `در سال گذشته ${formatFaNumber(presentCount)} بار همراه رو به راه بودی. امیدواریم از این به بعد هم بیشتر، و همیشه، همراه رو به راه باشی.`
+    );
+  } else {
+    lines.push("امیدواریم در سال پیش رو بیشتر همراه رو به راه باشی.");
+  }
+  return lines.join("\n");
 }
 
 export function manualAddInviteCopy(eventTitle: string) {

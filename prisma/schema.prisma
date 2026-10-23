@@ -193,11 +193,22 @@ model User {
   eventPhotos         EventPhoto[]               @relation("EventPhotoAuthor")
   photosReviewed      EventPhoto[]               @relation("PhotoReviewedBy")
   groupMemberships    TelegramGroupMembership[]
+  birthdayGreetings   BirthdayGreeting[]
 
   @@index([communityId, username])
   @@index([communityId, joinedAt])
   @@index([communityId, xp])
   @@index([communityId, workCategoryId])
+}
+
+model BirthdayGreeting {
+  id         String   @id @default(uuid())
+  userId     String
+  jalaliYear Int
+  sentAt     DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jalaliYear])
 }
 
 model UserProfile {

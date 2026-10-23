@@ -8,6 +8,7 @@ import {
   feedbackInviteCopy,
   helpMessageLines,
   photoReviewedCopy,
+  birthdayGroupCopy,
   groupSignupCopy,
   manualAddInviteCopy,
   registrationConfirmedCopy,
@@ -27,6 +28,18 @@ import {
 } from "@/lib/telegram-format";
 
 describe("notify copy", () => {
+  it("greets a birthday with the past year count, or without it", () => {
+    const attended = birthdayGroupCopy("رضا شیرازی", 6);
+    expect(attended).toContain("رضا شیرازی عزیز");
+    expect(attended).toContain("۶ بار همراه رو به راه بودی");
+    expect(attended).toContain("همراه رو به راه باشی");
+    const absent = birthdayGroupCopy("رضا شیرازی", 0);
+    expect(absent).not.toContain("بار همراه");
+    expect(absent).toContain("بیشتر همراه رو به راه باشی");
+    expect(attended).not.toContain("شما");
+    expect(absent).not.toContain("شما");
+  });
+
   it("asks a newly added person to finish their account", () => {
     const copy = manualAddInviteCopy("پیاده‌روی جمعه");
     expect(copy.body).toContain("«پیاده‌روی جمعه»");

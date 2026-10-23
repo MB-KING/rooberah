@@ -1,6 +1,6 @@
 import { formatFaNumber } from "@/lib/jalali";
 
-export const APP_VERSION = "1.5.9";
+export const APP_VERSION = "1.5.10";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => formatFaNumber(Number(digit)));
@@ -14,6 +14,15 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.5.10",
+    dateLabel: "۱ آبان ۱۴۰۵",
+    title: "تبریک تولد در گروه",
+    items: [
+      "روز تولد هر همراه، یک بار در گروه اصلی تبریک گفته می‌شود.",
+      "اگر در سال گذشته آمده باشد تعدادش می‌آید. اگر نیامده باشد، فقط دعوت می‌شود بیشتر همراه رو به راه باشد."
+    ]
+  },
   {
     version: "1.5.9",
     dateLabel: "۲۹ مهر ۱۴۰۵",
