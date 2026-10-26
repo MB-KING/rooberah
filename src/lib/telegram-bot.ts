@@ -111,6 +111,7 @@ export async function setupTelegramBot() {
       { command: "app", description: "باز کردن مینی‌اپ" },
       { command: "help", description: "راهنما" },
       { command: "add", description: "افزودن همین شخص به برنامه (ادمین، ریپلی)" },
+      { command: "photo", description: "بردن عکس گروه به برنامه (ادمین، ریپلی)" },
       { command: "addgroup", description: "ثبت گروه فعلی (سوپرادمین)" },
       { command: "removegroup", description: "غیرفعال‌سازی گروه (سوپرادمین)" },
       { command: "groupstatus", description: "وضعیت گروه (سوپرادمین)" }
@@ -121,6 +122,7 @@ export async function setupTelegramBot() {
     scope: { type: "all_group_chats" },
     commands: [
       { command: "add", description: "افزودن همین شخص به برنامه (ریپلی)" },
+      { command: "photo", description: "بردن عکس گروه به برنامه (ریپلی)" },
       { command: "addgroup", description: "ثبت گروه فعلی (سوپرادمین)" },
       { command: "removegroup", description: "غیرفعال‌سازی گروه (سوپرادمین)" },
       { command: "groupstatus", description: "وضعیت گروه (سوپرادمین)" }
@@ -293,6 +295,31 @@ function withThread<T extends Record<string, unknown>>(
     return { ...body, message_thread_id: threadId };
   }
   return body;
+}
+
+export async function downloadTelegramFile(fileId: string) {
+  const file = await callTelegram<{ file_path?: string }>("getFile", { file_id: fileId });
+  if (!file.file_path) {
+    throw new Error("Telegram file has no path");
+  }
+  const response = await fetch(
+    `https://api.telegram.org/file/bot${config.TELEGRAM_BOT_TOKEN}/${file.file_path}`,
+    { cache: "no-store" }
+  );
+  if (!response.ok) {
+    throw new Error("Telegram file download failed");
+  }
+  const filename = file.file_path.split("/").pop() || "event-photo.jpg";
+  const mimeType = filename.endsWith(".png")
+    ? "image/png"
+    : filename.endsWith(".webp")
+      ? "image/webp"
+      : "image/jpeg";
+  return {
+    buffer: Buffer.from(await response.arrayBuffer()),
+    filename,
+    mimeType
+  };
 }
 
 export async function answerTelegramCallback(callbackId: string, text?: string) {

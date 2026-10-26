@@ -9,6 +9,10 @@ import {
   handleReplyAddCommand,
   trackMembershipUpdate
 } from "@/modules/telegram/group-commands";
+import {
+  handlePhotoChoice,
+  handleReplyPhotoCommand
+} from "@/modules/telegram/group-photo";
 
 type TelegramPerson = {
   id?: number;
@@ -23,7 +27,12 @@ type TelegramUpdate = {
     message_id?: number;
     chat?: { id?: number; type?: string; title?: string; username?: string };
     from?: TelegramPerson;
-    reply_to_message?: { from?: TelegramPerson };
+    reply_to_message?: {
+      from?: TelegramPerson;
+      caption?: string;
+      photo?: { file_id?: string }[];
+      document?: { file_id?: string; mime_type?: string };
+    };
     text?: string;
     message_thread_id?: number;
     is_topic_message?: boolean;
@@ -64,7 +73,7 @@ export async function POST(request: Request) {
             is_bot: choice.from.is_bot
           }
         : undefined;
-      await handleAddChoice({
+      const choiceInput = {
         callbackId: choice.id,
         data: choice.data,
         from: person,
@@ -77,7 +86,9 @@ export async function POST(request: Request) {
             }
           : undefined,
         messageId: choice.message?.message_id
-      });
+      };
+      const added = await handleAddChoice(choiceInput);
+      if (!added) await handlePhotoChoice(choiceInput);
       return NextResponse.json({ ok: true });
     }
 
@@ -98,6 +109,30 @@ export async function POST(request: Request) {
               is_bot: user.is_bot
             }
           : undefined;
+      const replied = message.reply_to_message;
+      const photoFileId =
+        replied?.photo?.at(-1)?.file_id ||
+        (replied?.document?.mime_type?.startsWith("image/")
+          ? replied.document.file_id
+          : undefined);
+      const photoHandled = await handleReplyPhotoCommand({
+        text,
+        chat: {
+          id: message.chat.id!,
+          type: message.chat.type,
+          title: message.chat.title,
+          username: message.chat.username
+        },
+        threadId: message.is_topic_message ? message.message_thread_id : undefined,
+        messageId: message.message_id,
+        from: person(message.from),
+        replyTo: person(replied?.from),
+        fileId: photoFileId,
+        caption: replied?.caption
+      });
+      if (photoHandled) {
+        return NextResponse.json({ ok: true });
+      }
       const added = await handleReplyAddCommand({
         text,
         chat: {

@@ -1,6 +1,6 @@
 import { formatFaNumber } from "@/lib/jalali";
 
-export const APP_VERSION = "1.5.10";
+export const APP_VERSION = "1.5.11";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => formatFaNumber(Number(digit)));
@@ -14,6 +14,14 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.5.11",
+    dateLabel: "۴ آبان ۱۴۰۵",
+    title: "عکس گروه برای برنامه",
+    items: [
+      "ادمین روی عکس گروه ریپلی می‌کند و /photo می‌زند. برنامه را انتخاب می‌کند و عکس به اسم فرستنده ثبت و تأیید می‌شود."
+    ]
+  },
   {
     version: "1.5.10",
     dateLabel: "۱ آبان ۱۴۰۵",
