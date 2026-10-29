@@ -1,6 +1,6 @@
 import { formatFaNumber } from "@/lib/jalali";
 
-export const APP_VERSION = "1.5.11";
+export const APP_VERSION = "1.5.12";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => formatFaNumber(Number(digit)));
@@ -14,6 +14,16 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.5.12",
+    dateLabel: "۷ آبان ۱۴۰۵",
+    title: "کارت دعوت مرتب",
+    items: [
+      "کارت استوری، مربعی و افقی بدون عکس هم مرتب می‌ماند: عنوان، تاریخ، ساعت و محل.",
+      "عکس و اسم کنار متن «من توی این برنامه شرکت می‌کنم. اگر تو هم می‌آی خوشحال می‌شم ببینمت» می‌آید.",
+      "لوگوی رو به راه روی کارت است و فضای خالی با خود طرح پر شده."
+    ]
+  },
   {
     version: "1.5.11",
     dateLabel: "۴ آبان ۱۴۰۵",

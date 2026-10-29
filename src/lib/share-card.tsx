@@ -5,13 +5,12 @@ import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { persianForOg } from "@/lib/persian-og-text";
 import {
-  faTehranDateFormatter,
+  faTehranDateShortFormatter,
   faTehranTimeFormatter
 } from "@/lib/tehran-time";
-import { APP_NAME, brandColors } from "@/shared/brand";
-import { MEETING_TIME_LABEL, START_TIME_LABEL } from "@/shared/copy";
-import { publicEventStatuses } from "@/modules/events/event.repository";
+import { APP_SLOGAN, brandColors } from "@/shared/brand";
 import { MediaService } from "@/modules/media/media.service";
+import { publicEventStatuses } from "@/modules/events/event.repository";
 import { shownProfilePhoto } from "@/shared/profile-photo";
 import { getDisplayName } from "@/shared/privacy";
 import {
@@ -112,75 +111,46 @@ async function loadVazirmatnFont() {
   return null;
 }
 
-async function toJpegDataUrl(
-  buffer: Buffer,
-  contentType: string,
-  size: { width: number; height: number }
-) {
-  try {
-    const sharp = (await import("sharp")).default;
-    const resized = await sharp(buffer)
-      .rotate()
-      .resize({
-        width: size.width,
-        height: size.height,
-        fit: "cover",
-        withoutEnlargement: true
-      })
-      .jpeg({ quality: 72, mozjpeg: true })
-      .toBuffer();
-    return `data:image/jpeg;base64,${resized.toString("base64")}`;
-  } catch (error) {
-    logger.warn("share_card_image_resize_failed", {
-      reason: error instanceof Error ? error.message : "unknown"
-    });
-    const ok =
-      contentType.includes("jpeg") ||
-      contentType.includes("jpg") ||
-      contentType.includes("png");
-    if (!ok || buffer.byteLength > 220_000) return null;
-    return `data:${contentType};base64,${buffer.toString("base64")}`;
+const MEDIA_ID_RE = /\/api\/media\/([0-9a-f-]{36})/i;
+
+async function readPhotoBuffer(url: string) {
+  const mediaId = MEDIA_ID_RE.exec(url)?.[1];
+  if (mediaId) {
+    const file = await new MediaService().getStreamable(mediaId);
+    return file.buffer;
   }
+  if (!url.startsWith("https://") && !url.startsWith("http://")) return null;
+  const response = await fetch(url, { cache: "no-store" });
+  if (!response.ok) return null;
+  const type = response.headers.get("content-type") ?? "";
+  if (!type.startsWith("image/")) return null;
+  return Buffer.from(await response.arrayBuffer());
 }
 
-async function toAvatarDataUrl(photoUrl: string) {
+/** Small jpeg data URL. Satori cannot fetch our own /api/media path. */
+async function loadAvatarDataUrl(url: string | null) {
+  if (!url) return null;
   try {
-    let buffer: Buffer;
-    let contentType = "image/jpeg";
-    if (photoUrl.startsWith("/api/media/")) {
-      const file = await new MediaService().getStreamable(
-        photoUrl.slice("/api/media/".length)
-      );
-      buffer = file.buffer;
-      contentType = file.contentType;
-    } else if (/^https:\/\//i.test(photoUrl)) {
-      const response = await fetch(photoUrl, {
-        cache: "force-cache",
-        signal: AbortSignal.timeout(4000)
-      });
-      if (!response.ok) return null;
-      contentType = response.headers.get("content-type") || "image/jpeg";
-      buffer = Buffer.from(await response.arrayBuffer());
-    } else {
+    const buffer = await readPhotoBuffer(url);
+    if (!buffer || buffer.byteLength < 32 || buffer.byteLength > 8_000_000) {
       return null;
     }
-    if (buffer.byteLength < 32 || buffer.byteLength > 2_000_000) return null;
-    return toJpegDataUrl(buffer, contentType, { width: 192, height: 192 });
+    const sharp = (await import("sharp")).default;
+    const jpeg = await sharp(buffer)
+      .rotate()
+      .resize(192, 192, { fit: "cover", position: "centre" })
+      .jpeg({ quality: 82 })
+      .toBuffer();
+    return `data:image/jpeg;base64,${jpeg.toString("base64")}`;
   } catch (error) {
-    logger.warn("share_card_avatar_failed", {
+    logger.warn("share card avatar skipped", {
       reason: error instanceof Error ? error.message : "unknown"
     });
     return null;
   }
 }
 
-type Sharer = {
-  displayName: string;
-  avatarDataUrl: string | null;
-  initial: string;
-};
-
-async function loadSharer(userId: string | null): Promise<Sharer | null> {
+async function loadSharer(userId: string | null) {
   if (!userId) return null;
   const user = await prisma.user.findFirst({
     where: { id: userId, deletedAt: null },
@@ -193,30 +163,98 @@ async function loadSharer(userId: string | null): Promise<Sharer | null> {
     }
   });
   if (!user) return null;
-  const displayName = getDisplayName(user);
-  const initial = displayName.trim().charAt(0) || "ه";
-  const photo = shownProfilePhoto(user);
-  const avatarDataUrl = photo ? await toAvatarDataUrl(photo) : null;
-  return { displayName, avatarDataUrl, initial };
+  const name = getDisplayName(user);
+  const photo = await loadAvatarDataUrl(shownProfilePhoto(user));
+  return { name, photo };
+}
+
+let logoPromise: Promise<string | null> | null = null;
+
+/** Keep the white letters. Only the outer white paper becomes transparent. */
+async function loadLogoDataUrl() {
+  logoPromise ??= (async () => {
+    try {
+      const file = join(process.cwd(), "public/brand/roobeh-rah-icon.jpg");
+      const input = await readFile(file);
+      const sharp = (await import("sharp")).default;
+      const { data, info } = await sharp(input)
+        .resize(720, 720, { fit: "inside" })
+        .ensureAlpha()
+        .raw()
+        .toBuffer({ resolveWithObject: true });
+      const pixels = Buffer.from(data);
+      const count = info.width * info.height;
+      const white = (index: number) => {
+        const offset = index * 4;
+        return (
+          pixels[offset] > 236 &&
+          pixels[offset + 1] > 236 &&
+          pixels[offset + 2] > 236
+        );
+      };
+      const seen = new Uint8Array(count);
+      const stack: number[] = [];
+      const push = (index: number) => {
+        if (index < 0 || index >= count || seen[index] || !white(index)) return;
+        seen[index] = 1;
+        stack.push(index);
+      };
+      for (let x = 0; x < info.width; x += 1) {
+        push(x);
+        push((info.height - 1) * info.width + x);
+      }
+      for (let y = 0; y < info.height; y += 1) {
+        push(y * info.width);
+        push(y * info.width + info.width - 1);
+      }
+      while (stack.length > 0) {
+        const index = stack.pop() as number;
+        pixels[index * 4 + 3] = 0;
+        const x = index % info.width;
+        const y = (index - x) / info.width;
+        if (x > 0) push(index - 1);
+        if (x + 1 < info.width) push(index + 1);
+        if (y > 0) push(index - info.width);
+        if (y + 1 < info.height) push(index + info.width);
+      }
+      const png = await sharp(pixels, {
+        raw: { width: info.width, height: info.height, channels: 4 }
+      })
+        .trim()
+        .png()
+        .toBuffer();
+      return `data:image/png;base64,${png.toString("base64")}`;
+    } catch (error) {
+      logger.warn("share card logo skipped", {
+        reason: error instanceof Error ? error.message : "unknown"
+      });
+      return null;
+    }
+  })();
+  return logoPromise;
 }
 
 function RtlLine({
   text,
   fontSize,
   color,
-  fontWeight = 700
+  fontWeight = 700,
+  hug = false,
+  center = false
 }: {
   text: string;
   fontSize: number;
   color: string;
   fontWeight?: number;
+  hug?: boolean;
+  center?: boolean;
 }) {
   return (
     <div
       style={{
         display: "flex",
-        width: "100%",
-        justifyContent: "flex-end"
+        ...(hug ? {} : { width: "100%" }),
+        justifyContent: center ? "center" : "flex-end"
       }}
     >
       <div
@@ -237,54 +275,192 @@ function RtlLine({
   );
 }
 
-function AvatarBadge({
-  sharer,
-  size
+function Pill({
+  text,
+  fontSize,
+  background,
+  color,
+  border
 }: {
-  sharer: Sharer;
-  size: number;
+  text: string;
+  fontSize: number;
+  background: string;
+  color: string;
+  border?: string;
 }) {
   return (
     <div
       style={{
         display: "flex",
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        overflow: "hidden",
-        border: `4px solid ${brandColors.ember}`,
-        backgroundColor: brandColors.ember,
         alignItems: "center",
         justifyContent: "center",
-        flexShrink: 0
+        background,
+        color,
+        border: border ?? "0 solid transparent",
+        borderRadius: 999,
+        padding: `${Math.round(fontSize * 0.45)}px ${Math.round(fontSize * 0.9)}px`,
+        fontSize,
+        fontWeight: 700,
+        direction: "ltr",
+        lineHeight: 1.2
       }}
     >
-      {sharer.avatarDataUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
+      {rtlText(text)}
+    </div>
+  );
+}
+
+function Inviter({
+  name,
+  photo,
+  fontSize,
+  avatar
+}: {
+  name: string;
+  photo: string | null;
+  fontSize: number;
+  avatar: number;
+}) {
+  const initial = name.trim().charAt(0) || "ر";
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "flex-end",
+        alignItems: "center",
+        gap: 16
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          fontSize,
+          color: "#A56B32",
+          fontWeight: 700,
+          lineHeight: 1.35,
+          direction: "ltr"
+        }}
+      >
+        {rtlText(name)}
+      </div>
+      {photo ? (
         <img
-          src={sharer.avatarDataUrl}
-          alt=""
-          width={size}
-          height={size}
+          src={photo}
+          width={avatar}
+          height={avatar}
           style={{
-            width: size,
-            height: size,
-            objectFit: "cover"
+            width: avatar,
+            height: avatar,
+            borderRadius: avatar,
+            objectFit: "cover",
+            border: "4px solid #FFFFFF"
           }}
         />
       ) : (
         <div
           style={{
             display: "flex",
-            fontSize: Math.round(size * 0.42),
-            color: brandColors.ink,
+            width: avatar,
+            height: avatar,
+            borderRadius: avatar,
+            background: "#F39C12",
+            color: "#FFFFFF",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: Math.round(avatar * 0.42),
             fontWeight: 700,
-            direction: "ltr"
+            direction: "ltr",
+            border: "4px solid #FFFFFF"
           }}
         >
-          {rtlText(sharer.initial)}
+          {rtlText(initial)}
         </div>
       )}
+    </div>
+  );
+}
+
+function Circle({
+  size,
+  color,
+  top,
+  left,
+  right,
+  bottom
+}: {
+  size: number;
+  color: string;
+  top?: number;
+  left?: number;
+  right?: number;
+  bottom?: number;
+}) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        display: "flex",
+        width: size,
+        height: size,
+        borderRadius: size,
+        background: color,
+        ...(typeof top === "number" ? { top } : {}),
+        ...(typeof left === "number" ? { left } : {}),
+        ...(typeof right === "number" ? { right } : {}),
+        ...(typeof bottom === "number" ? { bottom } : {})
+      }}
+    />
+  );
+}
+
+function Field({
+  label,
+  text,
+  fontSize
+}: {
+  label: string;
+  text: string;
+  fontSize: number;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        width: "100%",
+        boxSizing: "border-box",
+        justifyContent: "space-between",
+        alignItems: "center",
+        background: "#FFFFFF",
+        borderRadius: 24,
+        border: "3px solid #F6D7B0",
+        padding: `${Math.round(fontSize * 0.4)}px ${Math.round(fontSize * 0.7)}px`
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          fontSize,
+          fontWeight: 700,
+          color: "#5C4030",
+          lineHeight: 1.3,
+          direction: "ltr"
+        }}
+      >
+        {rtlText(text)}
+      </div>
+      <div
+        style={{
+          display: "flex",
+          fontSize,
+          fontWeight: 700,
+          color: "#E07A12",
+          lineHeight: 1.3,
+          direction: "ltr"
+        }}
+      >
+        {rtlText(label)}
+      </div>
     </div>
   );
 }
@@ -306,15 +482,12 @@ export async function renderShareCard(input: RenderShareCardInput) {
       deletedAt: null,
       status: { in: publicEventStatuses }
     },
-    include: {
-      images: {
-        orderBy: { sortOrder: "asc" },
-        take: 1,
-        include: { mediaAsset: true }
-      },
-      _count: {
-        select: { registrations: { where: { status: "REGISTERED" } } }
-      }
+    select: {
+      title: true,
+      eventNumber: true,
+      date: true,
+      startTime: true,
+      locationName: true
     }
   });
 
@@ -322,46 +495,111 @@ export async function renderShareCard(input: RenderShareCardInput) {
     throw new AppError("EVENT_NOT_FOUND", "این برنامه پیدا نشد.", 404);
   }
 
-  let coverDataUrl: string | null = null;
-  if (event.images[0]?.mediaAssetId) {
-    try {
-      const media = await new MediaService().getStreamable(
-        event.images[0].mediaAssetId
-      );
-      coverDataUrl = await toJpegDataUrl(media.buffer, media.contentType, {
-        width: 1080,
-        height: 1920
-      });
-    } catch (error) {
-      logger.warn("share_card_cover_failed", {
-        eventId: input.eventId,
-        reason: error instanceof Error ? error.message : "unknown"
-      });
-    }
-  }
-
-  const sharer = await loadSharer(userId);
-  const fontData = await loadVazirmatnFont();
+  const [sharer, fontData, logo] = await Promise.all([
+    loadSharer(userId),
+    loadVazirmatnFont(),
+    loadLogoDataUrl()
+  ]);
   const compact = format === "landscape";
-  const titleSize = compact ? 36 : format === "story" ? 56 : 48;
-  const pad = format === "story" ? 72 : compact ? 40 : 52;
-  const avatarSize = compact ? 68 : format === "story" ? 104 : 88;
-  const metaSize = compact ? 20 : 24;
+  const story = format === "story";
+  const titleSize = compact ? 34 : story ? 60 : 44;
+  const metaSize = compact ? 24 : story ? 34 : 28;
+  const pad = story ? 44 : compact ? 22 : 28;
+  const footer = story ? 112 : compact ? 64 : 84;
+  const gap = compact ? 16 : story ? 22 : 14;
+  const logoSize = compact ? 268 : story ? 500 : 260;
+  const logoBox = compact ? 320 : logoSize;
+  const detailsWidth = size.width - pad * 2 - gap - logoBox;
   const eventNumber = event.eventNumber.toLocaleString("fa-IR");
-  const companions = `${event._count.registrations.toLocaleString("fa-IR")} نفر همراه`;
-  const dateLabel = faTehranDateFormatter.format(event.date);
-  const meetingLine = `${MEETING_TIME_LABEL} ${timeFormatter.format(event.meetingTime)}`;
-  const startLine = `${START_TIME_LABEL} ${timeFormatter.format(event.startTime)}`;
-  const titleLines = wrapWords(event.title, compact ? 32 : 24, compact ? 2 : 3);
-  const locationLines = wrapWords(event.locationName, compact ? 36 : 28, 2);
-  const address = event.locationAddress?.replace(/\s+/g, " ").trim();
-  const addressLines =
-    address && !compact
-      ? wrapWords(`نشانی ${address}`, 32, 2)
-      : [];
-  const brandLines = compact
-    ? [`${APP_NAME} · برنامه ${eventNumber}`]
-    : [APP_NAME, `برنامه شماره ${eventNumber}`];
+  const dateLabel = faTehranDateShortFormatter.format(event.date);
+  const timeLabel = timeFormatter.format(event.startTime);
+  const titleLines = wrapWords(event.title, compact ? 22 : story ? 18 : 18, 2);
+  const location = shorten(event.locationName, compact ? 28 : 26);
+  const fontFamily = fontData ? "Vazirmatn" : "sans-serif";
+
+  const details = (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        flexGrow: 1,
+        flexShrink: 0,
+        justifyContent: "space-between",
+        gap: compact ? 8 : story ? 16 : 12,
+        width: compact ? detailsWidth : "100%"
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          width: "100%",
+          justifyContent: "flex-end",
+          alignItems: "center"
+        }}
+      >
+        <Pill
+          text={`برنامه ${eventNumber}`}
+          fontSize={metaSize}
+          background={brandColors.red}
+          color="#FFFFFF"
+        />
+      </div>
+      <div
+        style={{
+          display: "flex",
+          width: "100%",
+          boxSizing: "border-box",
+          flexDirection: "column",
+          alignItems: "center",
+          background: "#FFFFFF",
+          borderRadius: story ? 36 : 24,
+          border: "3px solid #F6D7B0",
+          padding: story ? 28 : compact ? 14 : 20,
+          gap: 4
+        }}
+      >
+        {titleLines.map((line) => (
+          <RtlLine key={line} text={line} fontSize={titleSize} color={brandColors.ink} center />
+        ))}
+      </div>
+      <Field label="تاریخ" text={dateLabel} fontSize={metaSize} />
+      <Field label="ساعت" text={timeLabel} fontSize={metaSize} />
+      <Field label="محل" text={location} fontSize={metaSize} />
+      {sharer ? (
+        <div
+          style={{
+            display: "flex",
+            width: "100%",
+            boxSizing: "border-box",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            background: "#FFFFFF",
+            borderRadius: 24,
+            border: "3px solid #F6D7B0",
+            padding: compact ? 12 : 16,
+            gap: compact ? 4 : 6
+          }}
+        >
+          <Inviter
+            name={shorten(sharer.name, compact ? 22 : 28)}
+            photo={sharer.photo}
+            fontSize={compact ? 22 : story ? 32 : 26}
+            avatar={compact ? 52 : story ? 84 : 64}
+          />
+          <RtlLine
+            text="من توی این برنامه شرکت می‌کنم"
+            fontSize={compact ? 20 : story ? 30 : 24}
+            color="#5C4030"
+          />
+          <RtlLine
+            text="اگر تو هم می‌آی خوشحال می‌شم ببینمت"
+            fontSize={compact ? 20 : story ? 30 : 24}
+            color="#E07A12"
+          />
+        </div>
+      ) : null}
+    </div>
+  );
 
   return new ImageResponse(
     (
@@ -371,128 +609,83 @@ export async function renderShareCard(input: RenderShareCardInput) {
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "flex-end",
           position: "relative",
-          background: brandColors.ink,
-          color: "white",
-          padding: pad,
-          fontFamily: fontData ? "Vazirmatn" : "sans-serif"
+          overflow: "hidden",
+          background: "linear-gradient(165deg, #FFE7BF 0%, #FFF6EE 42%, #FFF6EE 100%)",
+          color: brandColors.ink,
+          fontFamily
         }}
       >
-        {coverDataUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={coverDataUrl}
-            alt=""
-            width={size.width}
-            height={size.height}
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover"
-            }}
-          />
-        ) : null}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            background:
-              "linear-gradient(180deg, rgba(28,16,8,0.25) 0%, rgba(28,16,8,0.88) 55%, rgba(28,16,8,0.96) 100%)",
-            display: "flex"
-          }}
+        <Circle
+          size={story ? 720 : compact ? 280 : 480}
+          color="#F5C518"
+          top={story ? -240 : compact ? -70 : -150}
+          left={story ? -200 : compact ? -70 : -140}
+        />
+        <Circle
+          size={story ? 520 : compact ? 180 : 380}
+          color={brandColors.red}
+          top={story ? -180 : compact ? -70 : -120}
+          right={story ? -180 : compact ? -60 : -130}
+        />
+        <Circle
+          size={story ? 620 : compact ? 240 : 400}
+          color="#F39C12"
+          bottom={story ? -140 : compact ? -80 : -130}
+          left={story ? -160 : compact ? -50 : -110}
         />
         <div
           style={{
-            position: "relative",
             display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end",
-            gap: compact ? 8 : 12,
-            width: "100%"
+            flexGrow: 1,
+            flexDirection: compact ? "row" : "column",
+            alignItems: compact ? "stretch" : "center",
+            padding: pad,
+            gap,
+            zIndex: 1
           }}
         >
-          {sharer ? (
+          {logo ? (
             <div
               style={{
                 display: "flex",
-                width: "100%",
-                justifyContent: "flex-end",
+                flexShrink: 0,
                 alignItems: "center",
-                gap: 16
+                justifyContent: "center",
+                width: compact ? logoBox : "100%"
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-end",
-                  gap: 4,
-                  flexGrow: 1
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    width: "100%",
-                    justifyContent: "flex-end",
-                    fontSize: compact ? 24 : 32,
-                    fontWeight: 700,
-                    color: "#FFFFFF",
-                    direction: "ltr"
-                  }}
-                >
-                  {rtlText(sharer.displayName)}
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    width: "100%",
-                    justifyContent: "flex-end",
-                    fontSize: compact ? 16 : 22,
-                    fontWeight: 700,
-                    color: "#FDE68A",
-                    direction: "ltr"
-                  }}
-                >
-                  {rtlText("من توی این برنامه شرکت می‌کنم")}
-                </div>
-              </div>
-              <AvatarBadge sharer={sharer} size={avatarSize} />
+              <img
+                src={logo}
+                width={logoSize}
+                height={logoSize}
+                style={{ width: logoSize, height: logoSize }}
+              />
             </div>
           ) : null}
-          {brandLines.map((line) => (
-            <RtlLine key={line} text={line} fontSize={metaSize} color={brandColors.ember} />
-          ))}
-          {titleLines.map((line) => (
-            <RtlLine
-              key={line}
-              text={line}
-              fontSize={titleSize}
-              color="#FFFFFF"
-            />
-          ))}
-          <RtlLine text={dateLabel} fontSize={metaSize} color="#E2E8F0" />
-          <RtlLine text={meetingLine} fontSize={metaSize} color="#E2E8F0" />
-          <RtlLine text={startLine} fontSize={metaSize} color="#E2E8F0" />
-          {locationLines.map((line) => (
-            <RtlLine
-              key={line}
-              text={line}
-              fontSize={compact ? 20 : 24}
-              color="#CBD5E1"
-            />
-          ))}
-          {addressLines.map((line) => (
-            <RtlLine key={line} text={line} fontSize={20} color="#94A3B8" />
-          ))}
-          <RtlLine text={companions} fontSize={metaSize} color="#FBBF24" />
+          {details}
+        </div>
+        <div
+          style={{
+            display: "flex",
+            height: footer,
+            alignItems: "center",
+            justifyContent: "center",
+            background: "linear-gradient(90deg, #F39C12 0%, #E85D04 100%)",
+            zIndex: 1
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              fontSize: metaSize,
+              fontWeight: 700,
+              color: "#FFFFFF",
+              direction: "ltr"
+            }}
+          >
+            {rtlText(APP_SLOGAN)}
+          </div>
         </div>
       </div>
     ),
