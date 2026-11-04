@@ -1,0 +1,56 @@
+name: SSH diagnose
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Trust the server
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+        run: |
+          set -eu
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -p "$DEPLOY_PORT" -T 15 "$DEPLOY_HOST" > ~/.ssh/known_hosts
+          if ! ssh-keygen -lf ~/.ssh/known_hosts | grep -q "SHA256:DvWulOz40VYfGBfNf787lkLuFrbzmHSHdQTRSxjk0Dg"; then
+            echo "server host key did not match"
+            exit 1
+          fi
+
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Read why SSH is closed
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          set -eu
+          ssh -p "$DEPLOY_PORT" -o BatchMode=yes "$DEPLOY_USER@$DEPLOY_HOST" 'bash -s' <<'EOF'
+          set +e
+          echo "HOST $(hostname)"
+          echo "--- listen ---"
+          ss -lnt | awk 'NR==1 || /:6579/ || /:22 /'
+          echo "--- sshd ---"
+          sshd -T 2>/dev/null | awk 'BEGIN{IGNORECASE=1} $1 ~ /^(port|listenaddress|addressfamily|passwordauthentication|kbdinteractiveauthentication|pubkeyauthentication|permitrootlogin|allowusers|denyusers|allowgroups|maxauthtries|maxstartups)$/'
+          echo "--- ufw ---"
+          ufw status verbose 2>/dev/null | head -n 60
+          echo "--- fail2ban ---"
+          fail2ban-client status 2>/dev/null
+          fail2ban-client status sshd 2>/dev/null
+          echo "--- nft ---"
+          nft list ruleset 2>/dev/null | awk 'length<240' | head -n 120
+          echo "--- recent ssh ---"
+          journalctl -u ssh -u sshd --since "3 days ago" -n 50 --no-pager 2>/dev/null
+          EOF
