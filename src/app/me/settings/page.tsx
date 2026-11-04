@@ -208,7 +208,7 @@ export default async function ProfileSettingsPage() {
             <Toggle
               name="notifyBotNews"
               label="خبر برنامه در چت ربات"
-              description="وقتی برنامه جدید می‌آید یا پیام عمومی فرستاده می‌شود، در چت خصوصی ربات ببین."
+              description="وقتی برنامه جدید می‌آید یا پیام عمومی فرستاده می‌شود، در چت خصوصی ربات ببین. زیر همان پیام هم دکمه‌ای برای خاموش کردنش هست."
               defaultChecked={profile?.notifyBotNews ?? true}
             />
             <Toggle

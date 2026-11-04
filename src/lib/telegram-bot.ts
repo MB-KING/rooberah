@@ -1,6 +1,6 @@
 import { config } from "@/lib/config";
 import { APP_NAME } from "@/shared/brand";
-import { notifyButtons } from "@/shared/notify-copy";
+import { MUTE_BOT_NEWS_CALLBACK, notifyButtons } from "@/shared/notify-copy";
 import { logger } from "@/lib/logger";
 import {
   formatHelpMessageHtml,
@@ -76,11 +76,21 @@ export function appPublicUrl() {
   );
 }
 
+type AppInlineButton =
+  | { text: string; url: string }
+  | { text: string; web_app: { url: string } }
+  | { text: string; callback_data: string };
+
+type ReplyMarkup = {
+  inline_keyboard?: Array<Array<Record<string, unknown>>>;
+};
+
 function buildAppKeyboard(input: {
   chatId: string;
   eventPath?: string;
   buttonText?: string;
-}) {
+  muteNews?: boolean;
+}): { inline_keyboard: AppInlineButton[][] } {
   const label = input.buttonText ?? `باز کردن ${APP_NAME}`;
   const httpsApp = appPublicUrl().startsWith("https://");
   // Query, not a hash: Telegram will not launch a Mini App whose button URL contains #.
@@ -88,18 +98,27 @@ function buildAppKeyboard(input: {
     ? `${appPublicUrl()}/?e=${encodeURIComponent(startParamFromPath(input.eventPath))}`
     : appPublicUrl();
 
-  // web_app buttons only work in private chats, and only with HTTPS URLs.
-  if (isGroupOrChannelChat(input.chatId) || !httpsApp) {
-    return {
-      inline_keyboard: [
-        [{ text: label, url: telegramDeepLink(input.eventPath) }]
-      ]
-    };
-  }
+  const openButton: AppInlineButton =
+    isGroupOrChannelChat(input.chatId) || !httpsApp
+      ? { text: label, url: telegramDeepLink(input.eventPath) }
+      : { text: label, web_app: { url: webAppUrl } };
 
-  return {
-    inline_keyboard: [[{ text: label, web_app: { url: webAppUrl } }]]
-  };
+  const inline_keyboard: AppInlineButton[][] = [[openButton]];
+  if (input.muteNews) {
+    inline_keyboard.push([
+      { text: notifyButtons.muteNews, callback_data: MUTE_BOT_NEWS_CALLBACK }
+    ]);
+  }
+  return { inline_keyboard };
+}
+
+export function withoutMuteNewsButton(markup?: ReplyMarkup) {
+  const inline_keyboard = (markup?.inline_keyboard ?? [])
+    .map((row) =>
+      row.filter((button) => button.callback_data !== MUTE_BOT_NEWS_CALLBACK)
+    )
+    .filter((row) => row.length > 0);
+  return { inline_keyboard };
 }
 
 export async function setupTelegramBot() {
@@ -367,6 +386,7 @@ export async function sendTelegramMessage(input: {
   parseMode?: "HTML";
   threadId?: number | null;
   replyToMessageId?: number;
+  muteNews?: boolean;
   inlineKeyboard?: {
     inline_keyboard: Array<Array<{ text: string; callback_data: string }>>;
   };
@@ -380,7 +400,8 @@ export async function sendTelegramMessage(input: {
       ? buildAppKeyboard({
           chatId,
           eventPath: input.eventPath,
-          buttonText: input.buttonText
+          buttonText: input.buttonText,
+          muteNews: input.muteNews
         })
       : undefined);
 
@@ -484,6 +505,26 @@ export async function editTelegramAnnouncement(input: {
     }
     logger.warn("telegram_edit_announce_failed", { chatId, reason });
     return { ok: false, reason };
+  }
+}
+
+export async function dropMuteNewsButton(input: {
+  chatId: number | string | bigint;
+  messageId: number;
+  replyMarkup?: ReplyMarkup;
+}) {
+  try {
+    await callTelegram("editMessageReplyMarkup", {
+      chat_id: input.chatId.toString(),
+      message_id: input.messageId,
+      reply_markup: withoutMuteNewsButton(input.replyMarkup)
+    });
+    return true;
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : "unknown";
+    if (/message is not modified/i.test(reason)) return true;
+    logger.warn("telegram_drop_mute_failed", { reason });
+    return false;
   }
 }
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { withoutMuteNewsButton } from "@/lib/telegram-bot";
 import { APP_NAME } from "@/shared/brand";
 import { MEETING_TIME_LABEL } from "@/shared/copy";
 import {
@@ -220,5 +221,17 @@ describe("telegram html formatters", () => {
     expect(help).not.toContain("هم مسیر");
     expect(start).not.toContain("rooberah.net");
     expect(help).not.toContain("VPN");
+  });
+
+  it("keeps the signup button when the news mute button is removed", () => {
+    const markup = withoutMuteNewsButton({
+      inline_keyboard: [
+        [{ text: "مشاهده و ثبت‌نام", web_app: { url: "https://example.com" } }],
+        [{ text: "دیگر این پیام‌ها نیاید", callback_data: "news:off" }]
+      ]
+    });
+    expect(markup.inline_keyboard).toEqual([
+      [{ text: "مشاهده و ثبت‌نام", web_app: { url: "https://example.com" } }]
+    ]);
   });
 });
