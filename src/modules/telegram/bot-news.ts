@@ -1,9 +1,13 @@
 import { EventStatus } from "@prisma/client";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
-import { sendTelegramMessage } from "@/lib/telegram-bot";
+import {
+  answerTelegramCallback,
+  dropMuteNewsButton,
+  sendTelegramMessage
+} from "@/lib/telegram-bot";
 import { formatNotificationHtml } from "@/lib/telegram-format";
-import { notifyButtons } from "@/shared/notify-copy";
+import { MUTE_BOT_NEWS_CALLBACK, notifyButtons } from "@/shared/notify-copy";
 
 const faDate = new Intl.DateTimeFormat("fa-IR", {
   timeZone: "Asia/Tehran",
@@ -55,13 +59,56 @@ export async function sendBotNews(input: {
       parseMode: "HTML",
       openApp: true,
       eventPath: input.eventPath,
-      buttonText: input.buttonText
+      buttonText: input.buttonText,
+      muteNews: true
     });
     if (result.ok) sent += 1;
     else failed += 1;
     await new Promise((resolve) => setTimeout(resolve, 40));
   }
   return { sent, failed, total: users.length };
+}
+
+export async function handleMuteBotNews(input: {
+  callbackId: string;
+  data: string;
+  telegramUserId?: number;
+  chatId?: number;
+  messageId?: number;
+  replyMarkup?: {
+    inline_keyboard?: Array<Array<Record<string, unknown>>>;
+  };
+}) {
+  if (input.data !== MUTE_BOT_NEWS_CALLBACK) return false;
+
+  const user = input.telegramUserId
+    ? await prisma.user.findFirst({
+        where: { telegramId: BigInt(input.telegramUserId), deletedAt: null },
+        select: { id: true }
+      })
+    : null;
+  if (!user) {
+    await answerTelegramCallback(input.callbackId, "حسابت پیدا نشد. اول از ربات وارد شو.");
+    return true;
+  }
+
+  await prisma.userProfile.upsert({
+    where: { userId: user.id },
+    update: { notifyBotNews: false },
+    create: { userId: user.id, notifyBotNews: false }
+  });
+  await answerTelegramCallback(
+    input.callbackId,
+    "خبر برنامه خاموش شد. از تنظیمات پروفایل دوباره روشن می‌شود."
+  );
+  if (input.chatId && input.messageId && input.replyMarkup) {
+    await dropMuteNewsButton({
+      chatId: input.chatId,
+      messageId: input.messageId,
+      replyMarkup: input.replyMarkup
+    });
+  }
+  return true;
 }
 
 export async function notifyMembersAboutEvent(event: {

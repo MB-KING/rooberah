@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
 import { sendHelpMessage, sendStartMessage } from "@/lib/telegram-bot";
 import { pathFromStartParam } from "@/lib/telegram-format";
+import { handleMuteBotNews } from "@/modules/telegram/bot-news";
 import {
   deactivateTelegramResourceByChatId,
   handleAddChoice,
@@ -55,6 +56,9 @@ type TelegramUpdate = {
     message?: {
       message_id?: number;
       chat?: { id?: number; type?: string; title?: string; username?: string };
+      reply_markup?: {
+        inline_keyboard?: Array<Array<Record<string, unknown>>>;
+      };
     };
   };
 };
@@ -87,6 +91,15 @@ export async function POST(request: Request) {
           : undefined,
         messageId: choice.message?.message_id
       };
+      const muted = await handleMuteBotNews({
+        callbackId: choice.id,
+        data: choice.data,
+        telegramUserId: choice.from?.id,
+        chatId: choice.message?.chat?.id,
+        messageId: choice.message?.message_id,
+        replyMarkup: choice.message?.reply_markup
+      });
+      if (muted) return NextResponse.json({ ok: true });
       const added = await handleAddChoice(choiceInput);
       if (!added) await handlePhotoChoice(choiceInput);
       return NextResponse.json({ ok: true });

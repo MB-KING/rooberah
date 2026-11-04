@@ -1,6 +1,6 @@
 import { formatFaNumber } from "@/lib/jalali";
 
-export const APP_VERSION = "1.5.12";
+export const APP_VERSION = "1.5.13";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => formatFaNumber(Number(digit)));
@@ -14,6 +14,15 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.5.13",
+    dateLabel: "۱۳ آبان ۱۴۰۵",
+    title: "خاموش کردن خبر برنامه از خود پیام",
+    items: [
+      "زیر پیام اعلام برنامه در چت ربات، دکمه «دیگر این پیام‌ها نیاید» هست.",
+      "با زدنش همان خبر برنامه که در تنظیمات پروفایل خاموش می‌شود، خاموش می‌شود. برنامهٔ همین پیام سر جایش می‌ماند."
+    ]
+  },
   {
     version: "1.5.12",
     dateLabel: "۷ آبان ۱۴۰۵",

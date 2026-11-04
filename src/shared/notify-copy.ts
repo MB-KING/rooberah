@@ -2,6 +2,8 @@ import { formatFaNumber } from "@/lib/jalali";
 import { APP_NAME } from "@/shared/brand";
 import { MEETING_TIME_LABEL, START_TIME_LABEL } from "@/shared/copy";
 
+export const MUTE_BOT_NEWS_CALLBACK = "news:off";
+
 export const notifyButtons = {
   openApp: `باز کردن ${APP_NAME}`,
   viewEvent: "مشاهده برنامه",
@@ -9,7 +11,8 @@ export const notifyButtons = {
   feedback: "ثبت نظر و عکس",
   profile: "مشاهده پروفایل",
   businesses: "مشاهده کسب‌وکارها",
-  rewards: "مشاهده مزیت‌ها"
+  rewards: "مشاهده مزیت‌ها",
+  muteNews: "دیگر این پیام‌ها نیاید"
 } as const;
 
 export function quoteTitle(title: string) {
