@@ -161,6 +161,29 @@ describe("telegram html formatters", () => {
     expect(html).not.toMatch(/<b>[^<]*$/);
   });
 
+  it("shows the whole description instead of cutting it after 160 characters", () => {
+    const description = `${"این هفته رقابت دوستانه و بازی داریم. ".repeat(6)}بازی تخته‌نرد تا آخر ادامه دارد.`;
+    expect(description.length).toBeGreaterThan(160);
+    const html = formatEventAnnounceHtml(
+      { ...event, description },
+      { participantNames: ["Reza Shirazi", "کیومرث فراهانی"] }
+    );
+    expect(html).toContain("بازی تخته‌نرد تا آخر ادامه دارد.");
+    expect(html).toContain("۱. Reza Shirazi");
+    expect(html).not.toContain("…");
+  });
+
+  it("keeps every participant when a very long description has to fit a caption", () => {
+    const html = formatEventAnnounceHtml(
+      { ...event, description: "توضیح کامل برنامه. ".repeat(200) },
+      { participantNames: ["سارا حی"], maxLength: TELEGRAM_CAPTION_LIMIT }
+    );
+    expect(html.length).toBeLessThanOrEqual(TELEGRAM_CAPTION_LIMIT);
+    expect(html).toContain("۱. سارا حی");
+    expect(html).toContain("برای جزئیات و ثبت‌نام");
+    expect(html).toContain("…");
+  });
+
   it("appends numbered participant names at the end", () => {
     const html = formatEventAnnounceHtml(event, {
       participantNames: ["سارا حی", "فاطیما بستانی", "ترانه"]

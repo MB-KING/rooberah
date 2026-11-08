@@ -5,6 +5,7 @@ import {
   helpMessageLines,
   quoteTitle,
   startMessageLines,
+  TELEGRAM_MESSAGE_LIMIT,
   telegramAccessFooter
 } from "@/shared/notify-copy";
 
@@ -120,29 +121,55 @@ export function formatEventAnnounceHtml(
   },
   options?: {
     participantNames?: string[];
+    maxLength?: number;
   }
 ) {
-  const lines = [
-    "<b>همراهمون باش برای رشد</b>",
-    `<b>برنامه ${escapeHtml(String(event.eventNumber))} ${escapeHtml(APP_NAME)}</b>`,
-    "────────────",
-    `<b>${escapeHtml(truncatePlain(event.title, 80))}</b>`,
-    `شماره ${escapeHtml(String(event.eventNumber))}`,
-    "",
-    `📅 ${escapeHtml(faDateFormatter.format(event.date))}`,
-    `🕐 ${escapeHtml(MEETING_TIME_LABEL)}: ${escapeHtml(faTimeFormatter.format(event.meetingTime))}`,
-    `🚶 ${escapeHtml(START_TIME_LABEL)}: ${escapeHtml(faTimeFormatter.format(event.startTime))}`,
-    `📍 ${escapeHtml(truncatePlain(event.locationName, 80))}`
-  ];
+  const names = options?.participantNames ?? [];
+  const description = event.description?.trim() ?? "";
+  const limit = options?.maxLength ?? TELEGRAM_MESSAGE_LIMIT;
 
-  const description = event.description?.trim();
-  if (description) {
-    lines.push("", escapeHtml(truncatePlain(description, 160)));
+  const render = (descriptionText: string) => {
+    const lines = [
+      "<b>همراهمون باش برای رشد</b>",
+      `<b>برنامه ${escapeHtml(String(event.eventNumber))} ${escapeHtml(APP_NAME)}</b>`,
+      "────────────",
+      `<b>${escapeHtml(truncatePlain(event.title, 80))}</b>`,
+      `شماره ${escapeHtml(String(event.eventNumber))}`,
+      "",
+      `📅 ${escapeHtml(faDateFormatter.format(event.date))}`,
+      `🕐 ${escapeHtml(MEETING_TIME_LABEL)}: ${escapeHtml(faTimeFormatter.format(event.meetingTime))}`,
+      `🚶 ${escapeHtml(START_TIME_LABEL)}: ${escapeHtml(faTimeFormatter.format(event.startTime))}`,
+      `📍 ${escapeHtml(truncatePlain(event.locationName, 80))}`
+    ];
+    if (descriptionText) {
+      lines.push("", escapeHtml(descriptionText));
+    }
+    lines.push("", "برای جزئیات و ثبت‌نام، دکمه زیر را بزن.");
+    const body = withParticipantFooter(lines.join("\n"), names);
+    return `${body}\n\n${escapeHtml(telegramAccessFooter("https://rooberah.net"))}`;
+  };
+
+  const full = render(description);
+  if (full.length <= limit || !description) return full;
+
+  const withoutDescription = render("");
+  if (withoutDescription.length > limit) return full;
+
+  let low = 0;
+  let high = description.length;
+  let best = withoutDescription;
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const piece = mid === 0 ? "" : truncatePlain(description, mid);
+    const html = render(piece);
+    if (html.length <= limit) {
+      best = html;
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
   }
-
-  lines.push("", "برای جزئیات و ثبت‌نام، دکمه زیر را بزن.");
-  const body = withParticipantFooter(lines.join("\n"), options?.participantNames ?? []);
-  return `${body}\n\n${escapeHtml(telegramAccessFooter("https://rooberah.net"))}`;
+  return best;
 }
 
 export function formatStartMessageHtml() {
