@@ -1,6 +1,6 @@
 import { formatFaNumber } from "@/lib/jalali";
 
-export const APP_VERSION = "1.5.13";
+export const APP_VERSION = "1.5.14";
 
 export function formatAppVersion(version = APP_VERSION) {
   return version.replace(/\d/g, (digit) => formatFaNumber(Number(digit)));
@@ -14,6 +14,15 @@ export type ChangelogRelease = {
 };
 
 export const changelog: ChangelogRelease[] = [
+  {
+    version: "1.5.14",
+    dateLabel: "۱۷ آبان ۱۴۰۵",
+    title: "توضیح کامل برنامه در اطلاع‌رسانی",
+    items: [
+      "توضیح برنامه در پیام گروه و کانال دیگر بعد از ۱۶۰ حرف قطع نمی‌شود.",
+      "اگر متن از سقف تلگرام بلندتر باشد، فقط همان بخش اضافه کوتاه می‌شود و اسم شرکت‌کننده‌ها می‌ماند."
+    ]
+  },
   {
     version: "1.5.13",
     dateLabel: "۱۳ آبان ۱۴۰۵",

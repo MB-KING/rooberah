@@ -107,8 +107,17 @@ function threadForResource(
   return resource.telegramThreadId;
 }
 
-function announceText(event: AnnounceBody, participantNames: string[] = []) {
-  return formatEventAnnounceHtml(event, { participantNames });
+function announceText(
+  event: AnnounceBody,
+  participantNames: string[] = [],
+  maxLength?: number
+) {
+  return formatEventAnnounceHtml(event, { participantNames, maxLength });
+}
+
+function announceCaption(event: AnnounceBody, participantNames: string[], text: string) {
+  if (text.length <= TELEGRAM_CAPTION_LIMIT) return text;
+  return announceText(event, participantNames, TELEGRAM_CAPTION_LIMIT);
 }
 
 async function sendAnnounceMessage(input: {
@@ -139,7 +148,7 @@ async function sendAnnounceMessage(input: {
     await sendTelegramPhoto({
       chatId: input.chatId,
       photoFileId: input.photoFileId,
-      caption: announceText(input.event),
+      caption: announceText(input.event, [], TELEGRAM_CAPTION_LIMIT),
       ...button
     });
   }
@@ -157,6 +166,7 @@ async function editOrResendAnnounce(input: {
   messageId: number;
   eventId: string;
   text: string;
+  caption?: string;
   threadId: number | null;
 }) {
   const edited = await editTelegramAnnouncement({
@@ -167,6 +177,17 @@ async function editOrResendAnnounce(input: {
     buttonText: notifyButtons.signup
   });
   if (edited.ok) return edited;
+
+  if (input.caption && input.caption !== input.text) {
+    const captionEdit = await editTelegramAnnouncement({
+      chatId: input.chatId,
+      messageId: input.messageId,
+      text: input.caption,
+      eventPath: `/events/${input.eventId}`,
+      buttonText: notifyButtons.signup
+    });
+    if (captionEdit.ok) return captionEdit;
+  }
 
   return sendTelegramMessage({
     chatId: input.chatId,
@@ -275,6 +296,7 @@ export async function announcePublishedEvent(
               messageId: Number(existing.telegramMessageId),
               eventId: event.id,
               text,
+              caption: announceCaption(event, participantNames, text),
               threadId: threadForResource(resource, event.announceThreadId)
             });
             if (edited.ok) {
@@ -447,7 +469,9 @@ export async function refreshEventAnnouncementMessages(eventId: string) {
     });
     if (announcements.length === 0) return;
 
-    const text = announceText(event, await loadParticipantNames(eventId));
+    const participantNames = await loadParticipantNames(eventId);
+    const text = announceText(event, participantNames);
+    const caption = announceCaption(event, participantNames, text);
 
     await Promise.all(
       announcements.map(async (row) => {
@@ -459,6 +483,7 @@ export async function refreshEventAnnouncementMessages(eventId: string) {
           messageId: Number(row.telegramMessageId),
           eventId: event.id,
           text,
+          caption,
           threadId: threadForResource(row.resource, event.announceThreadId)
         });
         if (edited.ok && edited.messageId !== Number(row.telegramMessageId)) {
@@ -519,7 +544,9 @@ export async function refreshAnnouncementCover(eventId: string) {
   const names = await loadParticipantNames(eventId);
   const text = announceText(event, names);
   const caption =
-    text.length <= TELEGRAM_CAPTION_LIMIT ? text : announceText(event);
+    text.length <= TELEGRAM_CAPTION_LIMIT
+      ? text
+      : announceText(event, [], TELEGRAM_CAPTION_LIMIT);
 
   for (const row of announcements) {
     if (!row.resource.telegramChatId || !row.telegramMessageId) continue;

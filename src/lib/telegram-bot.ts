@@ -466,14 +466,13 @@ export async function editTelegramAnnouncement(input: {
     message_id: input.messageId,
     reply_markup: keyboard
   };
-  const caption = input.text.slice(0, 1024);
   const text = input.text.slice(0, 4096);
 
-  if (caption.length <= 1024) {
+  if (input.text.length <= 1024) {
     try {
       await sendWithHtmlFallback({
         method: "editMessageCaption",
-        htmlText: caption,
+        htmlText: text,
         textField: "caption",
         body: shared
       });
